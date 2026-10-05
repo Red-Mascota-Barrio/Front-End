@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from '../pages/Auth/Login';
-import { LoginAdmin } from '../pages/Auth/LoginAdmin';
 import { Registro } from '../pages/Auth/Registro';
 import { Recuperar } from '../pages/Auth/Recuperar';
 import { ProtectedRoute } from './ProtectedRoute';
@@ -14,7 +13,6 @@ export const AppRouter = () => {
       {/*  manda a login directamente*/}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/login-admin" element={<LoginAdmin />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
       
