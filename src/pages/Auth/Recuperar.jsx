@@ -4,17 +4,24 @@ import { FaPaw, FaArrowLeft, FaKey, FaEnvelope } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { authService } from '../../services/authService';
+import { PasswordModal } from '../../components/auth/PasswordMoldal';
 import '../../assets/auth.css';
 
 export const Recuperar = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  
+
+  const handleCloseModal = () => {
+    setShowPasswordModal(false);
+    navigate('/login'); 
+  };
+
   // Guardamos el correo ingresado en el paso 1 para enviarlo junto con la nueva clave en el paso 2
-  const [correoGuardado, setCorreoGuardado] = useState(""); 
-  
+  const [correoGuardado, setCorreoGuardado] = useState("");
+
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
 
@@ -26,15 +33,15 @@ export const Recuperar = () => {
       setLoading(true);
       setErrorMsg(null);
       setMensaje(null);
-      
+
       // Llamada real a tu API de Laravel
       await authService.solicitarRecuperacion(data.correo);
-      
+
       setCorreoGuardado(data.correo); // Guardamos el correo para el siguiente paso
       setMensaje("Si tu correo está registrado, te hemos enviado un código de 6 dígitos.");
       setStep(2); // Avanzamos a la pantalla de nueva contraseña
 
-    } catch (error) {
+    } catch {
       setErrorMsg("Hubo un error de conexión al intentar enviar el código.");
     } finally {
       setLoading(false);
@@ -48,7 +55,7 @@ export const Recuperar = () => {
     try {
       setLoading(true);
       setErrorMsg(null);
-      
+
       // Llamada real enviando correo, OTP y la nueva clave
       await authService.restablecerContrasena({
         correo: correoGuardado,
@@ -56,8 +63,7 @@ export const Recuperar = () => {
         password: data.password
       });
 
-      alert("¡Contraseña actualizada con éxito!");
-      navigate('/login'); // Lo devolvemos al inicio de sesión
+      setShowPasswordModal(true);
 
     } catch (error) {
       setErrorMsg(error.response?.data?.mensaje || "Código incorrecto o vencido, intenta de nuevo.");
@@ -69,7 +75,7 @@ export const Recuperar = () => {
   return (
     <Container fluid className="vh-100 p-0 bg-light d-flex justify-content-center align-items-center">
       <div className="auth-form-container bg-white p-4 p-md-5 rounded-4 shadow-sm" style={{ maxWidth: '450px', width: '100%' }}>
-        
+
         <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-brand-green">
           <FaPaw size={24} />
           <span className="fw-bold fs-5">Red de Mascotas</span>
@@ -151,7 +157,7 @@ export const Recuperar = () => {
                 <Form.Control
                   type="password"
                   placeholder="Mínimo 8 caracteres"
-                  {...register("password", { 
+                  {...register("password", {
                     required: "Obligatorio",
                     minLength: { value: 8, message: "Debe tener al menos 8 caracteres" }
                   })}
@@ -173,6 +179,10 @@ export const Recuperar = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de éxito al actualizar la contraseña */}
+      <PasswordModal show={showPasswordModal} handleClose={handleCloseModal} />
+      
     </Container>
   );
-};
+}
