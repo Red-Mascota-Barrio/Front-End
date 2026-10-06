@@ -34,6 +34,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', userRole);
   };
 
+  // Actualiza los datos del usuario en sesión (ej. tras editar el perfil)
+  const updateUser = (cambios) => {
+    setUser((previo) => {
+      const actualizado = { ...previo, ...cambios };
+      localStorage.setItem('user', JSON.stringify(actualizado));
+      return actualizado;
+    });
+  };
+
   // Función de cierre de sesión
   const logout = () => {
     setUser(null);
@@ -46,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, role, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, role, login, logout, updateUser, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

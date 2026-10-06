@@ -3,6 +3,8 @@ import { Login } from '../pages/Auth/Login';
 import { Registro } from '../pages/Auth/Registro';
 import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
+import { Perfil } from '../pages/Perfil/Perfil';
+import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export const AppRouter = () => {
@@ -28,8 +30,8 @@ export const AppRouter = () => {
             <h2 className="text-muted">Panel Principal (Módulo en construcción)</h2>
           </div>
         } />
-        
-       
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil/editar" element={<EditarPerfil />} />
       </Route>
 
     </Routes>
