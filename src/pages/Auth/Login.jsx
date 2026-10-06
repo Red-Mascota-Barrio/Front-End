@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Container, Row, Col, Form, Button, InputGroup, Badge, Alert } from 'react-bootstrap';
-import { FaPaw, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
+import { FaPaw, FaEye, FaEyeSlash} from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
@@ -172,21 +172,6 @@ export const Login = () => {
 
               <Button type="submit" disabled={loading} className="w-100 fw-bold mb-4 py-2 btn-brand-green">
                 {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-              </Button>
-
-              <div className="d-flex align-items-center mb-4">
-                <hr className="flex-grow-1 text-muted" />
-                <span className="mx-3 text-muted small">o accede como</span>
-                <hr className="flex-grow-1 text-muted" />
-              </div>
-
-              <Button 
-                as={Link} 
-                to="/login-admin" 
-                variant="outline-secondary" 
-                className="w-100 fw-bold mb-4 py-2 d-flex justify-content-center align-items-center gap-2 text-decoration-none btn-auth-outline"
-              >
-                <FaShieldAlt /> Entrar como administrador
               </Button>
 
               <div className="text-center small">
