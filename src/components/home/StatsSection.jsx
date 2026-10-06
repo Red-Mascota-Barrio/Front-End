@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
-import { statsService } from '../../services/statsService';
+import { useAuth } from '../../context/AuthContext'; // Asegúrate de que esta ruta sea la correcta hacia tu contexto
 import '../../assets/home.css';
 
 const ITEMS = [
@@ -48,16 +48,8 @@ const TarjetaStat = ({ Icono, etiqueta, valor }) => {
 };
 
 export const StatsSection = () => {
-  const [stats, setStats] = useState(null);
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    statsService
-      .obtener()
-      .then(setStats)
-      .catch((error) => console.error('No se pudieron cargar las estadísticas:', error))
-      .finally(() => setCargando(false));
-  }, []);
+  // Extraemos los datos precargados del contexto global de autenticación
+  const { stats, cargandoStats } = useAuth();
 
   return (
     <section id="estadisticas" className="inicio-seccion">
@@ -69,7 +61,8 @@ export const StatsSection = () => {
               <TarjetaStat
                 Icono={Icono}
                 etiqueta={etiqueta}
-                valor={cargando ? '...' : stats?.[clave]}
+                // Si el contexto global está cargando, mostramos los puntos suspensivos
+                valor={cargandoStats ? '...' : stats?.[clave]}
               />
             </Col>
           ))}

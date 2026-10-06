@@ -3,35 +3,29 @@ import { Login } from '../pages/Auth/Login';
 import { Registro } from '../pages/Auth/Registro';
 import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
+import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export const AppRouter = () => {
-  return (
+  return (  
     <Routes>
       {/* =======================
           RUTAS PÚBLICAS
       ======================== */}
-      {/*  manda a login directamente*/}
-      <Route path="/" element={<Inicio />} />
-      <Route path="/" element={<Navigate to="/inicio" replace />} />
+      <Route path="/inicio" element={<Inicio />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
       
       {/* =======================
-          RUTAS PRIVADAS 
+          RUTAS EXCLUSIVAS DE ADMINISTRACIÓN (Solo Admin)
       ======================== */}
-      {/* si ponen la ruta necesita haber iniciado sesion */}
-      <Route element={<ProtectedRoute allowedRoles={['usuario', 'admin']} />}>
-        <Route path="/dashboard" element={
-          <div className="vh-100 d-flex justify-content-center align-items-center bg-light">
-            <h2 className="text-muted">Panel Principal (Módulo en construcción)</h2>
-          </div>
-        } />
-        
-       
+      <Route element={<ProtectedRoute allowedRoles={[1]} />}>
+        <Route path="/admin" element={<InicioAdmin />} />
       </Route>
 
+      {/* Redirección automática por si escriben cualquier otra ruta */}
+      <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
   );
 };

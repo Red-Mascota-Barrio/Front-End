@@ -39,10 +39,18 @@ export const Login = () => {
       }
 
       const response = await authService.login(payload);
+
+      const userRole = response.datos.user.rol_id || response.datos.user.id_rol || response.datos.user.rol?.id || 2;
+
       
-      // Si responde 200 OK, guardamos sesión y redirigimos
-      login(response.datos.user, response.datos.token, response.datos.user.rol?.nombre || 'usuario');
-      navigate('/dashboard'); // Ajusta esta ruta según tu panel principal
+      login(response.datos.user, response.datos.token, userRole);
+      
+     
+      if (Number(userRole) === 1) {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/inicio', { replace: true });
+      }
 
     } catch (error) {
       console.error("Error en login:", error);
