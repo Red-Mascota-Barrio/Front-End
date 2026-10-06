@@ -35,6 +35,7 @@ export const AppNavbar = () => {
           <Nav className="align-items-lg-center gap-lg-2">
             <Nav.Link as={Link} to="/">Inicio</Nav.Link>
             <Nav.Link as={Link} to="/mascotas">Adopta</Nav.Link>
+            <Nav.Link as={Link} to="/eventos">Eventos</Nav.Link>
             <Nav.Link as={Link} to="/foros">Foros</Nav.Link>
             <Nav.Link as={Link} to="/mis-mascotas">Mascotas</Nav.Link>
 

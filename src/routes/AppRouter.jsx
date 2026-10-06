@@ -4,6 +4,8 @@ import { Registro } from '../pages/Auth/Registro';
 import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
 import { ProtectedRoute } from './ProtectedRoute';
+import { Eventos } from '../pages/Eventos/Eventos';
+import { MascotasPage } from '../pages/Mascotas/Mascotas';
 
 export const AppRouter = () => {
   return (
@@ -13,10 +15,13 @@ export const AppRouter = () => {
       ======================== */}
       {/*  manda a login directamente*/}
       <Route path="/" element={<Inicio />} />
-      <Route path="/" element={<Navigate to="/inicio" replace />} />
+      <Route path="/inicio" element={<Navigate to="/" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
+      <Route path="/eventos" element={<Eventos />} />
+      <Route path="/mascotas" element={<MascotasPage />} />
+      
       
       {/* =======================
           RUTAS PRIVADAS 
@@ -29,7 +34,7 @@ export const AppRouter = () => {
           </div>
         } />
         
-       
+        
       </Route>
 
     </Routes>

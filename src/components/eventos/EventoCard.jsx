@@ -1,35 +1,38 @@
-
 export default function EventoCard({ evento, onInscribir }) {
-  const cuposAgotados = evento.cuposOcupados >= evento.cuposTotales;
+  const total = evento.cuposTotales || 0;
+  const cuposAgotados = total > 0 && evento.cuposOcupados >= total;
+  const porcentaje = total > 0 ? Math.min(100, (evento.cuposOcupados / total) * 100) : 0;
 
   return (
     <div className={`card h-100 ${evento.destacado ? 'border-warning shadow-sm' : ''}`}>
-      <div className="card-body">
-        {evento.destacado && (
-          <span className="badge bg-warning text-dark mb-2"> Evento Destacado</span>
-        )}
-        <span className="badge bg-info text-dark float-end">{evento.tipo}</span>
-        
+      <div className="card-body d-flex flex-column">
+        <div className="mb-1">
+          {evento.destacado && (
+            <span className="badge bg-warning text-dark">⭐ Evento destacado</span>
+          )}
+          <span className="badge bg-info text-dark float-end">{evento.tipo}</span>
+        </div>
+
         <h5 className="card-title mt-1">{evento.titulo}</h5>
         <p className="card-text text-muted small mb-2">{evento.descripcion}</p>
-        
-        <p className="small mb-1"> {evento.fecha}  {evento.hora}</p>
-        <p className="small mb-2"> {evento.lugar}</p>
 
-        //Indicador de Cupos //
-        <div className="mb-3">
+        <p className="small mb-1">📅 {evento.fecha} &nbsp; 🕒 {evento.hora}</p>
+        <p className="small mb-2">📍 {evento.lugar}</p>
+
+        {/* Indicador de cupos */}
+        <div className="mb-3 mt-auto">
           <small className="text-muted d-block">
-            Cupos: {evento.cuposOcupados} / {evento.cuposTotales}
+            Cupos: {evento.cuposOcupados} / {total}
           </small>
           <div className="progress" style={{ height: '6px' }}>
             <div
               className={`progress-bar ${cuposAgotados ? 'bg-danger' : 'bg-success'}`}
-              style={{ width: `${(evento.cuposOcupados / evento.cuposTotales) * 100}%` }}
+              style={{ width: `${porcentaje}%` }}
             ></div>
           </div>
         </div>
 
-        //Renderizado condicional de botones //
+        {/* Botón según estado */}
         {evento.inscrito ? (
           <button className="btn btn-outline-success w-100" disabled>
             ✓ Ya estás inscrito
@@ -47,4 +50,3 @@ export default function EventoCard({ evento, onInscribir }) {
     </div>
   );
 }
-
