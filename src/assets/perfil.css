@@ -1,0 +1,113 @@
+/* src/assets/perfil.css — módulo Perfil de Usuario (usa las variables de .inicio-page) */
+
+/* ===== Cabecera del perfil ===== */
+.perfil-hero {
+  color: #fff;
+  padding: 48px 0 40px;
+  background: linear-gradient(135deg, #1ccaa8 0%, #2e9fc9 55%, #4a7fd0 100%);
+}
+.perfil-nombre { font-size: clamp(1.5rem, 3.4vw, 2.2rem); font-weight: 800; }
+.perfil-bio { max-width: 620px; }
+.perfil-insignia {
+  background: linear-gradient(135deg, #17a392, #0e7466) !important;
+  color: #fff;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+.perfil-hero .perfil-insignia { background: rgba(255, 255, 255, 0.22) !important; border: 1px solid rgba(255, 255, 255, 0.6); }
+
+/* ===== Avatar ===== */
+.perfil-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  color: var(--c-primary-dark);
+  font-weight: 700;
+  border: 5px solid #fff;
+  box-shadow: var(--sombra-fuerte);
+}
+.perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== Estadísticas ===== */
+.perfil-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(4px);
+}
+.perfil-stat svg { font-size: 1.2rem; opacity: 0.9; }
+.perfil-stat strong { font-size: 1.7rem; line-height: 1.1; }
+.perfil-stat span { font-size: 0.85rem; opacity: 0.9; }
+
+/* ===== Pestañas ===== */
+.perfil-contenido { padding: 32px 12px 48px; }
+.perfil-tabs { border-bottom: 2px solid rgba(23, 163, 146, 0.2); }
+.perfil-tabs .nav-link {
+  color: var(--c-muted);
+  font-weight: 600;
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+.perfil-tabs .nav-link:hover { color: var(--c-primary-dark); }
+.perfil-tabs .nav-link.active {
+  background: transparent;
+  color: var(--c-primary-dark);
+  border-bottom-color: var(--c-primary);
+}
+
+/* ===== Items de las pestañas ===== */
+.perfil-item { text-align: center; }
+.perfil-fila { display: flex; align-items: center; gap: 16px; text-align: left; padding: 18px 22px; }
+.perfil-fila-icono { font-size: 1.6rem; color: var(--c-primary); flex-shrink: 0; }
+.perfil-mascota-img {
+  height: 150px;
+  border-radius: 14px;
+  background: var(--c-bg);
+  color: var(--c-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.perfil-mascota-img img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-vacio {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--c-muted);
+  background: #fff;
+  border: 2px dashed rgba(23, 163, 146, 0.35);
+  border-radius: 18px;
+}
+.perfil-spinner { color: var(--c-primary); }
+
+/* ===== Editar perfil ===== */
+.perfil-editar { max-width: 780px; }
+.perfil-volver { color: var(--c-primary-dark); font-weight: 600; text-decoration: none; }
+.perfil-volver:hover { text-decoration: underline; }
+.perfil-editar-card { padding: 28px; text-align: left; }
+.perfil-pref {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(23, 163, 146, 0.15);
+}
+.perfil-pref .form-check-input:checked { background-color: var(--c-primary); border-color: var(--c-primary); }
+.perfil-zona-peligro {
+  padding: 18px;
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  border-radius: 14px;
+  background: rgba(220, 53, 69, 0.04);
+}
+@media (max-width: 575px) {
+  .perfil-editar-card { padding: 18px; }
+  .perfil-tabs .nav-link { font-size: 0.85rem; padding: 8px 4px; }
+}
