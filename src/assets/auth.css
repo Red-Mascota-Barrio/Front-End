@@ -2,22 +2,22 @@
 
 /* --- Colores de Marca --- */
 .bg-brand-green {
-  background-color: #0f765c;
+ background: linear-gradient(135deg, #1ccaa8 0%, #2e9fc9 55%, #4a7fd0 100%);
 }
 
 .text-brand-green {
-  color: #0f765c !important;
+  color: #f39a4c !important;
 }
 
 /* --- Botones --- */
 .btn-brand-green {
-  background-color: #0f765c !important;
+  background-color: #f39a4c !important;
   border: none !important;
   border-radius: 8px;
 }
 
 .btn-brand-green:hover {
-  background-color: #0c5c48 !important; /* Un poco más oscuro al pasar el mouse */
+  background-color: #f39a4c !important; /* Un poco más oscuro al pasar el mouse */
 }
 
 .btn-auth-outline {
@@ -45,27 +45,4 @@
 
 .cursor-pointer {
   cursor: pointer;
-}
-
-/* --- Tema Administrador (Azul) --- */
-.bg-admin-blue {
-  background-color: #1a365d;
-}
-
-.text-admin-blue {
-  color: #1a365d !important;
-}
-
-.btn-admin-blue {
-  background-color: #2563eb !important;
-  border: none !important;
-  border-radius: 50rem; /* Botón completamente redondeado como en tu imagen */
-}
-
-.btn-admin-blue:hover {
-  background-color: #1d4ed8 !important;
-}
-
-.admin-card-border {
-  border-color: rgba(255, 255, 255, 0.2) !important;
 }
