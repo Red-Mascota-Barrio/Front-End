@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, InputGroup, Badge, Alert } from 'react-bootstrap';
-import { FaPaw, FaEye, FaEyeSlash} from 'react-icons/fa';
+import { FaPaw, FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
@@ -58,7 +58,7 @@ export const Login = () => {
           if (Number(userRole) === 1) {
             navigate("/admin", { replace: true });
           } else {
-            navigate("/inicio", { replace: true });
+            navigate("/", { replace: true });
           }
         } catch {
           setErrorMsg("No se pudo obtener el perfil de Google.");
@@ -103,7 +103,7 @@ export const Login = () => {
       if (Number(userRole) === 1) {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/inicio", { replace: true });
+        navigate("/", { replace: true });
       }
     } catch (error) {
       console.error("Error en login:", error);
@@ -111,7 +111,7 @@ export const Login = () => {
       const mensajeBackend = error.response?.data?.mensaje;
 
       // Laravel devuelve 403 si la cuenta está inactiva o no verificada
-      if (status === 403 && mensajeBackend.includes("verificada")) {
+      if (status === 403 && mensajeBackend?.includes("verificada")) {
         setRequiresOtp(true);
         setErrorMsg(
           "Tu cuenta no está verificada. Por favor, ingresa el código OTP que enviamos a tu correo.",
@@ -313,7 +313,7 @@ export const Login = () => {
                 className="w-100 fw-bold mb-4 py-2 d-flex justify-content-center align-items-center gap-2 border shadow-sm"
                 onClick={() =>
                   (window.location.href =
-                    "http://localhost:8000/api/auth/google/redirect")
+                    `${import.meta.env.VITE_API_URL}/auth/google/redirect`)
                 }
                 disabled={loading}
               >

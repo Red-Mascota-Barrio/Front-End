@@ -37,7 +37,7 @@ export const Hero = () => {
                 {haySesion ? (
                   <>
                     <Button as={Link} to="/mascotas" size="lg" className="btn-cta">Adoptar</Button>
-                    <Button as={Link} to="/dashboard" size="lg" className="btn-cta-outline">Ir a mi panel</Button>
+                    <Button as={Link} to="/perfil" size="lg" className="btn-cta-outline">Ir a mi panel</Button>
                   </>
                 ) : (
                   <>

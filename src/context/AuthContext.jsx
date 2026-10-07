@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { statsService } from '../services/statsService'; // Ajusta la ruta exacta a tu statsService
+// Asegúrate de que la ruta a tu servicio sea la correcta según tu estructura
+import { statsService } from '../services/statsService'; 
 
-// Creamos el contexto
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -19,21 +19,15 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
+
   const loading = false;
 
-  const [stats, setStats] = useState(null);
+  // Estados separados para manejar ambas rutas de estadísticas
+  const [statsGenerales, setStatsGenerales] = useState(null);
+  const [statsUsuario, setStatsUsuario] = useState(null);
   const [cargandoStats, setCargandoStats] = useState(true);
 
- 
-  useEffect(() => {
-    statsService
-      .obtener()
-      .then((datos) => setStats(datos))
-      .catch((error) => console.error('Error cargando estadísticas en AuthContext:', error))
-      .finally(() => setCargandoStats(false));
-  }, []); 
-
-  // Función de inicio de sesión
+  // Movemos las funciones arriba del useEffect para poder usar logout() dentro de él
   const login = (userData, userToken, userRole) => {
     setUser(userData);
     setToken(userToken);
@@ -44,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', userRole);
   };
 
-  // Actualiza los datos del usuario en sesión (ej. tras editar el perfil)
   const updateUser = (cambios) => {
     setUser((previo) => {
       const actualizado = { ...previo, ...cambios };
@@ -53,16 +46,48 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // Función de cierre de sesión
   const logout = () => {
     setUser(null);
     setToken(null);
     setRole(null);
+    setStatsUsuario(null); // Limpiamos también las estadísticas privadas
 
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('role');
   };
+
+  // Efecto que reacciona a los cambios en el token
+  useEffect(() => {
+    const cargarEstadisticas = async () => {
+      setCargandoStats(true);
+      try {
+        // 1. Cargamos SIEMPRE las estadísticas generales (Landing Page)
+        const generales = await statsService.obtenerGenerales();
+        setStatsGenerales(generales);
+
+        // 2. Cargamos las del usuario SOLO si inició sesión (Perfil)
+        if (token) {
+          const deUsuario = await statsService.obtenerUsuario(token);
+          setStatsUsuario(deUsuario);
+        } else {
+          // Si cierra sesión o entra sin token, limpiamos sus datos privados
+          setStatsUsuario(null);
+        }
+      } catch (error) {
+        console.error("Error cargando estadísticas en AuthContext:", error);
+        
+        
+        setStatsUsuario(null);
+
+      } finally {
+        setCargandoStats(false);
+      }
+    };
+
+    cargarEstadisticas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // La dependencia [token] es clave para que actualice al hacer login/logout
 
   return (
     <AuthContext.Provider 
@@ -71,11 +96,12 @@ export const AuthProvider = ({ children }) => {
         token, 
         role, 
         login, 
+        updateUser,
         logout, 
         loading,
-        stats,          // <-- Exportamos las estadísticas globales
-        cargandoStats   // <-- Exportamos el estado de carga global
-        
+        statsGenerales,
+        statsUsuario,
+        cargandoStats
       }}
     >
       {children}
@@ -83,6 +109,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook personalizado para usar el contexto fácilmente
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

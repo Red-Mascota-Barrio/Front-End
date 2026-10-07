@@ -21,7 +21,7 @@ export const ProtectedRoute = ({ allowedRoles }) => {
 
   // Si la ruta exige un rol específico (ej. solo 'admin') y el usuario no lo tiene
   if (allowedRoles && !allowedRoles.includes(Number(role))) {
-    return <Navigate to="/inicio" replace />; 
+    return <Navigate to="/" replace />; 
   }
 
   // Si pasa todas las validaciones, renderizamos la ruta hija que tus compañeros construyan
