@@ -37,12 +37,14 @@ export const AppNavbar = () => {
             <Nav.Link as={Link} to="/mascotas">Adopta</Nav.Link>
             <Nav.Link as={Link} to="/eventos">Eventos</Nav.Link>
             <Nav.Link as={Link} to="/foros">Foros</Nav.Link>
+            <Nav.Link as={Link} to="/foro">Foros</Nav.Link>
             <Nav.Link as={Link} to="/mis-mascotas">Mascotas</Nav.Link>
 
             {haySesion ? (
               <>
                 <span className="inicio-saludo">Hola, {user.nombre ?? user.correo}</span>
                 <Nav.Link as={Link} to="/dashboard" className="btn-nav-solid">Mi panel</Nav.Link>
+                <Nav.Link as={Link} to="/perfil" className="btn-nav-solid">Mi perfil</Nav.Link>
                 <Nav.Link as="button" type="button" className="btn-nav-outline" onClick={handleLogout}>
                   Cerrar sesión
                 </Nav.Link>

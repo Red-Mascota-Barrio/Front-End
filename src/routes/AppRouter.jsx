@@ -6,9 +6,16 @@ import { Inicio } from '../pages/Inicio/Inicio';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Eventos } from '../pages/Eventos/Eventos';
 import { MascotasPage } from '../pages/Mascotas/Mascotas';
+import { Perfil } from '../pages/Perfil/Perfil';
+import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
+import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
+import { ProtectedRoute } from './ProtectedRoute';
+import  Foro  from '../pages/Foro/Foro';
+import ForoDetalle from '../pages/Foro/ForoDetalle';
+
 
 export const AppRouter = () => {
-  return (
+  return (  
     <Routes>
       {/* =======================
           RUTAS PÚBLICAS
@@ -21,10 +28,11 @@ export const AppRouter = () => {
       <Route path="/recuperar" element={<Recuperar />} />
       <Route path="/eventos" element={<Eventos />} />
       <Route path="/mascotas" element={<MascotasPage />} />
-      
+      <Route path="/foro" element={<Foro />} />
+      <Route path="/foro/:id" element={<ForoDetalle />} />
       
       {/* =======================
-          RUTAS PRIVADAS 
+          RUTAS EXCLUSIVAS DE ADMINISTRACIÓN (Solo Admin)
       ======================== */}
       {/* si ponen la ruta necesita haber iniciado sesion */}
       <Route element={<ProtectedRoute allowedRoles={['usuario', 'admin']} />}>
@@ -33,10 +41,15 @@ export const AppRouter = () => {
             <h2 className="text-muted">Panel Principal (Módulo en construcción)</h2>
           </div>
         } />
-        
-        
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil/editar" element={<EditarPerfil />} />
+          
+      <Route element={<ProtectedRoute allowedRoles={[1]} />}>
+        <Route path="/admin" element={<InicioAdmin />} />
       </Route>
 
+      {/* Redirección automática por si escriben cualquier otra ruta */}
+      <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
   );
 };

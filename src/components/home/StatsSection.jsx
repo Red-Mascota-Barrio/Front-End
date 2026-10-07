@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
 import { statsService } from '../../services/statsService';
+import { useAuth } from '../../context/AuthContext'; // Asegúrate de que esta ruta sea la correcta hacia tu contexto
 import '../../assets/home.css';
 
 const ITEMS = [
@@ -69,7 +70,8 @@ export const StatsSection = () => {
               <TarjetaStat
                 Icono={Icono}
                 etiqueta={etiqueta}
-                valor={cargando ? '...' : stats?.[clave]}
+                // Si el contexto global está cargando, mostramos los puntos suspensivos
+                valor={cargandoStats ? '...' : stats?.[clave]}
               />
             </Col>
           ))}

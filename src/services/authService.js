@@ -7,12 +7,6 @@ export const authService = {
     return response.data; // Debe retornar { token, user, role } según tu API de Laravel
   },
 
-  // Petición de Login de Administrador
-  loginAdmin: async (credentials) => {
-    const response = await api.post('/admin/login', credentials);
-    return response.data;
-  },
-
   // Petición de Registro (Paso 1)
   register: async (userData) => {
     const response = await api.post('/register', userData);
@@ -28,6 +22,13 @@ export const authService = {
   // Petición de Logout
   logout: async () => {
     const response = await api.post('/logout');
+    return response.data;
+  },
+
+  getProfileConToken: async (token) => {
+    const response = await api.get('/user', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     return response.data;
   },
   
