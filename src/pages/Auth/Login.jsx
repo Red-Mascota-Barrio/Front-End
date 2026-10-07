@@ -1,17 +1,8 @@
-import { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  InputGroup,
-  Badge,
-  Alert,
-} from "react-bootstrap";
-import { FaPaw, FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useState } from 'react';
+import { Container, Row, Col, Form, Button, InputGroup, Badge, Alert } from 'react-bootstrap';
+import { FaPaw, FaEye, FaEyeSlash} from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
 // Importamos servicios y contexto
 import { useAuth } from "../../context/AuthContext";

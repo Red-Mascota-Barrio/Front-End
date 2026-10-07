@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
+import { statsService } from '../../services/statsService';
 import { useAuth } from '../../context/AuthContext'; // Asegúrate de que esta ruta sea la correcta hacia tu contexto
 import '../../assets/home.css';
 
@@ -48,8 +49,16 @@ const TarjetaStat = ({ Icono, etiqueta, valor }) => {
 };
 
 export const StatsSection = () => {
-  // Extraemos los datos precargados del contexto global de autenticación
-  const { stats, cargandoStats } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    statsService
+      .obtener()
+      .then(setStats)
+      .catch((error) => console.error('No se pudieron cargar las estadísticas:', error))
+      .finally(() => setCargando(false));
+  }, []);
 
   return (
     <section id="estadisticas" className="inicio-seccion">
