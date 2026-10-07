@@ -36,7 +36,7 @@ export const Registro = () => {
         contrasena: data.password
       };
 
-      const response = await authService.register(payload);
+      await authService.register(payload);
       
       setRegisteredEmail(data.correo);
       
@@ -246,7 +246,7 @@ export const Registro = () => {
                   Tu correo ha sido confirmado exitosamente y tu sesión está activa.
                 </p>
 
-                <Button onClick={() => navigate('/dashboard')} className="w-100 fw-bold py-2 btn-brand-green text-decoration-none">
+                <Button onClick={() => navigate('/perfil')} className="w-100 fw-bold py-2 btn-brand-green text-decoration-none">
                   Ir al panel principal
                 </Button>
               </div>

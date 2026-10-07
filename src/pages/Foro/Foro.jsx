@@ -10,41 +10,6 @@ import { Footer } from "../../components/layout/Footer";
 
 import "./foro.css";
 
-const hilosIniciales = [
-  {
-    id: 1,
-    titulo: "¿Cómo puedo mejorar mis hábitos de estudio?",
-    contenido:
-      "Me gustaría conocer algunos consejos para organizar mejor mi tiempo de estudio.",
-    categoria: "Estudio",
-    autor: "Usuario 1",
-    respuestas: 8,
-    visitas: 120,
-    destacado: true,
-  },
-  {
-    id: 2,
-    titulo: "Consejos para comenzar un proyecto",
-    contenido:
-      "Estoy empezando un proyecto personal y me gustaría conocer sus recomendaciones.",
-    categoria: "Proyectos",
-    autor: "Usuario 2",
-    respuestas: 5,
-    visitas: 87,
-    destacado: false,
-  },
-  {
-    id: 3,
-    titulo: "¿Qué herramientas utilizan para organizarse?",
-    contenido:
-      "Quiero conocer algunas herramientas que les hayan servido para organizar sus actividades.",
-    categoria: "General",
-    autor: "Usuario 3",
-    respuestas: 12,
-    visitas: 245,
-    destacado: false,
-  },
-];
 
 function Foro() {
   const [hilos, setHilos] = useState(() => {
@@ -52,14 +17,7 @@ function Foro() {
 
     if (hilosGuardados) {
       return JSON.parse(hilosGuardados);
-    }
-
-    localStorage.setItem(
-      "hilosForo",
-      JSON.stringify(hilosIniciales)
-    );
-
-    return hilosIniciales;
+    }    
   });
 
   const [busqueda, setBusqueda] = useState("");

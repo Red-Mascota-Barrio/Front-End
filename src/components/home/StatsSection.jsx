@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
 import { statsService } from '../../services/statsService';
-import { useAuth } from '../../context/AuthContext'; // Asegúrate de que esta ruta sea la correcta hacia tu contexto
 import '../../assets/home.css';
 
 const ITEMS = [
@@ -54,7 +53,7 @@ export const StatsSection = () => {
 
   useEffect(() => {
     statsService
-      .obtener()
+      .obtenerGenerales() // <-- Corrección: Ahora llama al método renombrado
       .then(setStats)
       .catch((error) => console.error('No se pudieron cargar las estadísticas:', error))
       .finally(() => setCargando(false));
@@ -70,8 +69,8 @@ export const StatsSection = () => {
               <TarjetaStat
                 Icono={Icono}
                 etiqueta={etiqueta}
-                // Si el contexto global está cargando, mostramos los puntos suspensivos
-                valor={cargandoStats ? '...' : stats?.[clave]}
+                // Mientras carga la petición, mostramos los puntos suspensivos
+                valor={cargando ? '...' : stats?.[clave]}
               />
             </Col>
           ))}
