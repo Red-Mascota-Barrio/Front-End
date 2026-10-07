@@ -41,7 +41,7 @@ export const AppNavbar = () => {
             {haySesion ? (
               <>
                 <span className="inicio-saludo">Hola, {user.nombre ?? user.correo}</span>
-                <Nav.Link as={Link} to="/dashboard" className="btn-nav-solid">Mi panel</Nav.Link>
+                <Nav.Link as={Link} to="/perfil" className="btn-nav-solid">Mi perfil</Nav.Link>
                 <Nav.Link as="button" type="button" className="btn-nav-outline" onClick={handleLogout}>
                   Cerrar sesión
                 </Nav.Link>

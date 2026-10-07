@@ -3,6 +3,8 @@ import { Login } from '../pages/Auth/Login';
 import { Registro } from '../pages/Auth/Registro';
 import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
+import { Perfil } from '../pages/Perfil/Perfil';
+import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -20,6 +22,16 @@ export const AppRouter = () => {
       {/* =======================
           RUTAS EXCLUSIVAS DE ADMINISTRACIÓN (Solo Admin)
       ======================== */}
+      {/* si ponen la ruta necesita haber iniciado sesion */}
+      <Route element={<ProtectedRoute allowedRoles={['usuario', 'admin']} />}>
+        <Route path="/dashboard" element={
+          <div className="vh-100 d-flex justify-content-center align-items-center bg-light">
+            <h2 className="text-muted">Panel Principal (Módulo en construcción)</h2>
+          </div>
+        } />
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil/editar" element={<EditarPerfil />} />
+          
       <Route element={<ProtectedRoute allowedRoles={[1]} />}>
         <Route path="/admin" element={<InicioAdmin />} />
       </Route>
