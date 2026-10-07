@@ -7,6 +7,9 @@ import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
 import { ProtectedRoute } from './ProtectedRoute';
+import  Foro  from '../pages/Foro/Foro';
+import ForoDetalle from '../pages/Foro/ForoDetalle';
+
 
 export const AppRouter = () => {
   return (  
@@ -18,6 +21,8 @@ export const AppRouter = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
+      <Route path="/foro" element={<Foro />} />
+      <Route path="/foro/:id" element={<ForoDetalle />} />
       
       {/* =======================
           RUTAS EXCLUSIVAS DE ADMINISTRACIÓN (Solo Admin)
