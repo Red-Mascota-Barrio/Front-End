@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
@@ -8,35 +8,39 @@ import CrearHiloModal from "../../components/foro/CrearHiloModal";
 import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
+import { foroService } from "../../services/foroService.js";
+
 import "./foro.css";
 
-
 function Foro() {
-  const [hilos, setHilos] = useState(() => {
-    const hilosGuardados = localStorage.getItem("hilosForo");
-
-    if (hilosGuardados) {
-      return JSON.parse(hilosGuardados);
-    }    
-  });
+  const [hilos, setHilos] = useState([]);
 
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  useEffect(() => {
+    const cargarHilos = async () => {
+      try {
+        const respuesta = await foroService.listar();
+
+        setHilos(respuesta.datos);
+      } catch (error) {
+        console.error("Error al cargar los hilos:", error);
+      }
+    };
+
+    cargarHilos();
+  }, []);
+
   const hilosFiltrados = hilos.filter((hilo) => {
     const coincideBusqueda =
-      hilo.titulo
-        .toLowerCase()
-        .includes(busqueda.toLowerCase()) ||
-      hilo.contenido
-        .toLowerCase()
-        .includes(busqueda.toLowerCase());
+      hilo.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
+      hilo.contenido.toLowerCase().includes(busqueda.toLowerCase());
 
     const coincideCategoria =
       categoria === "todas" ||
-      hilo.categoria.toLowerCase() ===
-        categoria.toLowerCase();
+      hilo.categoria.toLowerCase() === categoria.toLowerCase();
 
     return coincideBusqueda && coincideCategoria;
   });
@@ -46,9 +50,7 @@ function Foro() {
       <AppNavbar />
 
       <main className="foro">
-        <ForoHeader
-          onCrearHilo={() => setMostrarModal(true)}
-        />
+        <ForoHeader onCrearHilo={() => setMostrarModal(true)} />
 
         <FiltrosForo
           busqueda={busqueda}
@@ -59,18 +61,11 @@ function Foro() {
 
         <section className="foro-lista">
           {hilosFiltrados.length > 0 ? (
-            hilosFiltrados.map((hilo) => (
-              <HiloCard
-                key={hilo.id}
-                hilo={hilo}
-              />
-            ))
+            hilosFiltrados.map((hilo) => <HiloCard key={hilo.id} hilo={hilo} />)
           ) : (
             <div className="foro-sin-resultados">
               <h3>No se encontraron hilos</h3>
-              <p>
-                Intenta cambiar la búsqueda o la categoría.
-              </p>
+              <p>Intenta cambiar la búsqueda o la categoría.</p>
             </div>
           )}
         </section>
@@ -78,20 +73,19 @@ function Foro() {
         {mostrarModal && (
           <CrearHiloModal
             onCerrar={() => setMostrarModal(false)}
-            onCrearHilo={(nuevoHilo) => {
-              setHilos((hilosActuales) => {
-                const nuevosHilos = [
-                  nuevoHilo,
-                  ...hilosActuales,
-                ];
+            onCrearHilo={async (nuevoHilo) => {
+              try {
+                const respuesta = await foroService.crear(nuevoHilo);
 
-                localStorage.setItem(
-                  "hilosForo",
-                  JSON.stringify(nuevosHilos)
-                );
+                const hiloCreado =
+                  respuesta.dato || respuesta.data || respuesta;
 
-                return nuevosHilos;
-              });
+                setHilos((hilosActuales) => [hiloCreado, ...hilosActuales]);
+
+                setMostrarModal(false);
+              } catch (error) {
+                console.error("Error al crear el hilo:", error);
+              }
             }}
           />
         )}

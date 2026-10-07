@@ -9,7 +9,7 @@ function FiltrosForo({
       <div className="buscador-foro">
         <input
           type="text"
-          placeholder="Buscar en el foro..."
+          placeholder="Buscar en el foro"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -24,16 +24,12 @@ function FiltrosForo({
             Todas las categorías
           </option>
 
-          <option value="general">
-            General
+          <option value="perro">
+            Perro
           </option>
 
-          <option value="estudio">
-            Estudio
-          </option>
-
-          <option value="proyectos">
-            Proyectos
+          <option value="gato">
+            Gato
           </option>
         </select>
       </div>
