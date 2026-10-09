@@ -19,3 +19,34 @@ api.interceptors.request.use((config) => {
 }, (error) => {
   return Promise.reject(error);
 });
+
+export const getMascotas = async () => {
+  try {
+    const response = await api.get('/mascotas');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener mascotas;', error);
+    throw error;
+  }
+};
+
+export const registrarMascota = async (nuevaMascota) => {
+  try {
+    const response = await api.post('/mascotas', nuevaMascota);
+    return response.data;
+  } catch (error) {
+    console.error('Error al registrar mascota:', error);
+    throw error;
+  }
+};
+
+export const getMascotaById = async (id) => {
+  try {
+    const response = await api.get(`/mascotas/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error al obtener mascota con ${id}:`, error);
+    throw error;
+  }
+};
+
