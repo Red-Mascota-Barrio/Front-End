@@ -25,17 +25,12 @@ function ForoDetalle() {
       try {
         setCargando(true);
         const respuesta = await foroService.obtenerPorId(id);
+        console.log("Respuesta completa del hilo:", respuesta);
         const datosHilo = respuesta.datos || respuesta.data || respuesta;
 
         setHilo(datosHilo);
-        setComentarios(datosHilo.comentarios || []);
+        setComentarios(datosHilo.comentarios_principales || datosHilo.comentariosPrincipales || datosHilo.comentarios || []);
 
-        // Incrementar visitas si la función está definida en el servicio
-        if (foroService.incrementarVisitas) {
-          foroService.incrementarVisitas(id).catch(() => {});
-        }
-        
-        setHilo((prev) => (prev ? { ...prev, visitas: (prev.visitas || 0) + 1 } : prev));
       } catch (error) {
         console.error("Error al cargar el detalle del hilo:", error);
       } finally {
@@ -51,7 +46,10 @@ function ForoDetalle() {
       // Usar la ID primaria que devuelva Laravel o el parámetro de la URL
       const idHiloValido = hilo?.id_foro || hilo?.id || id;
 
-      const respuesta = await foroService.crearComentario(idHiloValido, nuevoComentario);
+      const respuesta = await foroService.crearComentario(
+        idHiloValido,
+        nuevoComentario,
+      );
       const comentarioGuardado = respuesta.datos || respuesta.data || respuesta;
 
       // 1. Agregar el nuevo comentario a la lista de UI
@@ -64,9 +62,12 @@ function ForoDetalle() {
       }));
     } catch (error) {
       console.error("Error al publicar el comentario:", error);
-      
+
       if (error.response?.status === 422) {
-        alert("Error de validación: " + JSON.stringify(error.response.data.errors || error.response.data));
+        alert(
+          "Error de validación: " +
+            JSON.stringify(error.response.data.errors || error.response.data),
+        );
       } else if (error.response?.status === 401) {
         alert("Debes iniciar sesión para publicar un comentario.");
       } else {
@@ -105,7 +106,8 @@ function ForoDetalle() {
   }
 
   const catId = hilo?.categoria_foro_id;
-  const catTexto = hilo?.categoriaForo?.nombre_categoria || hilo?.categoria || "";
+  const catTexto =
+    hilo?.categoriaForo?.nombre_categoria || hilo?.categoria || "";
   const nombreCategoria =
     catId === 1 || catTexto.toLowerCase().includes("perro") ? "Perro" : "Gato";
 
@@ -131,12 +133,8 @@ function ForoDetalle() {
 
           <div className="foro-detalle-estadisticas">
             <div className="estadistica">
-              <strong>{hilo.respuestas ?? comentarios.length}</strong>
+              <strong>{hilo.numero_comentarios ?? comentarios.length}</strong>
               <span>Respuestas</span>
-            </div>
-            <div className="estadistica">
-              <strong>{hilo.visitas ?? 0}</strong>
-              <span>Visitas</span>
             </div>
           </div>
         </article>

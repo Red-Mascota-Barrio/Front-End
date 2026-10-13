@@ -1,48 +1,46 @@
 import { useState } from "react";
 import ReportarModal from "./ReportarModal";
+import { foroService } from "../../services/foroService";
 
 function ComentarioCard({ comentario }) {
   const [mostrarReporte, setMostrarReporte] = useState(false);
 
-  const manejarReporte = (motivo) => {
-    const reportesGuardados = JSON.parse(
-      localStorage.getItem("reportesForo") || "[]"
-    );
+  const manejarReporte = async (motivoId) => {
+    try {
+      const datosReporte = {
+        tipo_reporte_id: Number(motivoId), // El número 1, 2, 3 o 4 del radio button
+        comentario_id: comentario.id_comentario || comentario.id, // El ID del comentario
+        descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
+      };
 
-    const nuevoReporte = {
-      id: Date.now(),
-      comentarioId: comentario.id,
-      motivo: motivo,
-      fecha: new Date().toLocaleString(),
-    };
+      const respuesta = await foroService.crearReporte(datosReporte);
 
-    const nuevosReportes = [
-      ...reportesGuardados,
-      nuevoReporte,
-    ];
-
-    localStorage.setItem(
-      "reportesForo",
-      JSON.stringify(nuevosReportes)
-    );
-
-    console.log("Reporte guardado:", nuevoReporte);
+      if (respuesta.resultado === "ok") {
+        alert("¡Reporte enviado con éxito! Gracias por avisarnos.");
+      } else {
+        alert(respuesta.mensaje || "No se pudo enviar el reporte.");
+      }
+    } catch (error) {
+      console.error("Error al enviar el reporte:", error);
+      alert("Hubo un error al procesar el reporte.");
+    }
   };
 
   return (
     <>
       <article className="comentario-card">
-
         <div className="comentario-header">
-          <strong>{comentario.autor}</strong>
+          <strong>
+            {comentario.usuario
+              ? `${comentario.usuario.nombre || ""} ${comentario.usuario.apellido || ""}`.trim()
+              : comentario.autor || "Usuario"}
+          </strong>
 
-          <span className="comentario-fecha">
-            {comentario.fecha}
-          </span>
+          <span className="comentario-fecha">{comentario.fecha}</span>
         </div>
 
         <p className="comentario-contenido">
-          {comentario.contenido}
+          {comentario.comentario || comentario.contenido || ""}
         </p>
 
         <button
@@ -52,7 +50,6 @@ function ComentarioCard({ comentario }) {
         >
           Reportar
         </button>
-
       </article>
 
       {mostrarReporte && (

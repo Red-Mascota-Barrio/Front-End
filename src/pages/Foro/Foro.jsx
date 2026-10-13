@@ -34,7 +34,6 @@ function Foro() {
   }, []);
 
   const hilosFiltrados = hilos.filter((hilo) => {
-    // Lectura segura con Optional Chaining (?.) y fallback a string vacío
     const titulo = hilo?.titulo?.toLowerCase() || "";
     const contenido = hilo?.contenido?.toLowerCase() || "";
     
@@ -45,7 +44,7 @@ function Foro() {
       ""
     ).toLowerCase();
 
-    const textoBusqueda = busqueda.toLowerCase();
+    const textoBusqueda = busqueda.toLowerCase().trim();
 
     const coincideBusqueda =
       titulo.includes(textoBusqueda) || contenido.includes(textoBusqueda);

@@ -3,7 +3,7 @@ import { foroService } from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
-  const [categoria, setCategoria] = useState("general");
+  const [categoria, setCategoria] = useState("");
   const [contenido, setContenido] = useState("");
 
   const manejarPublicacion = async (e) => {
@@ -17,7 +17,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
     const nuevoHilo = {
       titulo: titulo.trim(),
       contenido: contenido.trim(),
-      categoria_foro_id: categoria === "perro" ? 1 : 2,
+      categoria_foro_id: Number(categoria) || 1,
     };
 
     try {
@@ -82,8 +82,8 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <option value="perro">Perro</option>
-              <option value="gato">Gato</option>
+              <option value="1">Perro</option>
+              <option value="2">Gato</option>
             </select>
           </div>
 
