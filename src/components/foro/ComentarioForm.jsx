@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Form, Button } from "react-bootstrap";
 
 function ComentarioForm({ onAgregarComentario }) {
   const [contenido, setContenido] = useState("");
@@ -23,29 +24,29 @@ function ComentarioForm({ onAgregarComentario }) {
   };
 
   return (
-    <form
-      className="comentario-form"
-      onSubmit={manejarComentario}
-    >
-      <label htmlFor="comentario">
-        Escribe tu comentario
-      </label>
+    <Form onSubmit={manejarComentario} className="card shadow-sm border-0 rounded-4 p-4 bg-white mb-4">
+      <Form.Group className="mb-3" controlId="comentario">
+        <Form.Label className="fw-bold text-dark small">Escribe tu comentario</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={4}
+          placeholder="Comparte tu opinión o consejo..."
+          value={contenido}
+          onChange={(e) => setContenido(e.target.value)}
+          className="shadow-none border-secondary-subtle"
+        />
+      </Form.Group>
 
-      <textarea
-        id="comentario"
-        rows="5"
-        placeholder="Escribe tu comentario"
-        value={contenido}
-        onChange={(e) => setContenido(e.target.value)}
-      />
-
-      <button
-        type="submit"
-        className="btn-publicar-comentario"
-      >
-        Publicar comentario
-      </button>
-    </form>
+      <div className="text-end">
+        <Button
+          type="submit"
+          variant="primary"
+          className="rounded-pill px-4 py-2 shadow-sm fw-medium"
+        >
+          Publicar comentario
+        </Button>
+      </div>
+    </Form>
   );
 }
 

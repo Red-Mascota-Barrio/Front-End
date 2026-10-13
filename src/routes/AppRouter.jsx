@@ -9,8 +9,8 @@ import { MascotasPage } from '../pages/Mascotas/Mascotas';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
-import Foro   from '../pages/Foro/Foro';
-import ForoDetalle  from '../pages/Foro/ForoDetalle';
+import { Foro }  from '../pages/Foro/Foro';
+import ForoDetalle from '../pages/Foro/ForoDetalle';
 
 
 export const AppRouter = () => {

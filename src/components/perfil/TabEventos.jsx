@@ -10,13 +10,21 @@ export const TabEventos = () => (
     {(eventos) => (
       <div className="d-flex flex-column gap-3">
         {eventos.map((e) => (
-          <div className="inicio-card perfil-item perfil-fila" key={e.id}>
-            <FaCalendarAlt className="perfil-fila-icono" />
+          <div 
+            className="d-flex align-items-start p-4 bg-white rounded-4 shadow-sm border gap-3" 
+            key={e.id}
+          >
+            <div className="p-3 bg-primary bg-opacity-10 text-primary rounded-3 fs-4 d-flex align-items-center justify-content-center">
+              <FaCalendarAlt />
+            </div>
             <div className="flex-grow-1 text-start">
-              <strong>{e.titulo ?? e.nombre}</strong>
-              <p className="mb-1 text-muted small">{fecha(e.fecha_inicio ?? e.fecha)}</p>
+              <h6 className="fw-bold text-dark mb-1">{e.titulo ?? e.nombre}</h6>
+              <p className="mb-2 text-muted small">{fecha(e.fecha_inicio ?? e.fecha)}</p>
               {e.lugar && (
-                <small className="text-muted"><FaMapMarkerAlt className="me-1" />{e.lugar}</small>
+                <div className="text-secondary small d-flex align-items-center gap-1">
+                  <FaMapMarkerAlt className="text-danger" />
+                  <span>{e.lugar}</span>
+                </div>
               )}
             </div>
           </div>

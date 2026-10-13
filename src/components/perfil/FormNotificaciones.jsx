@@ -43,32 +43,52 @@ export const FormNotificaciones = () => {
     }
   };
 
-  if (cargando) return <div className="text-center py-4"><Spinner animation="border" className="perfil-spinner" /></div>;
+  if (cargando) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" role="status" />
+        <p className="mt-2 text-muted small">Cargando preferencias...</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h5 className="fw-bold mb-3">Preferencias de notificación</h5>
-      {mensaje && <Alert variant={mensaje.tipo} className="py-2 small">{mensaje.texto}</Alert>}
+    <div className="p-4 bg-white rounded-4 shadow-sm border">
+      <h5 className="fw-bold mb-4 text-dark">Preferencias de notificación</h5>
+      {mensaje && <Alert variant={mensaje.tipo} className="py-2 small rounded-3">{mensaje.texto}</Alert>}
 
-      {TIPOS.map(({ tipo, titulo, detalle }) => (
-        <div className="perfil-pref" key={tipo}>
-          <div>
-            <strong>{titulo}</strong>
-            <div className="small text-muted">{detalle}</div>
+      <div className="d-flex flex-column gap-3 mb-4">
+        {TIPOS.map(({ tipo, titulo, detalle }) => (
+          <div 
+            key={tipo} 
+            className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 border"
+          >
+            <div className="pe-3">
+              <strong className="text-dark d-block mb-1">{titulo}</strong>
+              <span className="text-muted small">{detalle}</span>
+            </div>
+            <Form.Check
+              type="switch"
+              id={`pref-${tipo}`}
+              checked={prefs[tipo]}
+              onChange={(e) => setPrefs((p) => ({ ...p, [tipo]: e.target.checked }))}
+              aria-label={titulo}
+              className="fs-5 cursor-pointer"
+            />
           </div>
-          <Form.Check
-            type="switch"
-            id={`pref-${tipo}`}
-            checked={prefs[tipo]}
-            onChange={(e) => setPrefs((p) => ({ ...p, [tipo]: e.target.checked }))}
-            aria-label={titulo}
-          />
-        </div>
-      ))}
+        ))}
+      </div>
 
-      <Button className="btn-cta mt-3" onClick={guardar} disabled={guardando}>
-        {guardando ? 'Guardando...' : 'Guardar preferencias'}
-      </Button>
+      <div className="d-grid">
+        <Button 
+          variant="primary" 
+          className="rounded-pill py-2 shadow-sm fw-medium" 
+          onClick={guardar} 
+          disabled={guardando}
+        >
+          {guardando ? 'Guardando...' : 'Guardar preferencias'}
+        </Button>
+      </div>
     </div>
   );
 };

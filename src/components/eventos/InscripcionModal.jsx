@@ -1,28 +1,43 @@
+import { Modal, Button } from 'react-bootstrap';
+
 export default function InscripcionModal({ evento, onClose, onConfirmar, enviando = false }) {
   return (
-    <div className="modal d-block bg-dark bg-opacity-50" tabIndex="-1" onClick={onClose}>
-      <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Confirmar inscripción</h5>
-            <button type="button" className="btn-close" onClick={onClose} aria-label="Cerrar"></button>
-          </div>
-          <div className="modal-body">
-            <p>¿Deseas inscribirte al evento <strong>{evento.titulo}</strong>?</p>
-            <ul className="list-unstyled text-muted small">
-              <li><strong>Fecha:</strong> {evento.fecha}</li>
-              <li><strong>Hora:</strong> {evento.hora}</li>
-              <li><strong>Lugar:</strong> {evento.lugar}</li>
-            </ul>
-          </div>
-          <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onClose} disabled={enviando}>Cancelar</button>
-            <button className="btn btn-success" onClick={() => onConfirmar(evento.id)} disabled={enviando}>
-              {enviando ? 'Inscribiendo...' : 'Confirmar asistencia'}
-            </button>
-          </div>
+    <Modal show={Boolean(evento)} onHide={onClose} centered backdrop="static">
+      <Modal.Header closeButton className="border-0 pb-0">
+        <Modal.Title className="fw-bold">Confirmar inscripción</Modal.Title>
+      </Modal.Header>
+      
+      <Modal.Body className="pt-3">
+        <p className="text-secondary mb-3">
+          ¿Deseas inscribirte al evento <strong className="text-dark">{evento?.titulo}</strong>?
+        </p>
+        
+        <div className="bg-light p-3 rounded-3 small text-secondary">
+          <div className="mb-1">📅 <strong>Fecha:</strong> {evento?.fecha}</div>
+          <div className="mb-1">🕒 <strong>Hora:</strong> {evento?.hora}</div>
+          <div>📍 <strong>Lugar:</strong> {evento?.lugar}</div>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+      
+      <Modal.Footer className="border-0 pt-0">
+        <Button 
+          variant="light" 
+          className="rounded-pill px-4 text-secondary border" 
+          onClick={onClose} 
+          disabled={enviando}
+        >
+          Cancelar
+        </Button>
+        
+        <Button 
+          variant="success" 
+          className="rounded-pill px-4 shadow-sm fw-medium" 
+          onClick={() => onConfirmar(evento.id)} 
+          disabled={enviando}
+        >
+          {enviando ? 'Inscribiendo...' : 'Confirmar asistencia'}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

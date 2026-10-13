@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Modal, Form, Button } from "react-bootstrap";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
@@ -29,67 +30,70 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-foro">
-        <div className="modal-header">
-          <h2>Crear nuevo hilo</h2>
+    <Modal show={true} onHide={onCerrar} centered backdrop="static">
+      <Modal.Header closeButton className="border-0 pb-0">
+        <Modal.Title className="fw-bold">Crear nuevo hilo</Modal.Title>
+      </Modal.Header>
 
-          <button className="btn-cerrar-modal" onClick={onCerrar}>
-            ×
-          </button>
-        </div>
-
-        <form className="form-hilo" onSubmit={manejarPublicacion}>
-          <div className="campo-formulario">
-            <label htmlFor="titulo">Título</label>
-
-            <input
-              id="titulo"
+      <Form onSubmit={manejarPublicacion}>
+        <Modal.Body className="pt-3">
+          <Form.Group className="mb-3" controlId="titulo">
+            <Form.Label className="fw-bold text-dark small">Título</Form.Label>
+            <Form.Control
               type="text"
               placeholder="Escribe el título..."
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
+              className="shadow-none"
             />
-          </div>
+          </Form.Group>
 
-          <div className="campo-formulario">
-            <label htmlFor="categoria">Categoría</label>
-
-            <select
-              id="categoria"
+          <Form.Group className="mb-3" controlId="categoria">
+            <Form.Label className="fw-bold text-dark small">Categoría</Form.Label>
+            <Form.Select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
+              className="shadow-none"
             >
               <option value="general">General</option>
               <option value="estudio">Estudio</option>
               <option value="proyectos">Proyectos</option>
-            </select>
-          </div>
+            </Form.Select>
+          </Form.Group>
 
-          <div className="campo-formulario">
-            <label htmlFor="contenido">Contenido</label>
-
-            <textarea
-              id="contenido"
-              rows="6"
-              placeholder="Escribe el contenido"
+          <Form.Group className="mb-3" controlId="contenido">
+            <Form.Label className="fw-bold text-dark small">Contenido</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              placeholder="Escribe el contenido..."
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
+              className="shadow-none"
             />
-          </div>
+          </Form.Group>
+        </Modal.Body>
 
-          <div className="modal-acciones">
-            <button type="button" className="btn-cancelar" onClick={onCerrar}>
-              Cancelar
-            </button>
+        <Modal.Footer className="border-0 pt-0">
+          <Button
+            variant="light"
+            className="rounded-pill px-4 text-secondary border"
+            onClick={onCerrar}
+            type="button"
+          >
+            Cancelar
+          </Button>
 
-            <button type="submit" className="btn-publicar">
-              Publicar hilo
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <Button
+            variant="primary"
+            className="rounded-pill px-4 shadow-sm fw-medium"
+            type="submit"
+          >
+            Publicar hilo
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 }
 

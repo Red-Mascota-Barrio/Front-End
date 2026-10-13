@@ -48,17 +48,32 @@ export const FotoPerfilUploader = () => {
   };
 
   return (
-    <div className="text-center mb-4">
-      <AvatarPerfil usuario={user} previa={previa} size={130} />
+    <div className="d-flex flex-column align-items-center text-center mb-4">
+      <div className="position-relative mb-3">
+        <AvatarPerfil usuario={user} previa={previa} size={130} />
+      </div>
+      
       <input ref={inputRef} type="file" accept={TIPOS.join(',')} hidden onChange={onSeleccionar} />
-      <div className="mt-3">
-        <Button variant="outline-success" size="sm" disabled={subiendo} onClick={() => inputRef.current.click()}>
-          <FaCamera className="me-2" />
+      
+      <div>
+        <Button 
+          variant="outline-primary" 
+          size="sm" 
+          className="rounded-pill px-4 py-2 shadow-sm fw-medium d-inline-flex align-items-center gap-2"
+          disabled={subiendo} 
+          onClick={() => inputRef.current.click()}
+        >
+          <FaCamera />
           {subiendo ? 'Subiendo...' : user?.foto_perfil ? 'Cambiar foto' : 'Subir foto'}
         </Button>
-        <div className="small text-muted mt-1">JPG, PNG o WEBP · máx. {MAX_MB} MB</div>
+        <div className="text-muted small mt-2">JPG, PNG o WEBP · máx. {MAX_MB} MB</div>
       </div>
-      {mensaje && <Alert variant={mensaje.tipo} className="py-2 small mt-3 mb-0">{mensaje.texto}</Alert>}
+
+      {mensaje && (
+        <Alert variant={mensaje.tipo} className="py-2 small mt-3 mb-0 rounded-3 w-100">
+          {mensaje.texto}
+        </Alert>
+      )}
     </div>
   );
 };

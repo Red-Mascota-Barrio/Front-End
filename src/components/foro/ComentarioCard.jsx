@@ -31,29 +31,26 @@ function ComentarioCard({ comentario }) {
 
   return (
     <>
-      <article className="comentario-card">
-
-        <div className="comentario-header">
-          <strong>{comentario.autor}</strong>
-
-          <span className="comentario-fecha">
-            {comentario.fecha}
-          </span>
+      <div className="card shadow-sm border-0 rounded-4 p-4 bg-white mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <strong className="text-dark fw-bold">{comentario.autor}</strong>
+          <small className="text-muted">{comentario.fecha}</small>
         </div>
 
-        <p className="comentario-contenido">
+        <p className="text-secondary mb-3 small">
           {comentario.contenido}
         </p>
 
-        <button
-          type="button"
-          className="btn-reportar-comentario"
-          onClick={() => setMostrarReporte(true)}
-        >
-          Reportar
-        </button>
-
-      </article>
+        <div className="text-end">
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm rounded-pill px-3"
+            onClick={() => setMostrarReporte(true)}
+          >
+            Reportar
+          </button>
+        </div>
+      </div>
 
       {mostrarReporte && (
         <ReportarModal

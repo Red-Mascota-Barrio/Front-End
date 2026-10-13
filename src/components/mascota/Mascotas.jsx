@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Modal } from 'react-bootstrap';
-import { mascotasService, urlFoto, SIN_FOTO } from '../services/mascotasService';
+import { mascotasService, urlFoto, SIN_FOTO } from '../../services/mascotasService';
 
 const POR_PAGINA = 6;
 const igual = (a, b) => String(a ?? '').toLowerCase() === String(b ?? '').toLowerCase();
 
-function Mascotas() {
+export const Mascotas = () => {
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -100,15 +100,15 @@ function Mascotas() {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container py-5">
       <h2 className="mb-4 text-center fw-bold text-primary">Adopta una mascota</h2>
 
       {/* Panel de filtros */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
+      <div className="card shadow-sm border-0 bg-light mb-5 rounded-4">
+        <div className="card-body p-4">
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label fw-bold">Buscar por nombre</label>
+              <label className="form-label fw-semibold text-secondary">Buscar por nombre</label>
               <input
                 type="text"
                 className="form-control"
@@ -119,7 +119,7 @@ function Mascotas() {
             </div>
 
             <div className="col-md-2">
-              <label className="form-label fw-bold">Especie</label>
+              <label className="form-label fw-semibold text-secondary">Especie</label>
               <select className="form-select" value={filtroEspecie} onChange={cambiarFiltro(setFiltroEspecie)}>
                 <option value="">Todas</option>
                 <option value="Perro">Perro</option>
@@ -128,7 +128,7 @@ function Mascotas() {
             </div>
 
             <div className="col-md-2">
-              <label className="form-label fw-bold">Tamaño</label>
+              <label className="form-label fw-semibold text-secondary">Tamaño</label>
               <select className="form-select" value={filtroTamano} onChange={cambiarFiltro(setFiltroTamano)}>
                 <option value="">Todos</option>
                 <option value="pequeno">Pequeño</option>
@@ -138,7 +138,7 @@ function Mascotas() {
             </div>
 
             <div className="col-md-2">
-              <label className="form-label fw-bold">Género</label>
+              <label className="form-label fw-semibold text-secondary">Género</label>
               <select className="form-select" value={filtroGenero} onChange={cambiarFiltro(setFiltroGenero)}>
                 <option value="">Todos</option>
                 <option value="macho">Macho</option>
@@ -147,7 +147,7 @@ function Mascotas() {
             </div>
 
             <div className="col-md-2">
-              <label className="form-label fw-bold">Ordenar por</label>
+              <label className="form-label fw-semibold text-secondary">Ordenar por</label>
               <select className="form-select" value={orden} onChange={(e) => setOrden(e.target.value)}>
                 <option value="nombre_asc">Nombre (A-Z)</option>
                 <option value="nombre_desc">Nombre (Z-A)</option>
@@ -158,16 +158,16 @@ function Mascotas() {
           </div>
 
           {/* Chips de filtros activos */}
-          <div className="d-flex align-items-center flex-wrap gap-2 mt-3 pt-2 border-top">
+          <div className="d-flex align-items-center flex-wrap gap-2 mt-4 pt-3 border-top">
             <span className="text-muted small fw-bold">Filtros activos:</span>
-            {busquedaDebounced && <span className="badge bg-info text-dark">Nombre: "{busquedaDebounced}"</span>}
-            {filtroEspecie && <span className="badge bg-secondary">Especie: {filtroEspecie}</span>}
-            {filtroTamano && <span className="badge bg-secondary">Tamaño: {filtroTamano}</span>}
-            {filtroGenero && <span className="badge bg-secondary">Género: {filtroGenero}</span>}
-            {!hayFiltros && <span className="text-muted small">ninguno</span>}
+            {busquedaDebounced && <span className="badge bg-primary bg-opacity-10 text-primary border border-primary">Nombre: "{busquedaDebounced}"</span>}
+            {filtroEspecie && <span className="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Especie: {filtroEspecie}</span>}
+            {filtroTamano && <span className="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Tamaño: {filtroTamano}</span>}
+            {filtroGenero && <span className="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Género: {filtroGenero}</span>}
+            {!hayFiltros && <span className="text-muted small">Ninguno</span>}
 
             {hayFiltros && (
-              <button className="btn btn-outline-danger btn-sm ms-auto" onClick={limpiarFiltros}>
+              <button className="btn btn-outline-danger btn-sm ms-auto rounded-pill px-3" onClick={limpiarFiltros}>
                 Limpiar filtros
               </button>
             )}
@@ -179,48 +179,53 @@ function Mascotas() {
       {cargando ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status"></div>
-          <p className="mt-2 text-muted">Cargando mascotas...</p>
+          <p className="mt-3 text-muted fw-medium">Cargando peluditos...</p>
         </div>
       ) : error ? (
-        <div className="alert alert-danger d-flex justify-content-between align-items-center">
+        <div className="alert alert-danger d-flex justify-content-between align-items-center shadow-sm rounded-4">
           <span>{error}</span>
-          <button className="btn btn-sm btn-outline-danger" onClick={cargar}>Reintentar</button>
+          <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={cargar}>Reintentar</button>
         </div>
       ) : mascotasFiltradas.length === 0 ? (
-        <div className="card text-center py-5 my-4 border-0 bg-light">
+        <div className="card text-center py-5 my-4 border-0 bg-light rounded-4">
           <div className="card-body">
             <h4 className="text-muted fw-bold mb-2">No se encontraron mascotas</h4>
             <p className="text-secondary">Intenta ajustar los filtros o realizar una nueva búsqueda.</p>
-            <button className="btn btn-primary mt-2" onClick={limpiarFiltros}>
+            <button className="btn btn-primary mt-3 rounded-pill px-4" onClick={limpiarFiltros}>
               Ver todas las mascotas
             </button>
           </div>
         </div>
       ) : (
         <>
-          <div className="row row-cols-1 row-cols-md-3 g-4">
+          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             {mascotasPaginadas.map((m) => (
               <div className="col" key={m.id_mascota ?? m.id}>
-                <div className="card h-100 shadow-sm border-0">
+                <div 
+                  className="card h-100 shadow-sm border-0 rounded-4 overflow-hidden"
+                  style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
                   <img
                     src={urlFoto(m.foto)}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
                     className="card-img-top"
                     alt={m.nombre}
-                    style={{ height: '220px', objectFit: 'cover' }}
+                    style={{ height: '240px', objectFit: 'cover' }}
                   />
-                  <div className="card-body d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h5 className="card-title fw-bold m-0">{m.nombre}</h5>
-                      <span className={`badge ${igual(m.genero, 'macho') ? 'bg-primary' : 'bg-danger'}`}>
+                  <div className="card-body d-flex flex-column p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h4 className="card-title fw-bold text-dark m-0">{m.nombre}</h4>
+                      <span className={`badge rounded-pill px-3 py-2 ${igual(m.genero, 'macho') ? 'bg-primary bg-opacity-10 text-primary' : 'bg-danger bg-opacity-10 text-danger'}`}>
                         {m.genero}
                       </span>
                     </div>
-                    <p className="card-text text-muted small mb-3 flex-grow-1">
-                      {m.notas_adicionales || 'Sin descripción adicional.'}
+                    <p className="card-text text-muted mb-4 flex-grow-1">
+                      {m.notas_adicionales || 'Sin descripción adicional disponible para este peludito.'}
                     </p>
                     <button
-                      className="btn btn-outline-primary w-100 mt-auto"
+                      className="btn btn-primary rounded-pill w-100 mt-auto fw-medium shadow-sm"
                       onClick={() => setMascotaSeleccionada(m)}
                     >
                       Ver detalle
@@ -233,8 +238,8 @@ function Mascotas() {
 
           {/* Paginación */}
           {totalPaginas > 1 && (
-            <nav className="d-flex justify-content-center mt-4">
-              <ul className="pagination">
+            <nav className="d-flex justify-content-center mt-5">
+              <ul className="pagination shadow-sm">
                 <li className={`page-item ${paginaSegura === 1 ? 'disabled' : ''}`}>
                   <button className="page-link" onClick={() => setPaginaActual(paginaSegura - 1)}>Anterior</button>
                 </li>
@@ -252,34 +257,45 @@ function Mascotas() {
         </>
       )}
 
-      {/* Modal de detalle (react-bootstrap: no depende del JS de Bootstrap) */}
-      <Modal show={Boolean(mascotaSeleccionada)} onHide={() => setMascotaSeleccionada(null)} centered>
+      {/* Modal de detalle */}
+      <Modal show={Boolean(mascotaSeleccionada)} onHide={() => setMascotaSeleccionada(null)} centered size="lg">
         {mascotaSeleccionada && (
           <>
-            <Modal.Header closeButton>
-              <Modal.Title className="fw-bold">{mascotaSeleccionada.nombre}</Modal.Title>
+            <Modal.Header closeButton className="border-0 pb-0">
+              <Modal.Title className="fw-bold fs-3">{mascotaSeleccionada.nombre}</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
-              <img
-                src={urlFoto(mascotaSeleccionada.foto)}
-                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
-                className="img-fluid rounded mb-3 w-100"
-                style={{ height: '250px', objectFit: 'cover' }}
-                alt={mascotaSeleccionada.nombre}
-              />
-              <ul className="list-group list-group-flush">
-                <li className="list-group-item"><strong>Especie:</strong> {mascotaSeleccionada.especie || 'N/A'}</li>
-                <li className="list-group-item"><strong>Género:</strong> {mascotaSeleccionada.genero}</li>
-                <li className="list-group-item"><strong>Edad estimada:</strong> {mascotaSeleccionada.edad_estimada ? `${mascotaSeleccionada.edad_estimada} años` : 'N/A'}</li>
-                <li className="list-group-item"><strong>Peso:</strong> {mascotaSeleccionada.peso_kg ? `${mascotaSeleccionada.peso_kg} kg` : 'N/A'}</li>
-                <li className="list-group-item"><strong>Tamaño:</strong> {mascotaSeleccionada.tamano}</li>
-                <li className="list-group-item"><strong>Esterilizado:</strong> {mascotaSeleccionada.esterilizado ? 'Sí' : 'No'}</li>
-                <li className="list-group-item"><strong>Vacunas al día:</strong> {mascotaSeleccionada.vacunas_al_dia ? 'Sí' : 'No'}</li>
-                <li className="list-group-item"><strong>Notas:</strong> {mascotaSeleccionada.notas_adicionales || 'Sin notas'}</li>
-              </ul>
+            <Modal.Body className="pt-3">
+              <div className="row g-4">
+                <div className="col-md-5">
+                  <img
+                    src={urlFoto(mascotaSeleccionada.foto)}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
+                    className="img-fluid rounded-4 shadow-sm w-100"
+                    style={{ height: '100%', minHeight: '300px', objectFit: 'cover' }}
+                    alt={mascotaSeleccionada.nombre}
+                  />
+                </div>
+                <div className="col-md-7">
+                  <div className="bg-light p-4 rounded-4 h-100">
+                    <h5 className="fw-bold text-primary mb-3">Información General</h5>
+                    <ul className="list-unstyled mb-0 text-dark">
+                      <li className="mb-2"><strong>Especie:</strong> <span className="text-muted">{mascotaSeleccionada.especie || 'N/A'}</span></li>
+                      <li className="mb-2"><strong>Género:</strong> <span className="text-muted">{mascotaSeleccionada.genero}</span></li>
+                      <li className="mb-2"><strong>Edad estimada:</strong> <span className="text-muted">{mascotaSeleccionada.edad_estimada ? `${mascotaSeleccionada.edad_estimada} años` : 'N/A'}</span></li>
+                      <li className="mb-2"><strong>Peso:</strong> <span className="text-muted">{mascotaSeleccionada.peso_kg ? `${mascotaSeleccionada.peso_kg} kg` : 'N/A'}</span></li>
+                      <li className="mb-2"><strong>Tamaño:</strong> <span className="text-muted">{mascotaSeleccionada.tamano}</span></li>
+                      <li className="mb-2"><strong>Esterilizado:</strong> <span className="text-muted">{mascotaSeleccionada.esterilizado ? 'Sí' : 'No'}</span></li>
+                      <li className="mb-2"><strong>Vacunas al día:</strong> <span className="text-muted">{mascotaSeleccionada.vacunas_al_dia ? 'Sí' : 'No'}</span></li>
+                    </ul>
+                    <hr className="my-3 text-secondary" />
+                    <h5 className="fw-bold text-primary mb-2">Notas</h5>
+                    <p className="text-muted small mb-0">{mascotaSeleccionada.notas_adicionales || 'Sin notas adicionales.'}</p>
+                  </div>
+                </div>
+              </div>
             </Modal.Body>
-            <Modal.Footer>
-              <button type="button" className="btn btn-secondary" onClick={() => setMascotaSeleccionada(null)}>
+            <Modal.Footer className="border-0 pt-0">
+              <button type="button" className="btn btn-secondary rounded-pill px-4" onClick={() => setMascotaSeleccionada(null)}>
                 Cerrar
               </button>
             </Modal.Footer>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
@@ -11,35 +11,33 @@ import { Footer } from "../../components/layout/Footer";
 import "./foro.css";
 
 
-function Foro() {
+export const Foro = () => {
   const [hilos, setHilos] = useState(() => {
-    const hilosGuardados = localStorage.getItem("hilosForo");
-
-    if (hilosGuardados) {
-      return JSON.parse(hilosGuardados);
-    }    
+    try {
+      return JSON.parse(localStorage.getItem("hilosForo")) || [];
+    } catch {
+      return [];
+    }
   });
 
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const hilosFiltrados = hilos.filter((hilo) => {
-    const coincideBusqueda =
-      hilo.titulo
-        .toLowerCase()
-        .includes(busqueda.toLowerCase()) ||
-      hilo.contenido
-        .toLowerCase()
-        .includes(busqueda.toLowerCase());
-
-    const coincideCategoria =
-      categoria === "todas" ||
-      hilo.categoria.toLowerCase() ===
-        categoria.toLowerCase();
-
-    return coincideBusqueda && coincideCategoria;
-  });
+  const hilosFiltrados = useMemo(
+    () =>
+      hilos.filter((hilo) => {
+        const q = busqueda.toLowerCase();
+        const coincideBusqueda =
+          (hilo.titulo ?? "").toLowerCase().includes(q) ||
+          (hilo.contenido ?? "").toLowerCase().includes(q);
+        const coincideCategoria =
+          categoria === "todas" ||
+          (hilo.categoria ?? "").toLowerCase() === categoria.toLowerCase();
+        return coincideBusqueda && coincideCategoria;
+      }),
+    [hilos, busqueda, categoria]
+  );
 
   return (
     <div className="foro-pagina">
