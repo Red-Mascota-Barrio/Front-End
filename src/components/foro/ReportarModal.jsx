@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 function ReportarModal({ onCerrar, onReportar }) {
-  const [motivo, setMotivo] = useState("spam");
+  const [motivo, setMotivo] = useState("1");
 
   const manejarReporte = (e) => {
     e.preventDefault();
@@ -43,43 +43,43 @@ function ReportarModal({ onCerrar, onReportar }) {
                 type="radio"
                 name="motivo"
                 value="spam"
-                checked={motivo === "spam"}
+                checked={motivo === "1"}
                 onChange={(e) => setMotivo(e.target.value)}
               />
-              Spam
+              Publicidad o Spam
             </label>
 
             <label>
               <input
                 type="radio"
                 name="motivo"
-                value="inapropiado"
-                checked={motivo === "inapropiado"}
+                value="2"
+                checked={motivo === "2"}
                 onChange={(e) => setMotivo(e.target.value)}
               />
-              Contenido inapropiado
+              Lenguaje ofensivo o acoso
             </label>
 
             <label>
               <input
                 type="radio"
                 name="motivo"
-                value="acoso"
-                checked={motivo === "acoso"}
+                value="3"
+                checked={motivo === "3"}
                 onChange={(e) => setMotivo(e.target.value)}
               />
-              Acoso o comportamiento ofensivo
+              Información falsa o peligrosa
             </label>
 
             <label>
               <input
                 type="radio"
                 name="motivo"
-                value="otro"
-                checked={motivo === "otro"}
+                value="4"
+                checked={motivo === "4"}
                 onChange={(e) => setMotivo(e.target.value)}
               />
-              Otro
+              Otro motivo
             </label>
 
           </div>

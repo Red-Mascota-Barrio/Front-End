@@ -1,31 +1,52 @@
 import { useState } from "react";
+import { foroService } from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
-  const [categoria, setCategoria] = useState("general");
+  const [categoria, setCategoria] = useState("");
   const [contenido, setContenido] = useState("");
 
-  const manejarPublicacion = (e) => {
+  const manejarPublicacion = async (e) => {
     e.preventDefault();
 
     if (!titulo.trim() || !contenido.trim()) {
+      alert("Completa el título y el contenido.");
       return;
     }
 
     const nuevoHilo = {
-      id: Date.now(),
-      titulo: titulo,
-      contenido: contenido,
-      categoria: categoria,
-      autor: "Usuario actual",
-      respuestas: 0,
-      visitas: 0,
-      destacado: false,
+      titulo: titulo.trim(),
+      contenido: contenido.trim(),
+      categoria_foro_id: Number(categoria) || 1,
     };
 
-    onCrearHilo(nuevoHilo);
+    try {
+      const respuesta = await foroService.crear(nuevoHilo);
 
-    onCerrar();
+      if (respuesta.resultado === "ok") {
+        onCrearHilo(respuesta.datos);
+        onCerrar();
+      } else {
+        alert(respuesta.mensaje || "No se pudo publicar el hilo.");
+      }
+    } catch (error) {
+      console.error("Error al publicar el hilo:", error);
+      console.error("Estado HTTP:", error.response?.status);
+      console.error("Respuesta de Laravel:", error.response?.data);
+
+      if (error.response) {
+        alert(
+          "Error HTTP: " +
+            error.response.status +
+            "\n" +
+            JSON.stringify(error.response.data, null, 2),
+        );
+      } else {
+        alert(
+          "No se recibió respuesta del servidor. Revisa la conexión con Laravel.",
+        );
+      }
+    }
   };
 
   return (
@@ -34,7 +55,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
         <div className="modal-header">
           <h2>Crear nuevo hilo</h2>
 
-          <button className="btn-cerrar-modal" onClick={onCerrar}>
+          <button type="button" className="btn-cerrar-modal" onClick={onCerrar}>
             ×
           </button>
         </div>
@@ -46,9 +67,10 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
             <input
               id="titulo"
               type="text"
-              placeholder="Escribe el título..."
+              placeholder="Escribe el título"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
+              required
             />
           </div>
 
@@ -60,9 +82,8 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <option value="general">General</option>
-              <option value="estudio">Estudio</option>
-              <option value="proyectos">Proyectos</option>
+              <option value="1">Perro</option>
+              <option value="2">Gato</option>
             </select>
           </div>
 
@@ -75,6 +96,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
               placeholder="Escribe el contenido"
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
+              required
             />
           </div>
 

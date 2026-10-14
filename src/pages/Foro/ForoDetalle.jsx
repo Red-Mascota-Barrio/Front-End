@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { AppNavbar } from "../../components/layout/AppNavbar";
@@ -8,241 +8,155 @@ import BadgeForo from "../../components/foro/BadgeForo";
 import ComentarioCard from "../../components/foro/ComentarioCard";
 import ComentarioForm from "../../components/foro/ComentarioForm";
 
-import "./foro.css";
+import { foroService } from "../../services/foroService.js";
 
-const comentariosIniciales = {
-  2: [
-    {
-      id: 1,
-      autor: "Usuario 4",
-      contenido:
-        "Me parece una excelente idea para comenzar.",
-      fecha: "Hoy",
-    },
-    {
-      id: 2,
-      autor: "Usuario 5",
-      contenido:
-        "Yo también estoy trabajando en algo parecido.",
-      fecha: "Hoy",
-    },
-  ],
-};
+import "./foro.css";
 
 function ForoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const numeroId = Number(id);
+  const [hilo, setHilo] = useState(null);
+  const [comentarios, setComentarios] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-  const hilosGuardados = JSON.parse(
-    localStorage.getItem("hilosForo") || "[]"
-  );
+  useEffect(() => {
+    const cargarDetalleHilo = async () => {
+      try {
+        setCargando(true);
+        const respuesta = await foroService.obtenerPorId(id);
+        console.log("Respuesta completa del hilo:", respuesta);
+        const datosHilo = respuesta.datos || respuesta.data || respuesta;
 
-  const hiloEncontrado = hilosGuardados.find(
-    (hilo) => hilo.id === numeroId
-  );
+        setHilo(datosHilo);
+        setComentarios(datosHilo.comentarios_principales || datosHilo.comentariosPrincipales || datosHilo.comentarios || []);
 
-  const [hilo, setHilo] = useState(() => {
-    if (!hiloEncontrado) {
-      return null;
-    }
-
-    const hiloActualizado = {
-      ...hiloEncontrado,
-      visitas: hiloEncontrado.visitas + 1,
+      } catch (error) {
+        console.error("Error al cargar el detalle del hilo:", error);
+      } finally {
+        setCargando(false);
+      }
     };
 
-    const hilosActualizados = hilosGuardados.map(
-      (hiloActual) =>
-        hiloActual.id === numeroId
-          ? hiloActualizado
-          : hiloActual
-    );
+    cargarDetalleHilo();
+  }, [id]);
 
-    localStorage.setItem(
-      "hilosForo",
-      JSON.stringify(hilosActualizados)
-    );
+  const agregarComentario = async (nuevoComentario) => {
+    try {
+      // Usar la ID primaria que devuelva Laravel o el parámetro de la URL
+      const idHiloValido = hilo?.id_foro || hilo?.id || id;
 
-    return hiloActualizado;
-  });
+      const respuesta = await foroService.crearComentario(
+        idHiloValido,
+        nuevoComentario,
+      );
+      const comentarioGuardado = respuesta.datos || respuesta.data || respuesta;
 
-  const [comentarios, setComentarios] = useState(() => {
-    const comentariosGuardados = localStorage.getItem(
-      `comentariosForo_${id}`
-    );
+      // 1. Agregar el nuevo comentario a la lista de UI
+      setComentarios((prev) => [...prev, comentarioGuardado]);
 
-    if (comentariosGuardados) {
-      return JSON.parse(comentariosGuardados);
+      // 2. Incrementar el contador de respuestas inmediatamente
+      setHilo((prevHilo) => ({
+        ...prevHilo,
+        respuestas: (prevHilo?.respuestas || comentarios.length) + 1,
+      }));
+    } catch (error) {
+      console.error("Error al publicar el comentario:", error);
+
+      if (error.response?.status === 422) {
+        alert(
+          "Error de validación: " +
+            JSON.stringify(error.response.data.errors || error.response.data),
+        );
+      } else if (error.response?.status === 401) {
+        alert("Debes iniciar sesión para publicar un comentario.");
+      } else {
+        alert("Hubo un error al guardar tu comentario.");
+      }
     }
+  };
 
-    return comentariosIniciales[id] || [];
-  });
-
-  if (!hilo) {
+  if (cargando) {
     return (
       <div className="foro-pagina">
-
         <AppNavbar />
-
         <main className="foro">
-
-          <button
-            className="btn-volver-foro"
-            onClick={() => navigate("/foro")}
-          >
-            ← Volver al foro
-          </button>
-
-          <div className="foro-sin-resultados">
-            <h1>Hilo no encontrado</h1>
-
-            <p>
-              El hilo que estás buscando no existe.
-            </p>
-          </div>
-
+          <p>Cargando hilo...</p>
         </main>
-
         <Footer />
-
       </div>
     );
   }
 
-  const agregarComentario = (nuevoComentario) => {
-    setComentarios((comentariosActuales) => {
-      const nuevosComentarios = [
-        ...comentariosActuales,
-        nuevoComentario,
-      ];
-
-      localStorage.setItem(
-        `comentariosForo_${id}`,
-        JSON.stringify(nuevosComentarios)
-      );
-
-      return nuevosComentarios;
-    });
-
-    const hilosActuales = JSON.parse(
-      localStorage.getItem("hilosForo") || "[]"
+  if (!hilo) {
+    return (
+      <div className="foro-pagina">
+        <AppNavbar />
+        <main className="foro">
+          <button className="btn-volver-foro" onClick={() => navigate("/foro")}>
+            ← Volver al foro
+          </button>
+          <div className="foro-sin-resultados">
+            <h1>Hilo no encontrado</h1>
+          </div>
+        </main>
+        <Footer />
+      </div>
     );
+  }
 
-    const hilosActualizados = hilosActuales.map(
-      (hiloActual) => {
-        if (hiloActual.id === numeroId) {
-          return {
-            ...hiloActual,
-            respuestas: hiloActual.respuestas + 1,
-          };
-        }
-
-        return hiloActual;
-      }
-    );
-
-    localStorage.setItem(
-      "hilosForo",
-      JSON.stringify(hilosActualizados)
-    );
-
-    const hiloActualizado = hilosActualizados.find(
-      (hiloActual) => hiloActual.id === numeroId
-    );
-
-    setHilo(hiloActualizado);
-  };
+  const catId = hilo?.categoria_foro_id;
+  const catTexto =
+    hilo?.categoriaForo?.nombre_categoria || hilo?.categoria || "";
+  const nombreCategoria =
+    catId === 1 || catTexto.toLowerCase().includes("perro") ? "Perro" : "Gato";
 
   return (
     <div className="foro-pagina">
-
       <AppNavbar />
 
       <main className="foro">
-
-        <button
-          className="btn-volver-foro"
-          onClick={() => navigate("/foro")}
-        >
+        <button className="btn-volver-foro" onClick={() => navigate("/foro")}>
           ← Volver al foro
         </button>
 
         <article className="foro-detalle">
-
           <div className="hilo-meta">
-
-            <BadgeForo tipo="categoria">
-              {hilo.categoria}
-            </BadgeForo>
-
-            {hilo.destacado && (
-              <BadgeForo tipo="destacado">
-                Destacado
-              </BadgeForo>
-            )}
-
+            <BadgeForo tipo="categoria">{nombreCategoria}</BadgeForo>
           </div>
 
           <h1>{hilo.titulo}</h1>
-
           <span className="hilo-autor">
-            Publicado por {hilo.autor}
+            Publicado por {hilo.usuario?.nombre || hilo.autor || "Anónimo"}
           </span>
-
-          <p className="foro-detalle-contenido">
-            {hilo.contenido}
-          </p>
+          <p className="foro-detalle-contenido">{hilo.contenido}</p>
 
           <div className="foro-detalle-estadisticas">
-
             <div className="estadistica">
-              <strong>{hilo.respuestas}</strong>
+              <strong>{hilo.numero_comentarios ?? comentarios.length}</strong>
               <span>Respuestas</span>
             </div>
-
-            <div className="estadistica">
-              <strong>{hilo.visitas}</strong>
-              <span>Visitas</span>
-            </div>
-
           </div>
-
         </article>
 
         <section className="comentarios-foro">
-
           <h2>Comentarios</h2>
 
           <div className="comentarios-lista">
-
             {comentarios.length > 0 ? (
-              comentarios.map((comentario) => (
-                <ComentarioCard
-                  key={comentario.id}
-                  comentario={comentario}
-                />
+              comentarios.map((c) => (
+                <ComentarioCard key={c.id_comentario || c.id} comentario={c} />
               ))
             ) : (
-              <p className="sin-comentarios">
-                Todavía no hay comentarios.
-                Sé el primero en comentar.
-              </p>
+              <p className="sin-comentarios">Todavía no hay comentarios.</p>
             )}
-
           </div>
 
-          <ComentarioForm
-            onAgregarComentario={agregarComentario}
-          />
-
+          <ComentarioForm onAgregarComentario={agregarComentario} />
         </section>
-
       </main>
 
       <Footer />
-
     </div>
   );
 }
