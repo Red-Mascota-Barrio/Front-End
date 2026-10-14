@@ -43,73 +43,91 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
         );
       } else {
         alert(
-          "No se recibió respuesta del servidor. Revisa la conexión con Laravel.",
+          "No se recibió respuesta del servidor.",
         );
       }
     }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-foro">
-        <div className="modal-header">
-          <h2>Crear nuevo hilo</h2>
+    <div
+      className="modal show d-block"
+      tabIndex="-1"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    >
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content border-0 shadow">
+          <div className="modal-header">
+            <h5 className="modal-title fw-bold">Crear nuevo hilo</h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onCerrar}
+            ></button>
+          </div>
 
-          <button type="button" className="btn-cerrar-modal" onClick={onCerrar}>
-            ×
-          </button>
+          <form onSubmit={manejarPublicacion}>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="titulo" className="form-label fw-semibold">
+                  Título
+                </label>
+                <input
+                  id="titulo"
+                  type="text"
+                  className="form-control"
+                  placeholder="Escribe el título"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="categoria" className="form-label fw-semibold">
+                  Categoría
+                </label>
+                <select
+                  id="categoria"
+                  className="form-select"
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                >
+                  <option value="1">Perro</option>
+                  <option value="2">Gato</option>
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="contenido" className="form-label fw-semibold">
+                  Contenido
+                </label>
+                <textarea
+                  id="contenido"
+                  className="form-control"
+                  rows="6"
+                  placeholder="Escribe el contenido"
+                  value={contenido}
+                  onChange={(e) => setContenido(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-light border"
+                onClick={onCerrar}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Publicar hilo
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form className="form-hilo" onSubmit={manejarPublicacion}>
-          <div className="campo-formulario">
-            <label htmlFor="titulo">Título</label>
-
-            <input
-              id="titulo"
-              type="text"
-              placeholder="Escribe el título"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="campo-formulario">
-            <label htmlFor="categoria">Categoría</label>
-
-            <select
-              id="categoria"
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-            >
-              <option value="1">Perro</option>
-              <option value="2">Gato</option>
-            </select>
-          </div>
-
-          <div className="campo-formulario">
-            <label htmlFor="contenido">Contenido</label>
-
-            <textarea
-              id="contenido"
-              rows="6"
-              placeholder="Escribe el contenido"
-              value={contenido}
-              onChange={(e) => setContenido(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="modal-acciones">
-            <button type="button" className="btn-cancelar" onClick={onCerrar}>
-              Cancelar
-            </button>
-
-            <button type="submit" className="btn-publicar">
-              Publicar hilo
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );

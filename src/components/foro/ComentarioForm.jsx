@@ -25,26 +25,32 @@ function ComentarioForm({ onAgregarComentario }) {
   };
 
   return (
-    <form className="comentario-form" onSubmit={manejarComentario}>
-      <label htmlFor="comentario">Escribe tu comentario</label>
+    <form className="card shadow-sm border-0 p-4" onSubmit={manejarComentario}>
+      <div className="mb-3">
+        <label htmlFor="comentario" className="form-label fw-bold text-dark">
+          Escribe tu comentario
+        </label>
+        <textarea
+          id="comentario"
+          className="form-control"
+          rows="4"
+          placeholder="Escribe tu comentario..."
+          value={contenido}
+          onChange={(e) => setContenido(e.target.value)}
+          disabled={enviando}
+          required
+        />
+      </div>
 
-      <textarea
-        id="comentario"
-        rows="4"
-        placeholder="Escribe tu comentario..."
-        value={contenido}
-        onChange={(e) => setContenido(e.target.value)}
-        disabled={enviando}
-        required
-      />
-
-      <button
-        type="submit"
-        className="btn-publicar-comentario"
-        disabled={enviando}
-      >
-        {enviando ? "Publicando..." : "Publicar comentario"}
-      </button>
+      <div className="d-flex justify-content-end">
+        <button
+          type="submit"
+          className="btn btn-primary px-4 fw-semibold"
+          disabled={enviando}
+        >
+          {enviando ? "Publicando..." : "Publicar comentario"}
+        </button>
+      </div>
     </form>
   );
 }

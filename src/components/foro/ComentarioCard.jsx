@@ -8,7 +8,7 @@ function ComentarioCard({ comentario }) {
   const manejarReporte = async (motivoId) => {
     try {
       const datosReporte = {
-        tipo_reporte_id: Number(motivoId), // El número 1, 2, 3 o 4 del radio button
+        tipo_reporte_id: Number(motivoId), 
         comentario_id: comentario.id_comentario || comentario.id, // El ID del comentario
         descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
       };
@@ -28,29 +28,30 @@ function ComentarioCard({ comentario }) {
 
   return (
     <>
-      <article className="comentario-card">
-        <div className="comentario-header">
-          <strong>
-            {comentario.usuario
-              ? `${comentario.usuario.nombre || ""} ${comentario.usuario.apellido || ""}`.trim()
-              : comentario.autor || "Usuario"}
-          </strong>
+      <div className="card shadow-sm mb-3 border-0">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <strong className="text-dark">
+              {comentario.usuario
+                ? `${comentario.usuario.nombre || ""} ${comentario.usuario.apellido || ""}`.trim()
+                : comentario.autor || "Usuario"}
+            </strong>
+            <small className="text-muted">{comentario.fecha}</small>
+          </div>
 
-          <span className="comentario-fecha">{comentario.fecha}</span>
+          <p className="card-text text-secondary mb-3">
+            {comentario.comentario || comentario.contenido || ""}
+          </p>
+
+          <button
+            type="button"
+            className="btn btn-link text-danger p-0 text-decoration-none small"
+            onClick={() => setMostrarReporte(true)}
+          >
+            Reportar
+          </button>
         </div>
-
-        <p className="comentario-contenido">
-          {comentario.comentario || comentario.contenido || ""}
-        </p>
-
-        <button
-          type="button"
-          className="btn-reportar-comentario"
-          onClick={() => setMostrarReporte(true)}
-        >
-          Reportar
-        </button>
-      </article>
+      </div>
 
       {mostrarReporte && (
         <ReportarModal

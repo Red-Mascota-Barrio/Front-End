@@ -10,11 +10,9 @@ import { Footer } from "../../components/layout/Footer";
 
 import { foroService } from "../../services/foroService.js";
 
-import "./foro.css";
 
 function Foro() {
   const [hilos, setHilos] = useState([]);
-
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -23,7 +21,6 @@ function Foro() {
     const cargarHilos = async () => {
       try {
         const respuesta = await foroService.listar();
-        // Aseguramos que sea un arreglo
         setHilos(respuesta.datos || respuesta.data || []);
       } catch (error) {
         console.error("Error al cargar los hilos:", error);
@@ -64,10 +61,10 @@ function Foro() {
   };
 
   return (
-    <div className="foro-pagina">
+    <div className="d-flex flex-column min-vh-100 bg-light">
       <AppNavbar />
 
-      <main className="foro">
+      <main className="container my-5 flex-grow-1" style={{ maxWidth: "1100px" }}>
         <ForoHeader onCrearHilo={() => setMostrarModal(true)} />
 
         <FiltrosForo
@@ -77,15 +74,17 @@ function Foro() {
           setCategoria={setCategoria}
         />
 
-        <section className="foro-lista">
+        <section className="mb-5">
           {hilosFiltrados.length > 0 ? (
             hilosFiltrados.map((hilo) => (
               <HiloCard key={hilo.id_foro || hilo.id} hilo={hilo} />
             ))
           ) : (
-            <div className="foro-sin-resultados">
-              <h3>No se encontraron hilos</h3>
-              <p>Intenta cambiar la búsqueda o la categoría.</p>
+            <div className="card border-0 shadow-sm text-center py-5">
+              <div className="card-body">
+                <h3 className="h5 fw-bold text-dark mb-2">No se encontraron hilos</h3>
+                <p className="text-muted mb-0">Intenta cambiar la búsqueda o la categoría.</p>
+              </div>
             </div>
           )}
         </section>
