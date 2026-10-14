@@ -9,7 +9,7 @@ import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
 import { foroService } from "../../services/foroService.js";
-
+import "../../assets/foro/foro.css";
 
 function Foro() {
   const [hilos, setHilos] = useState([]);
@@ -61,7 +61,7 @@ function Foro() {
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100 bg-light">
+    <div className="foro-pagina d-flex flex-column min-vh-100">
       <AppNavbar />
 
       <main className="container my-5 flex-grow-1" style={{ maxWidth: "1100px" }}>
@@ -80,9 +80,9 @@ function Foro() {
               <HiloCard key={hilo.id_foro || hilo.id} hilo={hilo} />
             ))
           ) : (
-            <div className="card border-0 shadow-sm text-center py-5">
+            <div className="foro-card text-center py-5">
               <div className="card-body">
-                <h3 className="h5 fw-bold text-dark mb-2">No se encontraron hilos</h3>
+                <h3 className="h5 fw-bold mb-2">No se encontraron hilos</h3>
                 <p className="text-muted mb-0">Intenta cambiar la búsqueda o la categoría.</p>
               </div>
             </div>

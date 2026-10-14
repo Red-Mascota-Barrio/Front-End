@@ -75,7 +75,7 @@ function ForoDetalle() {
 
   if (cargando) {
     return (
-      <div className="d-flex flex-column min-vh-100 bg-light">
+      <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#f0fdfa" }}>
         <AppNavbar />
         <main className="container my-5 text-center flex-grow-1">
           <p className="text-muted">Cargando hilo...</p>
@@ -87,7 +87,7 @@ function ForoDetalle() {
 
   if (!hilo) {
     return (
-      <div className="d-flex flex-column min-vh-100 bg-light">
+      <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#f0fdfa" }}>
         <AppNavbar />
         <main className="container my-5 flex-grow-1" style={{ maxWidth: "1100px" }}>
           <button 
@@ -96,7 +96,7 @@ function ForoDetalle() {
           >
             ← Volver al foro
           </button>
-          <div className="card border-0 shadow-sm text-center py-5">
+          <div className="card border-0 shadow-sm rounded-4 text-center py-5 bg-white">
             <div className="card-body">
               <h1 className="h4 text-dark mb-0">Hilo no encontrado</h1>
             </div>
@@ -114,18 +114,19 @@ function ForoDetalle() {
     catId === 1 || catTexto.toLowerCase().includes("perro") ? "Perro" : "Gato";
 
   return (
-    <div className="d-flex flex-column min-vh-100 bg-light">
+    <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#f0fdfa" }}>
       <AppNavbar />
 
       <main className="container my-5 flex-grow-1" style={{ maxWidth: "1100px" }}>
         <button 
-          className="btn btn-link text-primary p-0 text-decoration-none fw-semibold mb-4" 
+          className="btn btn-link text-decoration-none fw-semibold mb-4 p-0 d-inline-flex align-items-center gap-2" 
+          style={{ color: "#0d9488" }}
           onClick={() => navigate("/foro")}
         >
           ← Volver al foro
         </button>
 
-        <article className="card border-0 shadow-sm p-4 p-md-5 mb-5">
+        <article className="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5 bg-white">
           <div className="d-flex align-items-center gap-2 mb-3">
             <BadgeForo tipo="categoria">{nombreCategoria}</BadgeForo>
           </div>
@@ -141,7 +142,7 @@ function ForoDetalle() {
           </p>
 
           <div className="border-top pt-4 mt-2">
-            <div className="text-center bg-light rounded p-2" style={{ width: "90px" }}>
+            <div className="text-center rounded-3 p-2 border bg-light" style={{ width: "90px" }}>
               <span className="d-block h5 fw-bold mb-0 text-dark">
                 {hilo.numero_comentarios ?? comentarios.length}
               </span>
@@ -161,7 +162,7 @@ function ForoDetalle() {
                 <ComentarioCard key={c.id_comentario || c.id} comentario={c} />
               ))
             ) : (
-              <div className="card border-0 shadow-sm text-center py-4">
+              <div className="card border-0 shadow-sm rounded-4 text-center py-4 bg-white">
                 <div className="card-body text-muted">
                   Todavía no hay comentarios.
                 </div>

@@ -296,7 +296,7 @@
   margin-top: 30px;
   padding: 28px 0;
   color: #d6efec;
-  background: linear-gradient(135deg, var(--c-deep), #0e5a55);
+  background: #093d3a !important;
 }
 .inicio-footer .inicio-logo {
   width: 48px;

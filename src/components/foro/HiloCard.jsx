@@ -13,7 +13,7 @@ function HiloCard({ hilo }) {
 
   return (
     <div
-      className="card shadow-sm mb-3 border-0 cursor-pointer transition-hover"
+      className="card foro-card mb-3 transition-hover cursor-pointer"
       style={{ cursor: "pointer" }}
       onClick={() => navigate(`/foro/${hilo.id_foro || hilo.id}`)}
     >
@@ -21,11 +21,16 @@ function HiloCard({ hilo }) {
         <div className="flex-grow-1">
           <div className="d-flex align-items-center gap-2 mb-2">
             <BadgeForo tipo="categoria">{nombreCategoria}</BadgeForo>
-            {hilo.destacado && <BadgeForo tipo="destacado">Destacado</BadgeForo>}
+            {hilo.destacado && (
+              <BadgeForo tipo="destacado">Destacado</BadgeForo>
+            )}
           </div>
 
           <h2 className="h5 fw-bold text-dark mb-2">{hilo.titulo}</h2>
-          <p className="text-secondary mb-2 text-truncate" style={{ maxWidth: "700px" }}>
+          <p
+            className="text-secondary mb-2 text-truncate"
+            style={{ maxWidth: "700px" }}
+          >
             {hilo.contenido}
           </p>
 

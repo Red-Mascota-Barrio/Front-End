@@ -9,9 +9,12 @@ function ComentarioCard({ comentario }) {
     try {
       const datosReporte = {
         tipo_reporte_id: Number(motivoId), 
-        comentario_id: comentario.id_comentario || comentario.id, // El ID del comentario
+        comentario_id: comentario.id_participacion || comentario.id_comentario || comentario.id, // El ID del comentario
         descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
       };
+
+      console.log("Datos que se enviarán al backend:", datosReporte);
+      console.log("Objeto comentario completo:", comentario);
 
       const respuesta = await foroService.crearReporte(datosReporte);
 

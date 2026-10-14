@@ -4,7 +4,7 @@ function ComentarioForm({ onAgregarComentario }) {
   const [contenido, setContenido] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-    const manejarComentario = async (e) => {
+  const manejarComentario = async (e) => {
     e.preventDefault();
 
     if (!contenido.trim()) return;
@@ -13,12 +13,14 @@ function ComentarioForm({ onAgregarComentario }) {
       setEnviando(true);
       await onAgregarComentario({
         contenido: contenido.trim(),
-        comentario: contenido.trim()
+        comentario: contenido.trim(),
       });
       setContenido("");
     } catch (error) {
       console.error("Error al enviar el comentario:", error);
-      alert("No se pudo publicar el comentario. Revisa la consola para más detalles.");
+      alert(
+        "No se pudo publicar el comentario. Revisa la consola para más detalles.",
+      );
     } finally {
       setEnviando(false);
     }
@@ -45,7 +47,8 @@ function ComentarioForm({ onAgregarComentario }) {
       <div className="d-flex justify-content-end">
         <button
           type="submit"
-          className="btn btn-primary px-4 fw-semibold"
+          className="btn text-white fw-semibold px-4 py-2 rounded-pill shadow-sm"
+          style={{ backgroundColor: "#0d9488", border: "none" }}
           disabled={enviando}
         >
           {enviando ? "Publicando..." : "Publicar comentario"}
