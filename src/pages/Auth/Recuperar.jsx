@@ -74,24 +74,24 @@ export const Recuperar = () => {
 
   return (
     <Container fluid className="vh-100 p-0 bg-light d-flex justify-content-center align-items-center">
-      <div className="auth-form-container bg-white p-4 p-md-5 rounded-4 shadow-sm" style={{ maxWidth: '450px', width: '100%' }}>
+      <div className="bg-white p-4 p-md-5 rounded-4 shadow-sm border" style={{ maxWidth: '450px', width: '100%' }}>
 
-        <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-brand-green">
+        <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-primary">
           <FaPaw size={24} />
           <span className="fw-bold fs-5">Red de Mascotas</span>
         </div>
 
-        {errorMsg && <Alert variant="danger" className="py-2 small text-center">{errorMsg}</Alert>}
-        {mensaje && <Alert variant="success" className="py-2 small text-center">{mensaje}</Alert>}
+        {errorMsg && <Alert variant="danger" className="py-2 small text-center rounded-3 shadow-sm mb-3">{errorMsg}</Alert>}
+        {mensaje && <Alert variant="success" className="py-2 small text-center rounded-3 shadow-sm mb-3">{mensaje}</Alert>}
 
         {/* PASO 1: Ingresar Correo */}
         {step === 1 && (
           <div>
             <div className="text-center mb-4">
-              <div className="d-inline-block p-3 rounded-circle bg-light mb-3">
-                <FaEnvelope size={24} className="text-brand-green" />
+              <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3 shadow-sm">
+                <FaEnvelope size={22} />
               </div>
-              <h4 className="fw-bold">¿Olvidaste tu contraseña?</h4>
+              <h4 className="fw-bold text-dark">¿Olvidaste tu contraseña?</h4>
               <p className="text-muted small">
                 Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un código para restablecerla.
               </p>
@@ -99,24 +99,26 @@ export const Recuperar = () => {
 
             <Form onSubmit={handleSubmit(onSubmitCorreo)}>
               <Form.Group className="mb-4" controlId="correoRecuperacion">
-                <Form.Label className="small fw-bold text-muted input-label">CORREO ELECTRÓNICO</Form.Label>
+                <Form.Label className="small fw-bold text-muted">CORREO ELECTRÓNICO</Form.Label>
                 <Form.Control
                   type="email"
                   placeholder="tucorreo@ejemplo.com"
                   {...register("correo", { required: "El correo es obligatorio" })}
                   isInvalid={!!errors.correo}
-                  className="py-2"
+                  className="py-2 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.correo?.message}</Form.Control.Feedback>
               </Form.Group>
 
-              <Button type="submit" disabled={loading} className="w-100 fw-bold mb-4 py-2 btn-brand-green">
-                {loading ? 'Enviando...' : 'Enviar instrucciones'}
-              </Button>
+              <div className="d-grid mb-3">
+                <Button type="submit" variant="primary" disabled={loading} className="rounded-pill py-2 shadow-sm fw-medium">
+                  {loading ? 'Enviando...' : 'Enviar instrucciones'}
+                </Button>
+              </div>
 
               <div className="text-center">
-                <Link to="/login" className="text-muted small text-decoration-none d-flex justify-content-center align-items-center gap-2">
+                <Link to="/login" className="text-muted small text-decoration-none fw-medium d-inline-flex align-items-center gap-2">
                   <FaArrowLeft /> Volver al inicio de sesión
                 </Link>
               </div>
@@ -128,10 +130,10 @@ export const Recuperar = () => {
         {step === 2 && (
           <div>
             <div className="text-center mb-4">
-              <div className="d-inline-block p-3 rounded-circle bg-light mb-3">
-                <FaKey size={24} className="text-brand-green" />
+              <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3 shadow-sm">
+                <FaKey size={22} />
               </div>
-              <h4 className="fw-bold">Crear nueva contraseña</h4>
+              <h4 className="fw-bold text-dark">Crear nueva contraseña</h4>
               <p className="text-muted small">
                 Ingresa el código que recibiste por correo y tu nueva contraseña segura.
               </p>
@@ -139,21 +141,21 @@ export const Recuperar = () => {
 
             <Form onSubmit={handleSubmit(onSubmitNuevaClave)}>
               <Form.Group className="mb-3 text-center" controlId="codigoRecuperacion">
-                <Form.Label className="small fw-bold text-muted input-label d-block text-start">CÓDIGO DE RECUPERACIÓN</Form.Label>
+                <Form.Label className="small fw-bold text-muted d-block text-start">CÓDIGO DE RECUPERACIÓN</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="123456"
                   maxLength={6}
                   {...register("codigo_otp", { required: "Ingresa el código OTP" })}
                   isInvalid={!!errors.codigo_otp}
-                  className="py-2 text-center tracking-widest fs-5"
+                  className="py-2 text-center tracking-widest fs-5 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.codigo_otp?.message}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-4" controlId="nuevaPassword">
-                <Form.Label className="small fw-bold text-muted input-label">NUEVA CONTRASEÑA</Form.Label>
+                <Form.Label className="small fw-bold text-muted">NUEVA CONTRASEÑA</Form.Label>
                 <Form.Control
                   type="password"
                   placeholder="Mínimo 8 caracteres"
@@ -162,19 +164,23 @@ export const Recuperar = () => {
                     minLength: { value: 8, message: "Debe tener al menos 8 caracteres" }
                   })}
                   isInvalid={!!errors.password}
-                  className="py-2"
+                  className="py-2 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
               </Form.Group>
 
-              <Button type="submit" disabled={loading} className="w-100 fw-bold mb-4 py-2 btn-brand-green">
-                {loading ? 'Actualizando...' : 'Restablecer contraseña'}
-              </Button>
+              <div className="d-grid mb-3">
+                <Button type="submit" variant="primary" disabled={loading} className="rounded-pill py-2 shadow-sm fw-medium">
+                  {loading ? 'Actualizando...' : 'Restablecer contraseña'}
+                </Button>
+              </div>
 
-              <Button variant="link" onClick={() => setStep(1)} className="w-100 text-muted small text-decoration-none">
-                <FaArrowLeft className="me-1" /> Volver a pedir código
-              </Button>
+              <div className="text-center">
+                <Button variant="link" onClick={() => setStep(1)} className="text-muted small text-decoration-none d-inline-flex align-items-center gap-1 p-0 fw-medium">
+                  <FaArrowLeft /> Volver a pedir código
+                </Button>
+              </div>
             </Form>
           </div>
         )}
@@ -185,4 +191,6 @@ export const Recuperar = () => {
       
     </Container>
   );
-}
+};
+
+export default Recuperar;

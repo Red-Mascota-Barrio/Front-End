@@ -75,35 +75,38 @@ export default function Eventos() {
   const eventoDestacado = eventos.find((e) => e.destacado);
 
   return (
-    <div className="container py-4">
+    <div className="container py-5">
       {/* Encabezado y cambio de vista */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="m-0">Eventos</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+          <h2 className="fw-bold text-primary mb-1">Eventos y Jornadas</h2>
+          <p className="text-muted small mb-0">Participa en nuestras actividades de bienestar animal y adopción.</p>
+        </div>
         <button
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary rounded-pill px-4 shadow-sm fw-medium"
           onClick={() => setModoVista(modoVista === 'tarjetas' ? 'calendario' : 'tarjetas')}
         >
-          {modoVista === 'tarjetas' ? 'Ver calendario' : 'Ver tarjetas'}
+          {modoVista === 'tarjetas' ? '📅 Ver calendario' : '🗂️ Ver tarjetas'}
         </button>
       </div>
 
       {modoDemo && (
-        <div className="alert alert-warning py-2 small">
-          No se pudo conectar con el servidor: se muestran eventos de demostración.
+        <div className="alert alert-warning py-2 small rounded-3 shadow-sm mb-4">
+          ⚠️ No se pudo conectar con el servidor: se muestran eventos de demostración.
         </div>
       )}
 
       {cargando ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status"></div>
-          <p className="mt-2 text-muted">Cargando eventos...</p>
+          <p className="mt-3 text-muted fw-medium">Cargando eventos...</p>
         </div>
       ) : (
         <>
           {/* Evento destacado */}
           {eventoDestacado && modoVista === 'tarjetas' && (
-            <div className="mb-4">
-              <h4>Evento destacado</h4>
+            <div className="mb-5">
+              <h4 className="fw-bold text-dark mb-3">⭐ Evento Destacado</h4>
               <div className="row">
                 <div className="col-12 col-md-8 col-lg-6">
                   <EventoCard evento={eventoDestacado} onInscribir={abrirInscripcion} />
@@ -113,12 +116,12 @@ export default function Eventos() {
           )}
 
           {/* Filtros por tipo */}
-          <div className="btn-group mb-4" role="group">
+          <div className="btn-group mb-4 shadow-sm rounded-pill p-1 bg-light border" role="group">
             {TIPOS.map((tipo) => (
               <button
                 key={tipo}
                 type="button"
-                className={`btn ${filtroTipo === tipo ? 'btn-primary' : 'btn-outline-secondary'}`}
+                className={`btn rounded-pill px-4 fw-medium ${filtroTipo === tipo ? 'btn-primary shadow-sm' : 'btn-light text-secondary border-0'}`}
                 onClick={() => setFiltroTipo(tipo)}
               >
                 {tipo}
@@ -129,9 +132,13 @@ export default function Eventos() {
           {/* Tarjetas o calendario */}
           {modoVista === 'tarjetas' ? (
             eventosFiltrados.length === 0 ? (
-              <p className="text-muted">No hay eventos de este tipo por ahora.</p>
+              <div className="card text-center py-5 border-0 bg-light rounded-4 my-4">
+                <div className="card-body">
+                  <p className="text-muted mb-0">No hay eventos de este tipo por ahora.</p>
+                </div>
+              </div>
             ) : (
-              <div className="row g-3">
+              <div className="row g-4">
                 {eventosFiltrados.map((evt) => (
                   <div key={evt.id} className="col-12 col-md-6 col-lg-4">
                     <EventoCard evento={evt} onInscribir={abrirInscripcion} />

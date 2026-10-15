@@ -12,7 +12,7 @@ const STATS = [
 ];
 
 export const PerfilHeader = ({ usuario, estadisticas }) => (
-  <section className="perfil-hero">
+  <section className="bg-white border-bottom py-5 shadow-sm">
     <Container>
       <Row className="align-items-center g-4">
         <Col md="auto" className="text-center">
@@ -20,35 +20,39 @@ export const PerfilHeader = ({ usuario, estadisticas }) => (
         </Col>
 
         <Col>
-          <div className="d-flex align-items-center flex-wrap gap-2 mb-1">
-            <h1 className="perfil-nombre mb-0">
+          <div className="d-flex align-items-center flex-wrap gap-2 mb-2">
+            <h1 className="fw-bold text-dark mb-0 fs-2">
               {usuario.nombre} {usuario.apellido}
             </h1>
             {esVerificado(usuario) ? (
-              <Badge pill className="perfil-insignia" title="Cuenta verificada">
-                <FaCheckCircle className="me-1" /> Verificado
+              <Badge bg="success" className="d-inline-flex align-items-center gap-1 rounded-pill px-3 py-2 fw-medium" title="Cuenta verificada">
+                <FaCheckCircle /> Verificado
               </Badge>
             ) : (
-              <Badge pill bg="warning" text="dark">Sin verificar</Badge>
+              <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 fw-medium">Sin verificar</Badge>
             )}
           </div>
-          <p className="mb-1 opacity-75">{usuario.correo}</p>
-          {usuario.barrio && <p className="mb-1 opacity-75">📍 {usuario.barrio}</p>}
-          {usuario.biografia && <p className="mb-2 perfil-bio">{usuario.biografia}</p>}
+          <p className="text-muted mb-1">{usuario.correo}</p>
+          {usuario.barrio && <p className="text-muted mb-1">📍 {usuario.barrio}</p>}
+          {usuario.biografia && <p className="text-secondary small mt-2 mb-3">{usuario.biografia}</p>}
 
-          <Button as={Link} to="/perfil/editar" className="btn-cta mt-2">
-            <FaPen className="me-2" /> Editar perfil
+          <Button as={Link} to="/perfil/editar" variant="primary" className="rounded-pill px-4 py-2 shadow-sm fw-medium d-inline-flex align-items-center gap-2 mt-1">
+            <FaPen /> Editar perfil
           </Button>
         </Col>
       </Row>
 
-      <Row className="g-3 mt-4">
+      <Row className="g-3 mt-4 pt-4 border-top">
         {STATS.map(({ clave, etiqueta, Icono }) => (
           <Col xs={6} md={3} key={clave}>
-            <div className="perfil-stat">
-              <Icono />
-              <strong>{estadisticas?.[clave] ?? 0}</strong>
-              <span>{etiqueta}</span>
+            <div className="d-flex align-items-center p-3 bg-light rounded-4 border h-100 shadow-sm">
+              <div className="fs-3 text-primary me-3 p-3 bg-white rounded-3 shadow-sm border d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                <Icono />
+              </div>
+              <div>
+                <h4 className="fw-bold text-dark mb-0">{estadisticas?.[clave] ?? 0}</h4>
+                <span className="text-muted small fw-medium">{etiqueta}</span>
+              </div>
             </div>
           </Col>
         ))}

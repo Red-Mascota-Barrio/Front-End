@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
@@ -12,49 +12,33 @@ import { foroService } from "../../services/foroService.js";
 
 import "./foro.css";
 
-function Foro() {
-  const [hilos, setHilos] = useState([]);
+export const Foro = () => {
+  const [hilos, setHilos] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("hilosForo")) || [];
+    } catch {
+      return [];
+    }
+  });
 
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  useEffect(() => {
-    const cargarHilos = async () => {
-      try {
-        const respuesta = await foroService.listar();
-        // Aseguramos que sea un arreglo
-        setHilos(respuesta.datos || respuesta.data || []);
-      } catch (error) {
-        console.error("Error al cargar los hilos:", error);
-      }
-    };
-
-    cargarHilos();
-  }, []);
-
-  const hilosFiltrados = hilos.filter((hilo) => {
-    const titulo = hilo?.titulo?.toLowerCase() || "";
-    const contenido = hilo?.contenido?.toLowerCase() || "";
-    
-    // Mapeo seguro de la categoría desde Laravel
-    const nombreCategoria = (
-      hilo?.categoriaForo?.nombre_categoria || 
-      hilo?.categoria || 
-      ""
-    ).toLowerCase();
-
-    const textoBusqueda = busqueda.toLowerCase().trim();
-
-    const coincideBusqueda =
-      titulo.includes(textoBusqueda) || contenido.includes(textoBusqueda);
-
-    const coincideCategoria =
-      categoria === "todas" ||
-      nombreCategoria.includes(categoria.toLowerCase());
-
-    return coincideBusqueda && coincideCategoria;
-  });
+  const hilosFiltrados = useMemo(
+    () =>
+      hilos.filter((hilo) => {
+        const q = busqueda.toLowerCase();
+        const coincideBusqueda =
+          (hilo.titulo ?? "").toLowerCase().includes(q) ||
+          (hilo.contenido ?? "").toLowerCase().includes(q);
+        const coincideCategoria =
+          categoria === "todas" ||
+          (hilo.categoria ?? "").toLowerCase() === categoria.toLowerCase();
+        return coincideBusqueda && coincideCategoria;
+      }),
+    [hilos, busqueda, categoria]
+  );
 
   // Función para incorporar el hilo creado por CrearHiloModal sin re-hacer la petición
   const agregarNuevoHilo = (hiloCreado) => {

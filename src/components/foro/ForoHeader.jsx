@@ -1,21 +1,24 @@
+import { Button } from "react-bootstrap";
+import { FaPlus } from "react-icons/fa";
+
 function ForoHeader({ onCrearHilo }) {
   return (
-    <header className="foro-header">
+    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
       <div>
-        <h1>Foro Comunitario</h1>
-
-        <p>
+        <h2 className="fw-bold text-primary mb-1">Foro Comunitario</h2>
+        <p className="text-muted small mb-0">
           Comparte ideas, preguntas y experiencias con la comunidad.
         </p>
       </div>
 
-      <button
-        className="btn-crear-hilo"
+      <Button
+        variant="primary"
+        className="rounded-pill px-4 py-2 shadow-sm fw-medium d-inline-flex align-items-center gap-2"
         onClick={onCrearHilo}
       >
-        + Crear nuevo hilo
-      </button>
-    </header>
+        <FaPlus /> Crear nuevo hilo
+      </Button>
+    </div>
   );
 }
 

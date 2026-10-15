@@ -38,16 +38,21 @@ export const FormDatos = () => {
   };
 
   return (
-    <>
-      <FotoPerfilUploader />
+    <div className="p-4 bg-white rounded-4 shadow-sm border">
+      <h5 className="fw-bold mb-4 text-dark">Información personal</h5>
+      <div className="mb-4 text-center">
+        <FotoPerfilUploader />
+      </div>
+      
       <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-        {mensaje && <Alert variant={mensaje.tipo} className="py-2 small">{mensaje.texto}</Alert>}
+        {mensaje && <Alert variant={mensaje.tipo} className="py-2 small rounded-3">{mensaje.texto}</Alert>}
 
         <Row className="g-3">
           <Col md={6}>
             <Form.Group controlId="nombre">
-              <Form.Label className="small fw-bold text-muted input-label">NOMBRE</Form.Label>
+              <Form.Label className="small fw-bold text-muted">NOMBRE</Form.Label>
               <Form.Control
+                className="py-2 shadow-none"
                 {...register('nombre', { required: 'El nombre es obligatorio', maxLength: { value: 60, message: 'Máximo 60 caracteres' } })}
                 isInvalid={!!errors.nombre}
               />
@@ -56,8 +61,9 @@ export const FormDatos = () => {
           </Col>
           <Col md={6}>
             <Form.Group controlId="apellido">
-              <Form.Label className="small fw-bold text-muted input-label">APELLIDO</Form.Label>
+              <Form.Label className="small fw-bold text-muted">APELLIDO</Form.Label>
               <Form.Control
+                className="py-2 shadow-none"
                 {...register('apellido', { required: 'El apellido es obligatorio', maxLength: { value: 60, message: 'Máximo 60 caracteres' } })}
                 isInvalid={!!errors.apellido}
               />
@@ -66,16 +72,17 @@ export const FormDatos = () => {
           </Col>
           <Col md={6}>
             <Form.Group controlId="correo">
-              <Form.Label className="small fw-bold text-muted input-label">CORREO ELECTRÓNICO</Form.Label>
-              <Form.Control value={user?.correo ?? ''} disabled readOnly />
+              <Form.Label className="small fw-bold text-muted">CORREO ELECTRÓNICO</Form.Label>
+              <Form.Control className="py-2 shadow-none bg-light" value={user?.correo ?? ''} disabled readOnly />
               <Form.Text className="text-muted">El correo no se puede modificar.</Form.Text>
             </Form.Group>
           </Col>
           <Col md={6}>
             <Form.Group controlId="telefono">
-              <Form.Label className="small fw-bold text-muted input-label">TELÉFONO</Form.Label>
+              <Form.Label className="small fw-bold text-muted">TELÉFONO</Form.Label>
               <Form.Control
                 type="tel"
+                className="py-2 shadow-none"
                 {...register('telefono', { pattern: { value: /^[0-9+\s-]{7,15}$/, message: 'Teléfono no válido' } })}
                 isInvalid={!!errors.telefono}
               />
@@ -84,16 +91,17 @@ export const FormDatos = () => {
           </Col>
           <Col xs={12}>
             <Form.Group controlId="barrio">
-              <Form.Label className="small fw-bold text-muted input-label">BARRIO</Form.Label>
-              <Form.Control {...register('barrio')} />
+              <Form.Label className="small fw-bold text-muted">BARRIO</Form.Label>
+              <Form.Control className="py-2 shadow-none" {...register('barrio')} />
             </Form.Group>
           </Col>
           <Col xs={12}>
             <Form.Group controlId="biografia">
-              <Form.Label className="small fw-bold text-muted input-label">SOBRE MÍ</Form.Label>
+              <Form.Label className="small fw-bold text-muted">SOBRE MÍ</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
+                className="shadow-none"
                 {...register('biografia', { maxLength: { value: 250, message: 'Máximo 250 caracteres' } })}
                 isInvalid={!!errors.biografia}
               />
@@ -102,10 +110,12 @@ export const FormDatos = () => {
           </Col>
         </Row>
 
-        <Button type="submit" className="btn-cta mt-4" disabled={guardando || !isDirty}>
-          {guardando ? 'Guardando...' : 'Guardar cambios'}
-        </Button>
+        <div className="d-grid mt-4">
+          <Button type="submit" variant="primary" className="rounded-pill py-2 shadow-sm fw-medium" disabled={guardando || !isDirty}>
+            {guardando ? 'Guardando...' : 'Guardar cambios'}
+          </Button>
+        </div>
       </Form>
-    </>
+    </div>
   );
 };

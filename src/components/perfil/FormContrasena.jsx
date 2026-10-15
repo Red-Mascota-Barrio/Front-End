@@ -8,10 +8,10 @@ import { mensajeError } from '../../utils/perfil';
 
 const CampoClave = ({ id, etiqueta, registro, error, mostrar, onToggle }) => (
   <Form.Group className="mb-3" controlId={id}>
-    <Form.Label className="small fw-bold text-muted input-label">{etiqueta}</Form.Label>
+    <Form.Label className="small fw-bold text-muted">{etiqueta}</Form.Label>
     <InputGroup>
-      <Form.Control type={mostrar ? 'text' : 'password'} {...registro} isInvalid={!!error} className="border-end-0" />
-      <InputGroup.Text onClick={onToggle} className="bg-white border-start-0 text-muted cursor-pointer">
+      <Form.Control type={mostrar ? 'text' : 'password'} {...registro} isInvalid={!!error} className="border-end-0 py-2 shadow-none" />
+      <InputGroup.Text onClick={onToggle} className="bg-white border-start-0 text-muted" style={{ cursor: 'pointer' }}>
         {mostrar ? <FaEyeSlash /> : <FaEye />}
       </InputGroup.Text>
     </InputGroup>
@@ -47,9 +47,9 @@ export const FormContrasena = () => {
   };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <h5 className="fw-bold mb-3">Cambiar contraseña</h5>
-      {errorMsg && <Alert variant="danger" className="py-2 small">{errorMsg}</Alert>}
+    <Form onSubmit={handleSubmit(onSubmit)} noValidate className="p-4 bg-white rounded-4 shadow-sm border">
+      <h5 className="fw-bold mb-4 text-dark">Cambiar contraseña</h5>
+      {errorMsg && <Alert variant="danger" className="py-2 small rounded-3">{errorMsg}</Alert>}
 
       <CampoClave
         id="actual" etiqueta="CONTRASEÑA ACTUAL" mostrar={ver.actual} onToggle={() => toggle('actual')}
@@ -73,9 +73,11 @@ export const FormContrasena = () => {
         error={errors.confirmar}
       />
 
-      <Button type="submit" className="btn-cta" disabled={guardando}>
-        {guardando ? 'Actualizando...' : 'Actualizar contraseña'}
-      </Button>
+      <div className="d-grid mt-4">
+        <Button type="submit" variant="primary" className="rounded-pill py-2 shadow-sm fw-medium" disabled={guardando}>
+          {guardando ? 'Actualizando...' : 'Actualizar contraseña'}
+        </Button>
+      </div>
 
       <PasswordModal show={modal} handleClose={() => setModal(false)} />
     </Form>

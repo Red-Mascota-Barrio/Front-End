@@ -8,9 +8,9 @@ import { Eventos } from '../pages/Eventos/Eventos';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
-import Foro   from '../pages/Foro/Foro';
-import ForoDetalle  from '../pages/Foro/ForoDetalle';
-import Mascotas from '../components/mascotas/Mascotas';
+import { Foro }  from '../pages/Foro/Foro';
+import ForoDetalle from '../pages/Foro/ForoDetalle';
+
 
 export const AppRouter = () => {
   return (  
