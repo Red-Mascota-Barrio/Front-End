@@ -8,10 +8,13 @@ function ComentarioCard({ comentario }) {
   const manejarReporte = async (motivoId) => {
     try {
       const datosReporte = {
-        tipo_reporte_id: Number(motivoId), // El número 1, 2, 3 o 4 del radio button
-        comentario_id: comentario.id_comentario || comentario.id, // El ID del comentario
+        tipo_reporte_id: Number(motivoId), 
+        comentario_id: comentario.id_participacion || comentario.id_comentario || comentario.id, // El ID del comentario
         descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
       };
+
+      console.log("Datos que se enviarán al backend:", datosReporte);
+      console.log("Objeto comentario completo:", comentario);
 
       const respuesta = await foroService.crearReporte(datosReporte);
 
@@ -28,20 +31,24 @@ function ComentarioCard({ comentario }) {
 
   return (
     <>
-      <div className="card shadow-sm border-0 rounded-4 p-4 bg-white mb-3">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <strong className="text-dark fw-bold">{comentario.autor}</strong>
-          <small className="text-muted">{comentario.fecha}</small>
-        </div>
+      <div className="card shadow-sm mb-3 border-0">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <strong className="text-dark">
+              {comentario.usuario
+                ? `${comentario.usuario.nombre || ""} ${comentario.usuario.apellido || ""}`.trim()
+                : comentario.autor || "Usuario"}
+            </strong>
+            <small className="text-muted">{comentario.fecha}</small>
+          </div>
 
-        <p className="text-secondary mb-3 small">
-          {comentario.contenido}
-        </p>
+          <p className="card-text text-secondary mb-3">
+            {comentario.comentario || comentario.contenido || ""}
+          </p>
 
-        <div className="text-end">
           <button
             type="button"
-            className="btn btn-outline-danger btn-sm rounded-pill px-3"
+            className="btn btn-link text-danger p-0 text-decoration-none small"
             onClick={() => setMostrarReporte(true)}
           >
             Reportar

@@ -43,77 +43,93 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
         );
       } else {
         alert(
-          "No se recibió respuesta del servidor. Revisa la conexión con Laravel.",
+          "No se recibió respuesta del servidor.",
         );
       }
     }
   };
 
   return (
-    <Modal show={true} onHide={onCerrar} centered backdrop="static">
-      <Modal.Header closeButton className="border-0 pb-0">
-        <Modal.Title className="fw-bold">Crear nuevo hilo</Modal.Title>
-      </Modal.Header>
+    <div
+      className="modal show d-block"
+      tabIndex="-1"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    >
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content border-0 shadow">
+          <div className="modal-header">
+            <h5 className="modal-title fw-bold">Crear nuevo hilo</h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onCerrar}
+            ></button>
+          </div>
 
-      <Form onSubmit={manejarPublicacion}>
-        <Modal.Body className="pt-3">
-          <Form.Group className="mb-3" controlId="titulo">
-            <Form.Label className="fw-bold text-dark small">Título</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Escribe el título"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              className="shadow-none"
-            />
-          </Form.Group>
+          <form onSubmit={manejarPublicacion}>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="titulo" className="form-label fw-semibold">
+                  Título
+                </label>
+                <input
+                  id="titulo"
+                  type="text"
+                  className="form-control"
+                  placeholder="Escribe el título"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  required
+                />
+              </div>
 
-          <Form.Group className="mb-3" controlId="categoria">
-            <Form.Label className="fw-bold text-dark small">Categoría</Form.Label>
-            <Form.Select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="shadow-none"
-            >
-              <option value="general">General</option>
-              <option value="estudio">Estudio</option>
-              <option value="proyectos">Proyectos</option>
-            </Form.Select>
-          </Form.Group>
+              <div className="mb-3">
+                <label htmlFor="categoria" className="form-label fw-semibold">
+                  Categoría
+                </label>
+                <select
+                  id="categoria"
+                  className="form-select"
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                >
+                  <option value="1">Perro</option>
+                  <option value="2">Gato</option>
+                </select>
+              </div>
 
-          <Form.Group className="mb-3" controlId="contenido">
-            <Form.Label className="fw-bold text-dark small">Contenido</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={5}
-              placeholder="Escribe el contenido..."
-              value={contenido}
-              onChange={(e) => setContenido(e.target.value)}
-              className="shadow-none"
-            />
-          </Form.Group>
-        </Modal.Body>
+              <div className="mb-3">
+                <label htmlFor="contenido" className="form-label fw-semibold">
+                  Contenido
+                </label>
+                <textarea
+                  id="contenido"
+                  className="form-control"
+                  rows="6"
+                  placeholder="Escribe el contenido"
+                  value={contenido}
+                  onChange={(e) => setContenido(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-        <Modal.Footer className="border-0 pt-0">
-          <Button
-            variant="light"
-            className="rounded-pill px-4 text-secondary border"
-            onClick={onCerrar}
-            type="button"
-          >
-            Cancelar
-          </Button>
-
-          <Button
-            variant="primary"
-            className="rounded-pill px-4 shadow-sm fw-medium"
-            type="submit"
-          >
-            Publicar hilo
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-light border"
+                onClick={onCerrar}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Publicar hilo
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
 
