@@ -16,8 +16,30 @@ export const ListaPestana = ({ cargar, vacio, children }) => {
     return () => { activo = false; };
   }, [cargar]);
 
-  if (cargando) return <div className="text-center py-5"><Spinner animation="border" className="perfil-spinner" /></div>;
-  if (error) return <Alert variant="danger">No se pudo cargar la información. Intenta de nuevo más tarde.</Alert>;
-  if (items.length === 0) return <div className="perfil-vacio">{vacio}</div>;
+  if (cargando) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" role="status" />
+        <p className="mt-2 text-muted small">Cargando contenido...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="danger" className="rounded-3 text-center my-3">
+        No se pudo cargar la información. Intenta de nuevo más tarde.
+      </Alert>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-5 text-muted bg-light rounded-4 border p-4 my-3">
+        <p className="mb-0">{vacio}</p>
+      </div>
+    );
+  }
+
   return children(items);
 };

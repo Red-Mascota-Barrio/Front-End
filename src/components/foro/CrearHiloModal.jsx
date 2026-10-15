@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { foroService } from "../../services/foroService";
+import { Modal, Form, Button } from "react-bootstrap";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");

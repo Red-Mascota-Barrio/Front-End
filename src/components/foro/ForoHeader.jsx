@@ -1,3 +1,6 @@
+import { Button } from "react-bootstrap";
+import { FaPlus } from "react-icons/fa";
+
 function ForoHeader({ onCrearHilo }) {
   return (
     <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">

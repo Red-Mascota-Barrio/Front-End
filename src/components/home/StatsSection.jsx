@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
 import { statsService } from '../../services/statsService';
-import '../../assets/home.css';
 
 const ITEMS = [
   { clave: 'mascotas', etiqueta: 'Mascotas registradas', Icono: FaPaw },
@@ -39,10 +38,17 @@ const TarjetaStat = ({ Icono, etiqueta, valor }) => {
   const animado = useContador(esNumero ? numero : null);
 
   return (
-    <div className="inicio-card">
-      <div className="inicio-icono-circulo"><Icono /></div>
-      <div className="inicio-stat-numero">{esNumero ? animado : (valor ?? '—')}</div>
-      <div className="inicio-stat-etiqueta">{etiqueta}</div>
+    <div className="d-flex flex-column align-items-center text-center p-4 bg-white rounded-4 shadow-sm h-100 border">
+      <div 
+        className="d-flex justify-content-center align-items-center rounded-circle bg-primary bg-opacity-10 text-primary mb-3" 
+        style={{ width: '80px', height: '80px', fontSize: '2rem' }}
+      >
+        <Icono />
+      </div>
+      <h3 className="display-5 fw-bold text-dark mb-2">
+        {esNumero ? animado : (valor ?? '—')}
+      </h3>
+      <span className="text-secondary fw-medium fs-5">{etiqueta}</span>
     </div>
   );
 };
@@ -53,23 +59,22 @@ export const StatsSection = () => {
 
   useEffect(() => {
     statsService
-      .obtenerGenerales() // <-- Corrección: Ahora llama al método renombrado
+      .obtenerGenerales() 
       .then(setStats)
       .catch((error) => console.error('No se pudieron cargar las estadísticas:', error))
       .finally(() => setCargando(false));
   }, []);
 
   return (
-    <section id="estadisticas" className="inicio-seccion">
-      <Container>
-        <h2 className="inicio-titulo">Nuestra comunidad en cifras</h2>
+    <section id="estadisticas" className="py-5 bg-light">
+      <Container className="py-4">
+        <h2 className="text-center fw-bold text-dark mb-5">Nuestra comunidad en cifras</h2>
         <Row className="g-4">
           {ITEMS.map(({ clave, etiqueta, Icono }) => (
             <Col md={4} key={clave}>
               <TarjetaStat
                 Icono={Icono}
                 etiqueta={etiqueta}
-                // Mientras carga la petición, mostramos los puntos suspensivos
                 valor={cargando ? '...' : stats?.[clave]}
               />
             </Col>

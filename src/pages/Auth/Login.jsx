@@ -130,57 +130,42 @@ export const Login = () => {
         {/* Lado Izquierdo: Información */}
         <Col
           md={6}
-          className="d-none d-md-flex flex-column justify-content-center align-items-center text-white bg-brand-green"
+          className="d-none d-md-flex flex-column justify-content-center align-items-center text-white bg-brand-green p-5"
         >
-          <div className="text-center px-4 auth-panel-info">
-            <FaPaw size={40} className="mb-3 text-white opacity-50" />
+          <div className="text-center px-4" style={{ maxWidth: '500px' }}>
+            <div className="bg-white bg-opacity-10 rounded-circle d-inline-flex p-3 mb-4 shadow-sm">
+              <FaPaw size={40} className="text-white" />
+            </div>
 
-            <h2 className="fw-bold mb-3">Bienvenido de vuelta</h2>
-            <p className="mb-4">
+            <h2 className="fw-bold mb-3 display-6">Bienvenido de vuelta</h2>
+            <p className="mb-4 opacity-75">
               Accede a tu comunidad de mascotas. Gestiona tus publicaciones,
               participa en el foro y sigue los eventos de tu barrio.
             </p>
 
             <div className="d-flex justify-content-center gap-2 mb-4 flex-wrap">
-              <Badge
-                bg="light"
-                text="success"
-                pill
-                className="px-3 py-2 shadow-sm"
-              >
+              <Badge bg="white" text="success" className="rounded-pill px-3 py-2 fw-medium shadow-sm">
                 Adopciones
               </Badge>
-              <Badge
-                bg="light"
-                text="success"
-                pill
-                className="px-3 py-2 shadow-sm"
-              >
+              <Badge bg="white" text="success" className="rounded-pill px-3 py-2 fw-medium shadow-sm">
                 Mascotas
               </Badge>
-              <Badge
-                bg="light"
-                text="success"
-                pill
-                className="px-3 py-2 shadow-sm"
-              >
+              <Badge bg="white" text="success" className="rounded-pill px-3 py-2 fw-medium shadow-sm">
                 Eventos
               </Badge>
-              <Badge
-                bg="light"
-                text="success"
-                pill
-                className="px-3 py-2 shadow-sm"
-              >
+              <Badge bg="white" text="success" className="rounded-pill px-3 py-2 fw-medium shadow-sm">
                 Foros
               </Badge>
             </div>
 
-            <img
-              src={imagenMascotas}
-              alt="Perro y gato"
-              className="img-fluid rounded-4 shadow-lg bg-white mt-2 img-cover"
-            />
+            <div className="mt-4 overflow-hidden rounded-4 shadow-lg bg-white p-2">
+              <img
+                src={imagenMascotas}
+                alt="Perro y gato"
+                className="img-fluid rounded-3 w-100 object-fit-cover"
+                style={{ maxHeight: '240px' }}
+              />
+            </div>
           </div>
         </Col>
 
@@ -190,13 +175,13 @@ export const Login = () => {
           xs={12}
           className="d-flex flex-column justify-content-center align-items-center bg-white p-4 p-md-5"
         >
-          <div className="auth-form-container">
-            <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-brand-green">
-              <FaPaw />
-              <span className="fw-bold">Red de Mascotas de Barrio</span>
+          <div className="w-100" style={{ maxWidth: '420px' }}>
+            <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-primary">
+              <FaPaw className="fs-4" />
+              <span className="fw-bold fs-5">Red de Mascotas de Barrio</span>
             </div>
 
-            <h3 className="fw-bold mb-1">Iniciar sesión</h3>
+            <h3 className="fw-bold mb-1 text-dark">Iniciar sesión</h3>
             <p className="text-muted mb-4 small">
               Ingresa tus datos para continuar
             </p>
@@ -204,7 +189,7 @@ export const Login = () => {
             {errorMsg && (
               <Alert
                 variant={requiresOtp ? "warning" : "danger"}
-                className="py-2 small"
+                className="py-2 small rounded-3 shadow-sm mb-4"
               >
                 {errorMsg}
               </Alert>
@@ -213,7 +198,7 @@ export const Login = () => {
             <Form onSubmit={handleSubmit(onSubmit)}>
               {/* Input Correo */}
               <Form.Group className="mb-3" controlId="correo">
-                <Form.Label className="small fw-bold text-muted input-label">
+                <Form.Label className="small fw-bold text-muted">
                   CORREO ELECTRÓNICO
                 </Form.Label>
                 <Form.Control
@@ -223,7 +208,7 @@ export const Login = () => {
                     required: "El correo es obligatorio",
                   })}
                   isInvalid={!!errors.correo}
-                  className="py-2"
+                  className="py-2 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -233,7 +218,7 @@ export const Login = () => {
 
               {/* Input Contraseña con Toggle */}
               <Form.Group className="mb-2" controlId="password">
-                <Form.Label className="small fw-bold text-muted input-label">
+                <Form.Label className="small fw-bold text-muted">
                   CONTRASEÑA
                 </Form.Label>
                 <InputGroup>
@@ -244,12 +229,13 @@ export const Login = () => {
                       required: "La contraseña es obligatoria",
                     })}
                     isInvalid={!!errors.password}
-                    className="py-2 border-end-0"
+                    className="py-2 border-end-0 shadow-none"
                     disabled={loading}
                   />
                   <InputGroup.Text
                     onClick={() => setShowPassword(!showPassword)}
-                    className="bg-white border-start-0 text-muted cursor-pointer"
+                    className="bg-white border-start-0 text-muted"
+                    style={{ cursor: 'pointer' }}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </InputGroup.Text>
@@ -264,7 +250,7 @@ export const Login = () => {
               {/* Input OTP (Se muestra solo si la cuenta no está verificada) */}
               {requiresOtp && (
                 <Form.Group className="mb-3 mt-3" controlId="codigo_otp">
-                  <Form.Label className="small fw-bold text-muted input-label text-warning">
+                  <Form.Label className="small fw-bold text-warning">
                     CÓDIGO DE VERIFICACIÓN (OTP)
                   </Form.Label>
                   <Form.Control
@@ -275,7 +261,7 @@ export const Login = () => {
                       required: "Ingresa el código para verificar tu cuenta",
                     })}
                     isInvalid={!!errors.codigo_otp}
-                    className="py-2 text-center tracking-widest fs-5 border-warning"
+                    className="py-2 text-center tracking-widest fs-5 border-warning shadow-none"
                     disabled={loading}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -287,19 +273,22 @@ export const Login = () => {
               <div className="text-end mb-4 mt-2">
                 <Link
                   to="/recuperar"
-                  className="text-muted small text-decoration-none"
+                  className="text-muted small text-decoration-none fw-medium"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-100 fw-bold mb-3 py-2 btn-brand-green"
-              >
-                {loading ? "Iniciando sesión..." : "Iniciar sesión"}
-              </Button>
+              <div className="d-grid mb-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={loading}
+                  className="rounded-pill py-2 shadow-sm fw-medium"
+                >
+                  {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+                </Button>
+              </div>
 
               {/* ==========================================
                   BOTÓN DE GOOGLE
@@ -308,24 +297,26 @@ export const Login = () => {
                 <span className="text-muted small">o ingresa con</span>
               </div>
 
-              <Button
-                variant="light"
-                className="w-100 fw-bold mb-4 py-2 d-flex justify-content-center align-items-center gap-2 border shadow-sm"
-                onClick={() =>
-                  (window.location.href =
-                    `${import.meta.env.VITE_API_URL}/auth/google/redirect`)
-                }
-                disabled={loading}
-              >
-                <FaGoogle className="text-danger" />{" "}
-                <span className="text-dark">Continuar con Google</span>
-              </Button>
+              <div className="d-grid mb-4">
+                <Button
+                  variant="light"
+                  className="rounded-pill py-2 d-flex justify-content-center align-items-center gap-2 border shadow-sm fw-medium text-dark"
+                  onClick={() =>
+                    (window.location.href =
+                      `${import.meta.env.VITE_API_URL}/auth/google/redirect`)
+                  }
+                  disabled={loading}
+                >
+                  <FaGoogle className="text-danger" />
+                  <span>Continuar con Google</span>
+                </Button>
+              </div>
 
               <div className="text-center small">
                 <span className="text-muted">¿No tienes cuenta? </span>
                 <Link
                   to="/registro"
-                  className="text-decoration-none fw-bold text-brand-green"
+                  className="text-decoration-none fw-bold text-primary"
                 >
                   Regístrate gratis
                 </Link>
@@ -337,3 +328,5 @@ export const Login = () => {
     </Container>
   );
 };
+
+export default Login;

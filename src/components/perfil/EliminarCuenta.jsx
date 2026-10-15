@@ -45,13 +45,13 @@ export const EliminarCuenta = () => {
   };
 
   return (
-    <div className="perfil-zona-peligro">
-      <h5 className="fw-bold text-danger">Eliminar cuenta</h5>
+    <div className="p-4 border border-danger rounded-4 bg-white shadow-sm mt-4">
+      <h5 className="fw-bold text-danger mb-2">Eliminar cuenta</h5>
       <p className="text-muted small mb-3">
         Al eliminar tu cuenta se borrarán tus datos de forma permanente. Esta acción no se puede deshacer.
       </p>
-      <Button variant="outline-danger" onClick={confirmar}>
-        <FaTrashAlt className="me-2" /> Eliminar mi cuenta
+      <Button variant="outline-danger" onClick={confirmar} className="rounded-pill px-4 fw-medium">
+        <FaTrashAlt className="me-2 mb-1" /> Eliminar mi cuenta
       </Button>
     </div>
   );
