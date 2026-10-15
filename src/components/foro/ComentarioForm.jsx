@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Form, Button } from "react-bootstrap";
 
 function ComentarioForm({ onAgregarComentario }) {
   const [contenido, setContenido] = useState("");

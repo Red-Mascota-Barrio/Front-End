@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+import { foroService } from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
@@ -133,4 +133,4 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
   );
 }
 
-export default CrearHiloModal;
+export default CrearHiloModal;

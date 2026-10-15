@@ -2,8 +2,8 @@ import { Navbar, Nav, Container } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import logo from '../../assets/inicio/logo.png';
-import '../../assets/home.css'; // Puedes eliminar de este archivo las clases antiguas del navbar
+import logo from '../../assets/images/inicio/logo.png';
+import '../../styles/home.css'; // Puedes eliminar de este archivo las clases antiguas del navbar
 
 export const AppNavbar = () => {
   const { user, token, logout } = useAuth();
@@ -76,4 +76,4 @@ export const AppNavbar = () => {
       </Container>
     </Navbar>
   );
-};
+};

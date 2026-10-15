@@ -1,8 +1,8 @@
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import banner from '../../assets/inicio/banner.png';
-import flecha from '../../assets/inicio/flecha-abajo.png';
+import banner from '../../assets/images/inicio/banner.png';
+import flecha from '../../assets/images/inicio/flecha-abajo.png';
 
 export const Hero = () => {
   const { token, user } = useAuth();
@@ -82,4 +82,4 @@ export const Hero = () => {
       </div>
     </>
   );
-};
+};

@@ -4,8 +4,8 @@ import { FaPaw, FaArrowLeft, FaKey, FaEnvelope } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { authService } from '../../services/authService';
-import { PasswordModal } from '../../components/auth/PasswordMoldal';
-import '../../assets/auth.css';
+import { PasswordModal } from '../../components/auth/PasswordModal';
+import '../../styles/auth.css';
 
 export const Recuperar = () => {
   const [step, setStep] = useState(1);
@@ -193,4 +193,4 @@ export const Recuperar = () => {
   );
 };
 
-export default Recuperar;
+export default Recuperar;
