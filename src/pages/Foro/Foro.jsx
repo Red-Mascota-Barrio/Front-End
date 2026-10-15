@@ -8,8 +8,9 @@ import CrearHiloModal from "../../components/foro/CrearHiloModal";
 import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
-import "./foro.css";
+import { foroService } from "../../services/foroService.js";
 
+import "./foro.css";
 
 export const Foro = () => {
   const [hilos, setHilos] = useState(() => {
@@ -39,14 +40,19 @@ export const Foro = () => {
     [hilos, busqueda, categoria]
   );
 
+  // Función para incorporar el hilo creado por CrearHiloModal sin re-hacer la petición
+  const agregarNuevoHilo = (hiloCreado) => {
+    if (hiloCreado) {
+      setHilos((hilosActuales) => [hiloCreado, ...hilosActuales]);
+    }
+  };
+
   return (
     <div className="foro-pagina">
       <AppNavbar />
 
       <main className="foro">
-        <ForoHeader
-          onCrearHilo={() => setMostrarModal(true)}
-        />
+        <ForoHeader onCrearHilo={() => setMostrarModal(true)} />
 
         <FiltrosForo
           busqueda={busqueda}
@@ -58,17 +64,12 @@ export const Foro = () => {
         <section className="foro-lista">
           {hilosFiltrados.length > 0 ? (
             hilosFiltrados.map((hilo) => (
-              <HiloCard
-                key={hilo.id}
-                hilo={hilo}
-              />
+              <HiloCard key={hilo.id_foro || hilo.id} hilo={hilo} />
             ))
           ) : (
             <div className="foro-sin-resultados">
               <h3>No se encontraron hilos</h3>
-              <p>
-                Intenta cambiar la búsqueda o la categoría.
-              </p>
+              <p>Intenta cambiar la búsqueda o la categoría.</p>
             </div>
           )}
         </section>
@@ -76,21 +77,7 @@ export const Foro = () => {
         {mostrarModal && (
           <CrearHiloModal
             onCerrar={() => setMostrarModal(false)}
-            onCrearHilo={(nuevoHilo) => {
-              setHilos((hilosActuales) => {
-                const nuevosHilos = [
-                  nuevoHilo,
-                  ...hilosActuales,
-                ];
-
-                localStorage.setItem(
-                  "hilosForo",
-                  JSON.stringify(nuevosHilos)
-                );
-
-                return nuevosHilos;
-              });
-            }}
+            onCrearHilo={agregarNuevoHilo}
           />
         )}
       </main>

@@ -4,11 +4,21 @@ import BadgeForo from "./BadgeForo";
 function HiloCard({ hilo }) {
   const navigate = useNavigate();
 
+  const catId = hilo?.categoria_foro_id;
+  const catTexto =
+    hilo?.categoriaForo?.nombre_categoria || hilo?.categoria || "";
+
+  const nombreCategoria =
+    catId === 1 || catTexto.toLowerCase().includes("perro") ? "Perro" : "Gato";
+
   return (
-    <article className="hilo-card" onClick={() => navigate(`/foro/${hilo.id}`)}>
+    <article
+      className="hilo-card"
+      onClick={() => navigate(`/foro/${hilo.id_foro || hilo.id}`)}
+    >
       <div className="hilo-card-contenido">
         <div className="hilo-meta">
-          <BadgeForo tipo="categoria">{hilo.categoria}</BadgeForo>
+          <BadgeForo tipo="categoria">{nombreCategoria}</BadgeForo>
 
           {hilo.destacado && <BadgeForo tipo="destacado">Destacado</BadgeForo>}
         </div>
@@ -17,18 +27,15 @@ function HiloCard({ hilo }) {
 
         <p>{hilo.contenido}</p>
 
-        <span className="hilo-autor">Publicado por {hilo.autor}</span>
+        <span className="hilo-autor">
+          Publicado por {hilo.usuario?.nombre || hilo.autor || "Anónimo"}
+        </span>
       </div>
 
       <div className="hilo-estadisticas">
         <div className="estadistica">
-          <strong>{hilo.respuestas}</strong>
+          <strong>{hilo.numero_comentarios ?? 0}</strong>
           <span>Respuestas</span>
-        </div>
-
-        <div className="estadistica">
-          <strong>{hilo.visitas}</strong>
-          <span>Visitas</span>
         </div>
       </div>
     </article>

@@ -5,7 +5,6 @@ import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Eventos } from '../pages/Eventos/Eventos';
-import { MascotasPage } from '../pages/Mascotas/Mascotas';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
 import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
@@ -25,7 +24,7 @@ export const AppRouter = () => {
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
       <Route path="/eventos" element={<Eventos />} />
-      <Route path="/mascotas" element={<MascotasPage />} />
+      <Route path="/mascotas" element={<Mascotas />} />
       <Route path="/foro" element={<Foro />} />
       <Route path="/foro/:id" element={<ForoDetalle />} />
       

@@ -27,4 +27,35 @@ export const mascotasService = {
     const response = await api.post('/mascotas', mascotaData);
     return response.data;
   },
+
+  // POST /mascotas (Registrar nueva mascota)
+  crear: async (datosMascota) => {
+    const res = await api.post('/mascotas', datosMascota);
+    return res.data;
+  },
+
+  // GET /mascotas/:id (Obtener perfil de una mascota por ID)
+  obtenerPorId: async (id) => {
+    const res = await api.get(`/mascotas/${id}`);
+    return res.data;
+  },
+
+  // --- NUEVOS MÉTODOS PARA ESPECIES Y RAZAS DESDE LA BD ---
+
+  // GET /especies (Obtener lista de especies)
+  obtenerEspecies: async () => {
+    const res = await api.get('/especies');
+    return lista(res.data);
+  },
+
+  // GET /razas/especie/:idEspecie (Obtener razas de una especie específica)
+  // O GET /razas?id_especie=... si tu backend lo maneja por query param
+  obtenerRazasPorEspecie: async (idEspecie) => {
+    const res = await api.get(`/razas/especie/${idEspecie}`);
+    return lista(res.data);
+  }
 };
+
+
+
+
