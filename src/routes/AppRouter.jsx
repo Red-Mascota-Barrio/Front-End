@@ -8,7 +8,12 @@ import { Eventos } from '../pages/Eventos/Eventos';
 import { Mascotas } from '../pages/Mascotas/Mascotas';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
-import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
+import { AdminLayout } from '../components/admin/AdminLayout';
+import { AdminDashboard } from '../pages/Admin/AdminDashboard';
+import { AdminUsuarios } from '../pages/Admin/AdminUsuarios';
+import { AdminMascotas } from '../pages/Admin/AdminMascotas';
+import { AdminEventos } from '../pages/Admin/AdminEventos';
+import { AdminReportes } from '../pages/Admin/AdminReportes';
 import { Foro } from '../pages/Foro/Foro';
 import { ForoDetalle } from '../pages/Foro/ForoDetalle';
 
@@ -41,7 +46,13 @@ export const AppRouter = () => {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[1]} />}>
-        <Route path="/admin" element={<InicioAdmin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="mascotas" element={<AdminMascotas />} />
+          <Route path="eventos" element={<AdminEventos />} />
+          <Route path="reportes" element={<AdminReportes />} />
+        </Route>
       </Route>
 
       {/* Redirección automática por si escriben cualquier otra ruta */}
