@@ -5,17 +5,11 @@ import { Recuperar } from '../pages/Auth/Recuperar';
 import { Inicio } from '../pages/Inicio/Inicio';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Eventos } from '../pages/Eventos/Eventos';
-import { Mascotas } from '../pages/Mascotas/Mascotas';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
-import { AdminLayout } from '../components/admin/AdminLayout';
-import { AdminDashboard } from '../pages/Admin/AdminDashboard';
-import { AdminUsuarios } from '../pages/Admin/AdminUsuarios';
-import { AdminMascotas } from '../pages/Admin/AdminMascotas';
-import { AdminEventos } from '../pages/Admin/AdminEventos';
-import { AdminReportes } from '../pages/Admin/AdminReportes';
-import { Foro } from '../pages/Foro/Foro';
-import { ForoDetalle } from '../pages/Foro/ForoDetalle';
+import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
+import { Foro }  from '../pages/Foro/Foro';
+import ForoDetalle from '../pages/Foro/ForoDetalle';
 
 
 export const AppRouter = () => {

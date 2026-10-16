@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
@@ -8,11 +8,10 @@ import CrearHiloModal from "../../components/foro/CrearHiloModal";
 import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
-import { foroService } from "../../services/foroService";
-import "../../styles/foro.css";
+import { foroService } from "../../services/foroService.js";
+import "../../assets/foro/foro.css";
 
-export const Foro = () => {
-
+function Foro() {
   const [hilos, setHilos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
@@ -32,8 +31,8 @@ export const Foro = () => {
   }, []);
 
   const hilosFiltrados = hilos.filter((hilo) => {
-  const titulo = hilo?.titulo?.toLowerCase() || "";
-  const contenido = hilo?.contenido?.toLowerCase() || "";
+    const titulo = hilo?.titulo?.toLowerCase() || "";
+    const contenido = hilo?.contenido?.toLowerCase() || "";
     
     // Mapeo seguro de la categoría desde Laravel
     const nombreCategoria = (
@@ -101,6 +100,6 @@ export const Foro = () => {
       <Footer />
     </div>
   );
-};
+}
 
 export default Foro;

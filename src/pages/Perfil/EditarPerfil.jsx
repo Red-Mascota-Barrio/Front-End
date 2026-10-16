@@ -7,8 +7,8 @@ import { FormDatos } from '../../components/perfil/FormDatos';
 import { FormContrasena } from '../../components/perfil/FormContrasena';
 import { EliminarCuenta } from '../../components/perfil/EliminarCuenta';
 import { FormNotificaciones } from '../../components/perfil/FormNotificaciones';
-import '../../styles/home.css';
-import '../../styles/perfil.css';
+import '../../assets/home.css';
+import '../../assets/perfil.css';
 
 export const EditarPerfil = () => (
   <div className="inicio-page d-flex flex-column min-vh-100">

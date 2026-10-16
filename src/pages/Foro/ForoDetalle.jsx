@@ -8,10 +8,10 @@ import BadgeForo from "../../components/foro/BadgeForo";
 import ComentarioCard from "../../components/foro/ComentarioCard";
 import ComentarioForm from "../../components/foro/ComentarioForm";
 
-import { foroService } from "../../services/foroService";
+import { foroService } from "../../services/foroService.js";
 
 
-export function ForoDetalle() {
+function ForoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
 

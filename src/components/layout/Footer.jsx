@@ -1,6 +1,6 @@
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/images/inicio/logo.png';
+import logo from '../../assets/inicio/logo.png';
 
 export const Footer = () => (
   <footer className="bg-white border-top py-4 mt-auto">
@@ -30,4 +30,4 @@ export const Footer = () => (
       </small>
     </Container>
   </footer>
-);
+);
