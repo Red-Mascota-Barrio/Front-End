@@ -39,7 +39,13 @@ export const AppRouter = () => {
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[1]} />}>
-        <Route path="/admin" element={<InicioAdmin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="mascotas" element={<AdminMascotas />} />
+          <Route path="eventos" element={<AdminEventos />} />
+          <Route path="reportes" element={<AdminReportes />} />
+        </Route>
       </Route>
 
       {/* Redirección automática por si escriben cualquier otra ruta */}

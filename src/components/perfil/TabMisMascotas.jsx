@@ -2,8 +2,13 @@ import { Row, Col, Badge } from 'react-bootstrap';
 import { FaPaw } from 'react-icons/fa';
 import { perfilService } from '../../services/perfilService';
 import { ListaPestana } from './ListaPestana';
+import { urlFoto, fotoDeMascota } from '../../services/mascotasService';
 
-const imagenMascota = (m) => m.imagen_principal ?? m.imagenes?.[0]?.url ?? m.imagenes?.[0]?.ruta ?? null;
+// La API devuelve la ruta en "foto" (o en imagenes[].url_imagen); hay que convertirla en URL de /storage
+const imagenMascota = (m) => {
+  const ruta = m.imagen_principal ?? fotoDeMascota(m);
+  return ruta ? urlFoto(ruta) : null;
+};
 
 export const TabMisMascotas = () => (
   <ListaPestana cargar={perfilService.misMascotas} vacio="Aún no has registrado mascotas 🐶🐱">

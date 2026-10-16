@@ -6,12 +6,37 @@ export { SIN_FOTO };
 const lista = (data) =>
   Array.isArray(data) ? data : data?.datos ?? data?.data ?? data?.mascotas ?? [];
 
-// Convierte la ruta de foto que devuelve Laravel en una URL completa
+const ORIGEN_API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+
+// Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
+// (http://localhost:8000/storage/mascotas/abc.jpg). Requiere `php artisan storage:link` en el backend.
 export const urlFoto = (foto) => {
   if (!foto) return SIN_FOTO;
-  if (/^https?:\/\//i.test(foto)) return foto;
-  const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
-  return `${base}/storage/${String(foto).replace(/^\/+/, '')}`;
+  const ruta = String(foto);
+  if (/^(https?:|blob:|data:)/i.test(ruta)) return ruta;
+  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/)/, '');
+  return `${ORIGEN_API}/storage/${limpia}`;
+};
+
+// Foto principal de una mascota: columna "foto" o, si no hay, la primera imagen de la galería
+export const fotoDeMascota = (m) => m?.foto ?? m?.imagenes?.[0]?.url_imagen ?? null;
+
+// Arma el FormData con los nombres de campo que valida MascotasController
+const aFormData = (d) => {
+  const fd = new FormData();
+  const poner = (k, v) => v !== undefined && v !== null && v !== '' && fd.append(k, v);
+  poner('nombre', d.nombre);
+  poner('genero', d.genero ? String(d.genero).toLowerCase() : undefined);
+  poner('raza_id', d.raza_id ?? d.id_raza);
+  poner('edad_estimada', d.edad_estimada ?? d.edad);
+  poner('fecha_nacimiento', d.fecha_nacimiento);
+  poner('peso_kg', d.peso_kg);
+  poner('tamano', d.tamano);
+  poner('notas_adicionales', d.notas_adicionales ?? d.descripcion);
+  fd.append('esterilizado', d.esterilizado ? 1 : 0);
+  fd.append('vacunas_al_dia', d.vacunas_al_dia ? 1 : 0);
+  if (d.foto instanceof File) fd.append('foto', d.foto);
+  return fd;
 };
 
 export const mascotasService = {
@@ -30,7 +55,10 @@ export const mascotasService = {
 
   // POST /mascotas (Registrar nueva mascota)
   crear: async (datosMascota) => {
-    const res = await api.post('/mascotas', datosMascota);
+    // multipart/form-data para que Laravel reciba la foto con $request->file('foto')
+    const res = await api.post('/mascotas', aFormData(datosMascota), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
 

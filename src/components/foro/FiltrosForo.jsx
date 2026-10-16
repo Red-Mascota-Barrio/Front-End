@@ -40,18 +40,20 @@ function FiltrosForo({
   }, []);
 
   return (
-    <section className="filtros-foro">
-      <div className="buscador-foro">
+    <div className="row g-3 mb-4">
+      <div className="col-md-8">
         <input
           type="text"
-          placeholder="Buscar en el foro"
+          className="form-control py-2"
+          placeholder="Buscar en el foro..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
       </div>
 
-      <div className="categoria-foro">
+      <div className="col-md-4">
         <select
+          className="form-select py-2"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           disabled={loading} // Se bloquea mientras carga
@@ -71,7 +73,7 @@ function FiltrosForo({
           ))}
         </select>
       </div>
-    </section>
+    </div>
   );
 }
 

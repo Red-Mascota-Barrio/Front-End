@@ -9,36 +9,49 @@ import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
 import { foroService } from "../../services/foroService.js";
+import "../../assets/foro/foro.css";
 
-import "./foro.css";
-
-export const Foro = () => {
-  const [hilos, setHilos] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("hilosForo")) || [];
-    } catch {
-      return [];
-    }
-  });
-
+function Foro() {
+  const [hilos, setHilos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const hilosFiltrados = useMemo(
-    () =>
-      hilos.filter((hilo) => {
-        const q = busqueda.toLowerCase();
-        const coincideBusqueda =
-          (hilo.titulo ?? "").toLowerCase().includes(q) ||
-          (hilo.contenido ?? "").toLowerCase().includes(q);
-        const coincideCategoria =
-          categoria === "todas" ||
-          (hilo.categoria ?? "").toLowerCase() === categoria.toLowerCase();
-        return coincideBusqueda && coincideCategoria;
-      }),
-    [hilos, busqueda, categoria]
-  );
+  useEffect(() => {
+    const cargarHilos = async () => {
+      try {
+        const respuesta = await foroService.listar();
+        setHilos(respuesta.datos || respuesta.data || []);
+      } catch (error) {
+        console.error("Error al cargar los hilos:", error);
+      }
+    };
+
+    cargarHilos();
+  }, []);
+
+  const hilosFiltrados = hilos.filter((hilo) => {
+    const titulo = hilo?.titulo?.toLowerCase() || "";
+    const contenido = hilo?.contenido?.toLowerCase() || "";
+    
+    // Mapeo seguro de la categoría desde Laravel
+    const nombreCategoria = (
+      hilo?.categoriaForo?.nombre_categoria || 
+      hilo?.categoria || 
+      ""
+    ).toLowerCase();
+
+    const textoBusqueda = busqueda.toLowerCase().trim();
+
+    const coincideBusqueda =
+      titulo.includes(textoBusqueda) || contenido.includes(textoBusqueda);
+
+    const coincideCategoria =
+      categoria === "todas" ||
+      nombreCategoria.includes(categoria.toLowerCase());
+
+    return coincideBusqueda && coincideCategoria;
+  });
 
   // Función para incorporar el hilo creado por CrearHiloModal sin re-hacer la petición
   const agregarNuevoHilo = (hiloCreado) => {
@@ -48,10 +61,10 @@ export const Foro = () => {
   };
 
   return (
-    <div className="foro-pagina">
+    <div className="foro-pagina d-flex flex-column min-vh-100">
       <AppNavbar />
 
-      <main className="foro">
+      <main className="container my-5 flex-grow-1" style={{ maxWidth: "1100px" }}>
         <ForoHeader onCrearHilo={() => setMostrarModal(true)} />
 
         <FiltrosForo
@@ -61,15 +74,17 @@ export const Foro = () => {
           setCategoria={setCategoria}
         />
 
-        <section className="foro-lista">
+        <section className="mb-5">
           {hilosFiltrados.length > 0 ? (
             hilosFiltrados.map((hilo) => (
               <HiloCard key={hilo.id_foro || hilo.id} hilo={hilo} />
             ))
           ) : (
-            <div className="foro-sin-resultados">
-              <h3>No se encontraron hilos</h3>
-              <p>Intenta cambiar la búsqueda o la categoría.</p>
+            <div className="foro-card text-center py-5">
+              <div className="card-body">
+                <h3 className="h5 fw-bold mb-2">No se encontraron hilos</h3>
+                <p className="text-muted mb-0">Intenta cambiar la búsqueda o la categoría.</p>
+              </div>
             </div>
           )}
         </section>

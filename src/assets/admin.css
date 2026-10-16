@@ -1,0 +1,135 @@
+/* ============================================================
+   Panel de administración — ajustes mínimos sobre Bootstrap 5.
+   Casi todo el diseño viene de clases de Bootstrap en los JSX;
+   aquí solo va el color de marca y el sidebar.
+   ============================================================ */
+
+.adm-app {
+  --adm-verde: #16a47a;
+  --adm-verde-hover: #0d7a5f;
+  --adm-verde-oscuro: #06503d;
+  --adm-verde-fondo: #e6f7f1;
+
+  /* Verde de la marca para las variantes "success" de Bootstrap */
+  --bs-success: #16a47a;
+  --bs-success-rgb: 22, 164, 122;
+  --bs-success-bg-subtle: #e6f7f1;
+  --bs-success-border-subtle: #b6e6d5;
+  --bs-success-text-emphasis: #06503d;
+  --bs-link-color-rgb: 22, 164, 122;
+
+  min-height: 100vh;
+  background: #f3faf7;
+}
+
+.adm-app .btn-success {
+  --bs-btn-bg: var(--adm-verde);
+  --bs-btn-border-color: var(--adm-verde);
+  --bs-btn-hover-bg: var(--adm-verde-hover);
+  --bs-btn-hover-border-color: var(--adm-verde-hover);
+  --bs-btn-active-bg: var(--adm-verde-oscuro);
+  --bs-btn-active-border-color: var(--adm-verde-oscuro);
+  --bs-btn-disabled-bg: var(--adm-verde);
+  --bs-btn-disabled-border-color: var(--adm-verde);
+}
+
+.adm-app .btn-outline-success {
+  --bs-btn-color: var(--adm-verde);
+  --bs-btn-border-color: var(--adm-verde);
+  --bs-btn-hover-bg: var(--adm-verde);
+  --bs-btn-hover-border-color: var(--adm-verde);
+  --bs-btn-active-bg: var(--adm-verde-hover);
+  --bs-btn-active-border-color: var(--adm-verde-hover);
+}
+
+.adm-app .form-control:focus,
+.adm-app .form-select:focus {
+  border-color: var(--adm-verde);
+  box-shadow: 0 0 0 0.2rem rgba(22, 164, 122, 0.2);
+}
+
+.adm-titulo,
+.adm-marca { color: var(--adm-verde-oscuro); }
+
+/* ---------- Sidebar ---------- */
+.adm-sidebar { --bs-offcanvas-width: 270px; }
+
+@media (min-width: 992px) {
+  .adm-sidebar {
+    position: sticky !important;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    flex-shrink: 0;
+    overflow-y: auto;
+    background-color: #fff !important;
+    border-right: 1px solid var(--bs-border-color);
+  }
+  .adm-sidebar .offcanvas-body { padding: 1rem !important; }
+}
+
+.adm-sidebar-seccion { font-size: 0.7rem; letter-spacing: 0.06em; }
+
+.adm-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.5rem;
+  color: #4b5563;
+  font-weight: 500;
+  border: 0;
+  background: none;
+  width: 100%;
+}
+.adm-nav .nav-link:hover,
+.adm-nav .nav-link.active {
+  background: var(--adm-verde-fondo);
+  color: var(--adm-verde-oscuro);
+}
+.adm-nav .nav-link.active { font-weight: 700; }
+.adm-nav .nav-link.text-danger:hover { background: #fef2f2; color: #9f1239 !important; }
+
+/* ---------- Piezas pequeñas ---------- */
+.adm-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+.adm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.adm-btn-icono { width: 40px; height: 40px; padding: 0; }
+
+.adm-stat-icono {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-punto { width: 10px; height: 10px; flex-shrink: 0; }
+
+.adm-paginacion {
+  --bs-pagination-active-bg: var(--adm-verde);
+  --bs-pagination-active-border-color: var(--adm-verde);
+  --bs-pagination-color: var(--adm-verde-oscuro);
+  --bs-pagination-hover-color: var(--adm-verde-oscuro);
+  --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(22, 164, 122, 0.2);
+}
+
+.adm-app .table > :not(caption) > * > * { padding: 0.75rem 1rem; }
+.adm-app .table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  font-weight: 600;
+  white-space: nowrap;
+}

@@ -3,21 +3,20 @@ import { FaPlus } from "react-icons/fa";
 
 function ForoHeader({ onCrearHilo }) {
   return (
-    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
-        <h2 className="fw-bold text-primary mb-1">Foro Comunitario</h2>
-        <p className="text-muted small mb-0">
+        <h1 className="fw-bold mb-1">Foro Comunitario</h1>
+        <p className="text-muted mb-0">
           Comparte ideas, preguntas y experiencias con la comunidad.
         </p>
       </div>
 
-      <Button
-        variant="primary"
-        className="rounded-pill px-4 py-2 shadow-sm fw-medium d-inline-flex align-items-center gap-2"
+      <button
+        className="btn btn-foro-primary px-4 py-2"
         onClick={onCrearHilo}
       >
-        <FaPlus /> Crear nuevo hilo
-      </Button>
+        Crear nuevo hilo
+      </button>
     </div>
   );
 }
