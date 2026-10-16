@@ -1,6 +1,6 @@
 import { AppNavbar } from '../../components/layout/AppNavbar';
 import { Footer } from '../../components/layout/Footer';
-import { Mascotas } from '../../components/mascotas/Mascotas';
+import { Mascotas } from '../../components/mascota/Mascotas';
 
 export const MascotasPage = () => (
   <div className="d-flex flex-column min-vh-100">
@@ -11,5 +11,3 @@ export const MascotasPage = () => (
     <Footer />
   </div>
 );
-
-export { MascotasPage as Mascotas };

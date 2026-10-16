@@ -23,3 +23,5 @@ api.interceptors.request.use((config) => {
 
 export { api };
 export default api;
+
+// Creamos la instancia de Axios con la URL base del .env

@@ -9,8 +9,8 @@ import { TabActividadForo } from '../../components/perfil/TabActividadForo';
 import { TabEventos } from '../../components/perfil/TabEventos';
 import { perfilService } from '../../services/perfilService';
 import { useAuth } from '../../context/AuthContext';
-import '../../styles/home.css';
-import '../../styles/perfil.css';
+import '../../assets/home.css';
+import '../../assets/perfil.css';
 
 export const Perfil = () => {
   const { user, updateUser } = useAuth();

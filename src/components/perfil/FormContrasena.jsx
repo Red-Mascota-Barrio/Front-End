@@ -3,7 +3,7 @@ import { Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { perfilService } from '../../services/perfilService';
-import { PasswordModal } from '../auth/PasswordModal';
+import { PasswordModal } from '../auth/PasswordMoldal';
 import { mensajeError } from '../../utils/perfil';
 
 const CampoClave = ({ id, etiqueta, registro, error, mostrar, onToggle }) => (
@@ -82,4 +82,4 @@ export const FormContrasena = () => {
       <PasswordModal show={modal} handleClose={() => setModal(false)} />
     </Form>
   );
-};
+};

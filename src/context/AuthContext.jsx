@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     cargarEstadisticas();
-     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]); // La dependencia [token] es clave para que actualice al hacer login/logout
 
   return (
