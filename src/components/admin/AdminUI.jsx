@@ -1,61 +1,77 @@
-import { useEffect } from 'react';
+import {
+  Alert, Button, Card, Form, InputGroup, Modal, Pagination, Spinner,
+} from 'react-bootstrap';
 import { AdminIcon } from './AdminIcon';
 import { formatoNumero } from '../../utils/admin';
 
 /* ============================================================
-   Piezas reutilizables del panel (estilo Mockups-Front)
+   Piezas reutilizables del panel (React-Bootstrap)
    ============================================================ */
 
 export const PageHeader = ({ titulo, subtitulo, children }) => (
-  <div className="adm-page-header">
+  <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
-      <h1>{titulo}</h1>
-      {subtitulo && <p>{subtitulo}</p>}
+      <h1 className="h3 fw-bold mb-1 adm-titulo">{titulo}</h1>
+      {subtitulo && <p className="text-secondary small mb-0">{subtitulo}</p>}
     </div>
-    {children && <div className="adm-page-header-acciones">{children}</div>}
+    {children && <div className="d-flex flex-wrap align-items-center gap-2">{children}</div>}
   </div>
 );
 
-export const StatCard = ({ icono, numero, label, alerta = false, cargando = false }) => (
-  <div className={`adm-stat-card${alerta ? ' alerta' : ''}`}>
-    <div className="adm-stat-icono">
-      <AdminIcon nombre={icono} />
-    </div>
-    <div>
-      <div className="adm-stat-numero">{cargando ? '…' : formatoNumero(numero)}</div>
-      <div className="adm-stat-label">{label}</div>
-    </div>
-  </div>
-);
+export const StatCard = ({ icono, numero, label, alerta = false, cargando = false }) => {
+  const v = alerta ? 'danger' : 'success';
+  return (
+    <Card className={`h-100 border-0 shadow-sm ${alerta ? 'border-start border-4 border-danger' : ''}`}>
+      <Card.Body className="d-flex align-items-center gap-3">
+        <div className={`adm-stat-icono rounded-3 bg-${v}-subtle text-${v}-emphasis`}>
+          <AdminIcon nombre={icono} size={24} />
+        </div>
+        <div>
+          <div className={`fs-3 fw-bold lh-1 ${alerta ? 'text-danger' : ''}`}>
+            {cargando ? <Spinner animation="border" size="sm" /> : formatoNumero(numero)}
+          </div>
+          <div className="small text-secondary mt-1">{label}</div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+};
 
-export const Badge = ({ clase = 'adm-badge-gris', children, className = '' }) => (
-  <span className={`adm-badge ${clase} ${className}`}>{children}</span>
+// Badge suave de Bootstrap: variante = success | danger | warning | primary | secondary | info
+export const Badge = ({ variante = 'secondary', children, className = '' }) => (
+  <span
+    className={`badge rounded-pill fw-semibold bg-${variante}-subtle text-${variante}-emphasis border border-${variante}-subtle ${className}`}
+  >
+    {children}
+  </span>
 );
 
 export const Toolbar = ({ busqueda, onBusqueda, placeholder, children }) => (
-  <div className="adm-toolbar">
-    <div className="adm-toolbar-search">
-      <span>🔍</span>
-      <input
+  <div className="d-flex flex-wrap gap-2 mb-3">
+    <InputGroup className="flex-grow-1" style={{ minWidth: 220, maxWidth: 520 }}>
+      <InputGroup.Text className="bg-white">
+        <AdminIcon nombre="lupa" />
+      </InputGroup.Text>
+      <Form.Control
         type="search"
         value={busqueda}
         onChange={(e) => onBusqueda(e.target.value)}
         placeholder={placeholder}
         aria-label="Buscar"
       />
-    </div>
+    </InputGroup>
     {children}
   </div>
 );
 
 export const SelectFiltro = ({ value, onChange, opciones, label }) => (
-  <select className="adm-toolbar-select" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+  <Form.Select className="w-auto" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
     {opciones.map((o) => (
       <option key={o.value} value={o.value}>
         {o.label}
       </option>
     ))}
-  </select>
+  </Form.Select>
 );
 
 // Construye la lista de páginas con "…" (1 2 3 … 53)
@@ -73,82 +89,80 @@ const paginasVisibles = (actual, total) => {
   return salida;
 };
 
+// Tarjeta contenedora de las tablas
+export const TablaCard = ({ children }) => (
+  <Card className="border-0 shadow-sm overflow-hidden">{children}</Card>
+);
+
 export const TablaFooter = ({ mostrando, total, nombre, pagina, totalPaginas, onPagina }) => (
-  <div className="adm-tabla-footer">
-    <span>
+  <Card.Footer className="bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+    <span className="small text-secondary">
       Mostrando <strong>{mostrando}</strong> de {formatoNumero(total)} {nombre}
     </span>
     {totalPaginas > 1 && (
-      <div className="adm-paginacion">
-        <button type="button" className="adm-pag-btn" disabled={pagina === 1} onClick={() => onPagina(pagina - 1)} aria-label="Anterior">
-          ‹
-        </button>
+      <Pagination size="sm" className="mb-0 adm-paginacion">
+        <Pagination.Prev disabled={pagina === 1} onClick={() => onPagina(pagina - 1)} />
         {paginasVisibles(pagina, totalPaginas).map((p) =>
           typeof p === 'string' ? (
-            <span key={p} className="adm-pag-puntos">…</span>
+            <Pagination.Ellipsis key={p} disabled />
           ) : (
-            <button
-              key={p}
-              type="button"
-              className={`adm-pag-btn${p === pagina ? ' activo' : ''}`}
-              onClick={() => onPagina(p)}
-            >
+            <Pagination.Item key={p} active={p === pagina} onClick={() => onPagina(p)}>
               {p}
-            </button>
+            </Pagination.Item>
           ),
         )}
-        <button type="button" className="adm-pag-btn" disabled={pagina === totalPaginas} onClick={() => onPagina(pagina + 1)} aria-label="Siguiente">
-          ›
-        </button>
-      </div>
+        <Pagination.Next disabled={pagina === totalPaginas} onClick={() => onPagina(pagina + 1)} />
+      </Pagination>
     )}
-  </div>
+  </Card.Footer>
 );
 
 export const EstadoVacio = ({ icono = '🔍', titulo, sub }) => (
-  <div className="adm-vacio">
-    <div className="adm-vacio-icono">{icono}</div>
-    <div className="adm-vacio-titulo">{titulo}</div>
-    {sub && <div className="adm-vacio-sub">{sub}</div>}
+  <div className="text-center py-5 px-3 text-secondary">
+    <div className="display-6 mb-2">{icono}</div>
+    <div className="fs-5 fw-bold text-body">{titulo}</div>
+    {sub && <div className="small">{sub}</div>}
   </div>
 );
 
 export const Cargando = ({ texto = 'Cargando…' }) => (
-  <div className="adm-vacio">
-    <div className="adm-spinner" />
-    <div className="adm-vacio-sub">{texto}</div>
+  <div className="text-center py-5 text-secondary">
+    <Spinner animation="border" variant="success" className="mb-2" />
+    <div className="small">{texto}</div>
   </div>
 );
 
 export const Aviso = ({ tipo = 'advertencia', children }) => (
-  <div className={`adm-aviso${tipo === 'error' ? ' error' : ''}`} role="alert">
-    <span>{tipo === 'error' ? '⛔' : '⚠️'}</span>
+  <Alert variant={tipo === 'error' ? 'danger' : 'warning'} className="d-flex gap-2 align-items-start">
+    <AdminIcon nombre={tipo === 'error' ? 'alerta' : 'info'} className="mt-1" />
     <div>{children}</div>
-  </div>
+  </Alert>
 );
 
-// Modal con overlay difuminado; cierra con Escape o clic fuera
-export const AdminModal = ({ abierto, titulo, onCerrar, children, ancho }) => {
-  useEffect(() => {
-    if (!abierto) return undefined;
-    const alPresionar = (e) => e.key === 'Escape' && onCerrar();
-    document.addEventListener('keydown', alPresionar);
-    return () => document.removeEventListener('keydown', alPresionar);
-  }, [abierto, onCerrar]);
+// Modal de React-Bootstrap; cierra con Escape o clic fuera
+export const AdminModal = ({ abierto, titulo, onCerrar, children, size }) => (
+  <Modal show={abierto} onHide={onCerrar} centered size={size} scrollable>
+    <Modal.Header closeButton>
+      <Modal.Title as="h5" className="fw-bold">{titulo}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>{children}</Modal.Body>
+  </Modal>
+);
 
-  if (!abierto) return null;
+// Fila de botones al final de un modal
+export const ModalAcciones = ({ children }) => (
+  <div className="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">{children}</div>
+);
 
-  return (
-    <div
-      className="adm-modal-overlay adm-app-modal"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}
-    >
-      <div className="adm-modal-caja" style={ancho ? { maxWidth: ancho } : undefined}>
-        <h2>{titulo}</h2>
-        {children}
-      </div>
-    </div>
-  );
-};
+// Botón pequeño de icono para las acciones de una fila
+export const BotonAccion = ({ icono, titulo, peligro = false, ...props }) => (
+  <Button
+    size="sm"
+    variant={peligro ? 'outline-danger' : 'outline-secondary'}
+    title={titulo}
+    aria-label={titulo}
+    {...props}
+  >
+    <AdminIcon nombre={icono} />
+  </Button>
+);

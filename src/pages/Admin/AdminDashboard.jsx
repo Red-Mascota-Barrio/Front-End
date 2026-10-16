@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
+import { Button, Card, Col, ListGroup, Row, Table } from 'react-bootstrap';
 import { adminService, ESTADOS_REPORTE } from '../../services/adminService';
 import { PageHeader, StatCard, Badge, EstadoVacio, Cargando } from '../../components/admin/AdminUI';
 import {
@@ -54,7 +55,7 @@ export const AdminDashboard = () => {
       items.push({
         id: `r-${r.id_reporte}`,
         fecha: aFecha(r.fecha_reporte),
-        punto: estadoReporteId(r) === ESTADOS_REPORTE.RESUELTO ? 'claro' : 'rojo',
+        color: estadoReporteId(r) === ESTADOS_REPORTE.RESUELTO ? 'success' : 'danger',
         texto: (
           <>
             Reporte {foro ? <>en el hilo <strong>“{foro}”</strong></> : 'en el foro'}
@@ -68,7 +69,7 @@ export const AdminDashboard = () => {
       items.push({
         id: `e-${e.id_evento}`,
         fecha: aFecha(e.fecha_actualizacion ?? e.fecha_evento),
-        punto: est.clave === 'cancelado' ? 'naranja' : '',
+        color: est.clave === 'cancelado' ? 'warning' : 'success',
         texto: (
           <>
             Evento <strong>“{e.nombre}”</strong> {est.clave === 'cancelado' ? 'cancelado' : 'programado'}
@@ -85,88 +86,99 @@ export const AdminDashboard = () => {
   return (
     <>
       <PageHeader titulo="Panel Administrativo" subtitulo={`Resumen general de la plataforma · ${fechaLarga()}`}>
-        <Link to="/admin/reportes" className="adm-btn adm-btn-ghost adm-btn-sm adm-btn-alerta">
-          ⚠️ Revisar reportes ({pendientes})
-        </Link>
+        <Button as={Link} to="/admin/reportes" variant="outline-danger" size="sm">
+          <i className="bi bi-exclamation-triangle me-1" /> Revisar reportes ({pendientes})
+        </Button>
       </PageHeader>
 
-      <div className="adm-grid-4 adm-mb-lg">
-        <StatCard icono="usuarios" numero={stats?.usuarios} label="Usuarios" cargando={cargando} />
-        <StatCard icono="corazon" numero={stats?.mascotas ?? mascotas.length} label="Mascotas" cargando={cargando} />
-        <StatCard icono="pulso" numero={stats?.adopciones} label="Adopciones" cargando={cargando} />
-        <StatCard icono="alerta" numero={pendientes} label="Reportes pendientes" alerta cargando={cargando} />
-      </div>
+      <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
+        <Col><StatCard icono="usuarios" numero={stats?.usuarios} label="Usuarios" cargando={cargando} /></Col>
+        <Col><StatCard icono="corazon" numero={stats?.mascotas ?? mascotas.length} label="Mascotas" cargando={cargando} /></Col>
+        <Col><StatCard icono="pulso" numero={stats?.adopciones} label="Adopciones" cargando={cargando} /></Col>
+        <Col><StatCard icono="alerta" numero={pendientes} label="Reportes pendientes" alerta cargando={cargando} /></Col>
+      </Row>
 
-      <div className="adm-grid-2 adm-mb-lg">
+      <Row xs={1} lg={2} className="g-3 mb-4">
         {/* Actividad reciente */}
-        <div className="adm-tarjeta">
-          <div className="adm-tarjeta-header">
-            <h3 className="adm-tarjeta-titulo">Actividad reciente</h3>
-            <Badge clase="adm-badge-verde">En vivo</Badge>
-          </div>
-          {cargando ? (
-            <Cargando />
-          ) : actividad.length === 0 ? (
-            <EstadoVacio icono="🌿" titulo="Sin actividad" sub="Aún no hay reportes ni eventos recientes." />
-          ) : (
-            actividad.map((a) => (
-              <div key={a.id} className="adm-actividad-item">
-                <div className={`adm-actividad-punto ${a.punto}`} />
-                <div className="adm-actividad-texto">{a.texto}</div>
-                <div className="adm-actividad-hora">{haceCuanto(a.fecha)}</div>
-              </div>
-            ))
-          )}
-        </div>
+        <Col>
+          <Card className="h-100 border-0 shadow-sm">
+            <Card.Header className="bg-white d-flex justify-content-between align-items-center py-3">
+              <h2 className="h6 fw-bold mb-0 adm-titulo">Actividad reciente</h2>
+              <Badge variante="success">En vivo</Badge>
+            </Card.Header>
+            {cargando ? (
+              <Cargando />
+            ) : actividad.length === 0 ? (
+              <EstadoVacio icono="🌿" titulo="Sin actividad" sub="Aún no hay reportes ni eventos recientes." />
+            ) : (
+              <ListGroup variant="flush">
+                {actividad.map((a) => (
+                  <ListGroup.Item key={a.id} className="d-flex align-items-center gap-3 py-3">
+                    <span className={`adm-punto rounded-circle bg-${a.color}`} />
+                    <div className="small text-secondary flex-grow-1">{a.texto}</div>
+                    <small className="text-body-tertiary text-nowrap">{haceCuanto(a.fecha)}</small>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            )}
+          </Card>
+        </Col>
 
         {/* Mascotas recientes */}
-        <div className="adm-tarjeta">
-          <div className="adm-tarjeta-header">
-            <h3 className="adm-tarjeta-titulo">Mascotas recientes</h3>
-            <Link to="/admin/mascotas" className="adm-tarjeta-link">Ver todas →</Link>
-          </div>
-          {cargando ? (
-            <Cargando />
-          ) : mascotasRecientes.length === 0 ? (
-            <EstadoVacio icono="🐾" titulo="Sin mascotas" sub="Todavía no hay mascotas registradas." />
-          ) : (
-            <table className="adm-mini-tabla">
-              <tbody>
-                {mascotasRecientes.map((m) => {
-                  const est = estadoMascota(m);
-                  return (
-                    <tr key={m.id_mascotas}>
-                      <td>
-                        <strong>{m.nombre}</strong>
-                        <br />
-                        <span className="adm-mini-sub">
-                          {[especieDeMascota(m), m.edad_estimada].filter(Boolean).join(' · ') || '—'}
-                        </span>
-                      </td>
-                      <td><Badge clase={est.clase}>{est.texto}</Badge></td>
-                      <td className="adm-mini-hora">{m.genero ? m.genero.charAt(0).toUpperCase() + m.genero.slice(1) : ''}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+        <Col>
+          <Card className="h-100 border-0 shadow-sm">
+            <Card.Header className="bg-white d-flex justify-content-between align-items-center py-3">
+              <h2 className="h6 fw-bold mb-0 adm-titulo">Mascotas recientes</h2>
+              <Link to="/admin/mascotas" className="small fw-semibold link-success text-decoration-none">
+                Ver todas <i className="bi bi-arrow-right" />
+              </Link>
+            </Card.Header>
+            {cargando ? (
+              <Cargando />
+            ) : mascotasRecientes.length === 0 ? (
+              <EstadoVacio icono="🐾" titulo="Sin mascotas" sub="Todavía no hay mascotas registradas." />
+            ) : (
+              <Table hover className="align-middle mb-0 small">
+                <tbody>
+                  {mascotasRecientes.map((m) => {
+                    const est = estadoMascota(m);
+                    return (
+                      <tr key={m.id_mascotas}>
+                        <td>
+                          <div className="fw-semibold">{m.nombre}</div>
+                          <div className="text-secondary small">
+                            {[especieDeMascota(m), m.edad_estimada].filter(Boolean).join(' · ') || '—'}
+                          </div>
+                        </td>
+                        <td><Badge variante={est.clase}>{est.texto}</Badge></td>
+                        <td className="text-end text-secondary text-nowrap">
+                          {m.genero ? m.genero.charAt(0).toUpperCase() + m.genero.slice(1) : ''}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            )}
+          </Card>
+        </Col>
+      </Row>
 
       {/* Acciones rápidas */}
-      <div className="adm-tarjeta">
-        <h3 className="adm-tarjeta-titulo" style={{ marginBottom: 16 }}>Acciones rápidas</h3>
-        <div className="adm-acciones-lista">
-          <Link to="/admin/usuarios" className="adm-btn adm-btn-secundario adm-btn-sm">👥 Gestionar usuarios</Link>
-          <Link to="/admin/mascotas" className="adm-btn adm-btn-secundario adm-btn-sm">🐾 Gestionar mascotas</Link>
-          <Link to="/admin/eventos" className="adm-btn adm-btn-secundario adm-btn-sm">📅 Gestionar eventos</Link>
-          <Link to="/foro" className="adm-btn adm-btn-secundario adm-btn-sm">💬 Moderar foros</Link>
-          <Link to="/admin/reportes" className="adm-btn adm-btn-ghost adm-btn-sm adm-btn-alerta">
-            ⚠️ Reportes pendientes ({pendientes})
-          </Link>
-        </div>
-      </div>
+      <Card className="border-0 shadow-sm">
+        <Card.Body>
+          <h2 className="h6 fw-bold mb-3 adm-titulo">Acciones rápidas</h2>
+          <div className="d-flex flex-wrap gap-2">
+            <Button as={Link} to="/admin/usuarios" variant="outline-success" size="sm">👥 Gestionar usuarios</Button>
+            <Button as={Link} to="/admin/mascotas" variant="outline-success" size="sm">🐾 Gestionar mascotas</Button>
+            <Button as={Link} to="/admin/eventos" variant="outline-success" size="sm">📅 Gestionar eventos</Button>
+            <Button as={Link} to="/foro" variant="outline-success" size="sm">💬 Moderar foros</Button>
+            <Button as={Link} to="/admin/reportes" variant="outline-danger" size="sm">
+              ⚠️ Reportes pendientes ({pendientes})
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
     </>
   );
 };

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Col, Form, Row, Table } from 'react-bootstrap';
 import { adminService, mensajeError, TIPOS_EVENTO } from '../../services/adminService';
 import {
-  PageHeader, StatCard, Badge, Toolbar, SelectFiltro, TablaFooter,
-  EstadoVacio, Cargando, Aviso, AdminModal,
+  PageHeader, StatCard, Badge, Toolbar, SelectFiltro, TablaCard, TablaFooter,
+  EstadoVacio, Cargando, Aviso, AdminModal, ModalAcciones, BotonAccion,
 } from '../../components/admin/AdminUI';
 import {
   normalizar, fechaCorta, estadoEvento, emojiTipoEvento, claseTipoEvento, rel,
@@ -195,8 +196,9 @@ export const AdminEventos = () => {
     }
   };
 
-  const claseCampo = (k) => `adm-campo${errores[k] ? ' error' : ''}`;
-  const errorDe = (k) => (errores[k] ? <span className="adm-mensaje-error">{errores[k]}</span> : null);
+  // Props comunes de cada campo: valor, cambio y estado de error de Bootstrap
+  const props = (k) => ({ value: form[k], onChange: campo(k), isInvalid: Boolean(errores[k]) });
+  const errorDe = (k) => <Form.Control.Feedback type="invalid">{errores[k]}</Form.Control.Feedback>;
 
   return (
     <>
@@ -204,15 +206,20 @@ export const AdminEventos = () => {
         titulo="Gestión de eventos"
         subtitulo={cargando ? 'Cargando eventos…' : `${stats.total} eventos creados en la plataforma`}
       >
-        <button type="button" className="adm-btn adm-btn-primario adm-btn-sm" onClick={abrirNuevo}>+ Crear evento</button>
+        <Button variant="outline-secondary" size="sm" onClick={cargar} disabled={cargando}>
+          <i className="bi bi-arrow-clockwise me-1" /> Actualizar
+        </Button>
+        <Button variant="success" size="sm" onClick={abrirNuevo}>
+          <i className="bi bi-plus-lg me-1" /> Crear evento
+        </Button>
       </PageHeader>
 
-      <div className="adm-grid-4 adm-mb-md">
-        <StatCard icono="calendario" numero={stats.total} label="Total eventos" cargando={cargando} />
-        <StatCard icono="reloj" numero={stats.proximos} label="Próximos" cargando={cargando} />
-        <StatCard icono="usuario" numero={stats.inscritos} label="Inscritos" cargando={cargando} />
-        <StatCard icono="pulso" numero={stats.realizados} label="Realizados" cargando={cargando} />
-      </div>
+      <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
+        <Col><StatCard icono="calendario" numero={stats.total} label="Total eventos" cargando={cargando} /></Col>
+        <Col><StatCard icono="reloj" numero={stats.proximos} label="Próximos" cargando={cargando} /></Col>
+        <Col><StatCard icono="usuario" numero={stats.inscritos} label="Inscritos" cargando={cargando} /></Col>
+        <Col><StatCard icono="pulso" numero={stats.realizados} label="Realizados" cargando={cargando} /></Col>
+      </Row>
 
       {error && <Aviso tipo="error">{error}</Aviso>}
 
@@ -239,71 +246,66 @@ export const AdminEventos = () => {
         />
       </Toolbar>
 
-      <div className="adm-tabla-wrap">
+      <TablaCard>
         {cargando ? (
           <Cargando texto="Cargando eventos…" />
         ) : filtrados.length === 0 ? (
           <EstadoVacio
             icono={eventos.length ? '🔍' : '📅'}
             titulo={eventos.length ? 'Sin resultados' : 'Aún no hay eventos'}
-            sub={eventos.length ? 'Prueba con otra búsqueda o filtro.' : 'Crea el primero con “+ Crear evento”.'}
+            sub={eventos.length ? 'Prueba con otra búsqueda o filtro.' : 'Crea el primero con “Crear evento”.'}
           />
         ) : (
           <>
-            <div className="adm-tabla-scroll">
-              <table className="adm-tabla">
-                <thead>
-                  <tr>
-                    <th>Evento</th>
-                    <th>Tipo</th>
-                    <th>Fecha</th>
-                    <th>Lugar</th>
-                    <th>Inscritos</th>
-                    <th>Estado</th>
-                    <th className="th-derecha">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibles.map((e) => {
-                    const tipo = tipoDe(e)?.nombre_tipo ?? tipos.find((t) => t.id_tipo_evento === Number(e.tipo_evento_id))?.nombre_tipo ?? '—';
-                    const est = estadoEvento(e);
-                    const org = organizadorDe(e);
-                    return (
-                      <tr key={e.id_evento}>
-                        <td>
-                          <div className="adm-tabla-nombre">{e.nombre}</div>
-                          <div className="adm-tabla-sub">
-                            {org ? `Organiza: ${org.nombre} ${org.apellido ?? ''}` : e.descripcion}
-                          </div>
-                        </td>
-                        <td><Badge clase={claseTipoEvento(tipo)}>{emojiTipoEvento(tipo)} {tipo}</Badge></td>
-                        <td className="adm-td-sec" style={{ whiteSpace: 'nowrap' }}>
-                          {fechaCorta(e.fecha_evento)}
-                          <div className="adm-tabla-sub">{String(e.hora_evento ?? '').slice(0, 5)}</div>
-                        </td>
-                        <td className="adm-td-tenue">{e.ubicacion}</td>
-                        <td className="adm-td-numero">{Number(e.total_inscritos ?? 0)}</td>
-                        <td><Badge clase={est.clase}>{est.texto}</Badge></td>
-                        <td>
-                          <div className="adm-acciones-tabla">
-                            <button type="button" className="adm-accion-btn" title="Editar" onClick={() => abrirEdicion(e)}>✏️</button>
-                            <button
-                              type="button"
-                              className="adm-accion-btn"
-                              title={est.clave === 'cancelado' ? 'Reactivar' : 'Cancelar'}
-                              onClick={() => alternarEstado(e)}
-                            >
-                              {est.clave === 'cancelado' ? '▶️' : '⏸'}
-                            </button>
-                            <button type="button" className="adm-accion-btn peligro" title="Eliminar" onClick={() => eliminar(e)}>🗑</button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <Table hover responsive className="align-middle mb-0 small">
+              <thead className="table-light">
+                <tr>
+                  <th>Evento</th>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Lugar</th>
+                  <th>Inscritos</th>
+                  <th>Estado</th>
+                  <th className="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibles.map((e) => {
+                  const tipo = tipoDe(e)?.nombre_tipo ?? tipos.find((t) => t.id_tipo_evento === Number(e.tipo_evento_id))?.nombre_tipo ?? '—';
+                  const est = estadoEvento(e);
+                  const org = organizadorDe(e);
+                  return (
+                    <tr key={e.id_evento}>
+                      <td style={{ minWidth: 200 }}>
+                        <div className="fw-semibold">{e.nombre}</div>
+                        <div className="text-secondary text-truncate" style={{ fontSize: '.75rem', maxWidth: 280 }}>
+                          {org ? `Organiza: ${org.nombre} ${org.apellido ?? ''}` : e.descripcion}
+                        </div>
+                      </td>
+                      <td><Badge variante={claseTipoEvento(tipo)}>{emojiTipoEvento(tipo)} {tipo}</Badge></td>
+                      <td className="text-secondary text-nowrap">
+                        {fechaCorta(e.fecha_evento)}
+                        <div className="text-body-tertiary" style={{ fontSize: '.75rem' }}>{String(e.hora_evento ?? '').slice(0, 5)}</div>
+                      </td>
+                      <td className="text-body-tertiary">{e.ubicacion}</td>
+                      <td className="fw-semibold">{Number(e.total_inscritos ?? 0)}</td>
+                      <td><Badge variante={est.clase}>{est.texto}</Badge></td>
+                      <td>
+                        <div className="d-flex justify-content-end gap-1">
+                          <BotonAccion icono="editar" titulo="Editar" onClick={() => abrirEdicion(e)} />
+                          <BotonAccion
+                            icono={est.clave === 'cancelado' ? 'play' : 'pausa'}
+                            titulo={est.clave === 'cancelado' ? 'Reactivar' : 'Cancelar'}
+                            onClick={() => alternarEstado(e)}
+                          />
+                          <BotonAccion icono="eliminar" titulo="Eliminar" peligro onClick={() => eliminar(e)} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
             <TablaFooter
               mostrando={visibles.length}
               total={filtrados.length}
@@ -314,60 +316,60 @@ export const AdminEventos = () => {
             />
           </>
         )}
-      </div>
+      </TablaCard>
 
       <AdminModal
         abierto={Boolean(modal)}
         titulo={modal === 'nuevo' ? '📅 Nuevo evento' : '✏️ Editar evento'}
         onCerrar={() => setModal(null)}
       >
-        <form onSubmit={guardar} noValidate>
-          <div className="adm-grupo-campo">
-            <label htmlFor="evNombre">Nombre del evento</label>
-            <input id="evNombre" className={claseCampo('nombre')} placeholder="Ej: Jornada de vacunación" value={form.nombre} onChange={campo('nombre')} maxLength={150} />
-            {errorDe('nombre')}
-          </div>
-          <div className="adm-grupo-campo">
-            <label htmlFor="evTipo">Tipo</label>
-            <select id="evTipo" className={claseCampo('tipo_evento_id')} value={form.tipo_evento_id} onChange={campo('tipo_evento_id')}>
-              <option value="">Selecciona…</option>
-              {tipos.map((t) => (
-                <option key={t.id_tipo_evento} value={t.id_tipo_evento}>
-                  {emojiTipoEvento(t.nombre_tipo)} {t.nombre_tipo}
-                </option>
-              ))}
-            </select>
-            {errorDe('tipo_evento_id')}
-          </div>
-          <div className="adm-form-grid-2">
-            <div className="adm-grupo-campo">
-              <label htmlFor="evFecha">Fecha</label>
-              <input id="evFecha" type="date" className={claseCampo('fecha_evento')} value={form.fecha_evento} onChange={campo('fecha_evento')} />
+        <Form onSubmit={guardar} noValidate>
+          <Row className="g-3">
+            <Form.Group as={Col} xs={12} controlId="evNombre">
+              <Form.Label>Nombre del evento</Form.Label>
+              <Form.Control placeholder="Ej: Jornada de vacunación" maxLength={150} {...props('nombre')} />
+              {errorDe('nombre')}
+            </Form.Group>
+            <Form.Group as={Col} xs={12} controlId="evTipo">
+              <Form.Label>Tipo</Form.Label>
+              <Form.Select {...props('tipo_evento_id')}>
+                <option value="">Selecciona…</option>
+                {tipos.map((t) => (
+                  <option key={t.id_tipo_evento} value={t.id_tipo_evento}>
+                    {emojiTipoEvento(t.nombre_tipo)} {t.nombre_tipo}
+                  </option>
+                ))}
+              </Form.Select>
+              {errorDe('tipo_evento_id')}
+            </Form.Group>
+            <Form.Group as={Col} sm={6} controlId="evFecha">
+              <Form.Label>Fecha</Form.Label>
+              <Form.Control type="date" {...props('fecha_evento')} />
               {errorDe('fecha_evento')}
-            </div>
-            <div className="adm-grupo-campo">
-              <label htmlFor="evHora">Hora</label>
-              <input id="evHora" type="time" className={claseCampo('hora_evento')} value={form.hora_evento} onChange={campo('hora_evento')} />
+            </Form.Group>
+            <Form.Group as={Col} sm={6} controlId="evHora">
+              <Form.Label>Hora</Form.Label>
+              <Form.Control type="time" {...props('hora_evento')} />
               {errorDe('hora_evento')}
-            </div>
-          </div>
-          <div className="adm-grupo-campo">
-            <label htmlFor="evLugar">Lugar</label>
-            <input id="evLugar" className={claseCampo('ubicacion')} placeholder="Parque, salón, dirección…" value={form.ubicacion} onChange={campo('ubicacion')} maxLength={150} />
-            {errorDe('ubicacion')}
-          </div>
-          <div className="adm-grupo-campo">
-            <label htmlFor="evDescripcion">Descripción ({form.descripcion.length}/255)</label>
-            <textarea id="evDescripcion" rows={3} className={claseCampo('descripcion')} placeholder="Detalles del evento, requisitos, contacto…" value={form.descripcion} onChange={campo('descripcion')} maxLength={255} />
-            {errorDe('descripcion')}
-          </div>
-          <div className="adm-modal-acciones">
-            <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setModal(null)}>Cancelar</button>
-            <button type="submit" className="adm-btn adm-btn-primario" disabled={guardando}>
+            </Form.Group>
+            <Form.Group as={Col} xs={12} controlId="evLugar">
+              <Form.Label>Lugar</Form.Label>
+              <Form.Control placeholder="Parque, salón, dirección…" maxLength={150} {...props('ubicacion')} />
+              {errorDe('ubicacion')}
+            </Form.Group>
+            <Form.Group as={Col} xs={12} controlId="evDescripcion">
+              <Form.Label>Descripción <span className="text-secondary small">({form.descripcion.length}/255)</span></Form.Label>
+              <Form.Control as="textarea" rows={3} placeholder="Detalles del evento, requisitos, contacto…" maxLength={255} {...props('descripcion')} />
+              {errorDe('descripcion')}
+            </Form.Group>
+          </Row>
+          <ModalAcciones>
+            <Button variant="outline-secondary" onClick={() => setModal(null)}>Cancelar</Button>
+            <Button type="submit" variant="success" disabled={guardando}>
               {guardando ? 'Guardando…' : modal === 'nuevo' ? 'Crear evento' : 'Guardar cambios'}
-            </button>
-          </div>
-        </form>
+            </Button>
+          </ModalAcciones>
+        </Form>
       </AdminModal>
     </>
   );

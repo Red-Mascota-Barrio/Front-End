@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Modal } from 'react-bootstrap';
-import { mascotasService, urlFoto, SIN_FOTO } from '../../services/mascotasService';
+import { mascotasService, urlFoto, fotoDeMascota, SIN_FOTO } from '../../services/mascotasService';
 
 const POR_PAGINA = 6;
 const igual = (a, b) => String(a ?? '').toLowerCase() === String(b ?? '').toLowerCase();
@@ -208,7 +208,7 @@ export const Mascotas = () => {
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
                   <img
-                    src={urlFoto(m.foto)}
+                    src={urlFoto(fotoDeMascota(m))}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
                     className="card-img-top"
                     alt={m.nombre}
@@ -268,7 +268,7 @@ export const Mascotas = () => {
               <div className="row g-4">
                 <div className="col-md-5">
                   <img
-                    src={urlFoto(mascotaSeleccionada.foto)}
+                    src={urlFoto(fotoDeMascota(mascotaSeleccionada))}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
                     className="img-fluid rounded-4 shadow-sm w-100"
                     style={{ height: '100%', minHeight: '300px', objectFit: 'cover' }}
