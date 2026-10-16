@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
+import foroService from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
@@ -8,26 +9,47 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [categoriasList, setCategoriasList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const manejarPublicacion = (e) => {
+  const manejarPublicacion = async (e) => {
     e.preventDefault();
 
-    if (!titulo.trim() || !contenido.trim() || !categoria) {
+    if (!titulo.trim() || !contenido.trim()) {
+      alert("Completa el título y el contenido.");
       return;
     }
 
     const nuevoHilo = {
-      id: Date.now(),
-      titulo: titulo,
-      contenido: contenido,
-      categoria: categoria, // Esto enviará el id_categoria
-      autor: "Usuario actual",
-      respuestas: 0,
-      visitas: 0,
-      destacado: false,
+      titulo: titulo.trim(),
+      contenido: contenido.trim(),
+      categoria_foro_id: Number(categoria) || 1,
     };
 
-    onCrearHilo(nuevoHilo);
-    onCerrar();
+    try {
+      const respuesta = await foroService.crear(nuevoHilo);
+
+      if (respuesta.resultado === "ok") {
+        onCrearHilo(respuesta.datos);
+        onCerrar();
+      } else {
+        alert(respuesta.mensaje || "No se pudo publicar el hilo.");
+      }
+    } catch (error) {
+      console.error("Error al publicar el hilo:", error);
+      console.error("Estado HTTP:", error.response?.status);
+      console.error("Respuesta de Laravel:", error.response?.data);
+
+      if (error.response) {
+        alert(
+          "Error HTTP: " +
+            error.response.status +
+            "\n" +
+            JSON.stringify(error.response.data, null, 2),
+        );
+      } else {
+        alert(
+          "No se recibió respuesta del servidor. Revisa la conexión con Laravel.",
+        );
+      }
+    }
   };
 
   useEffect(() => {
@@ -72,7 +94,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
             <Form.Label className="fw-bold text-dark small">Título</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Escribe el título..."
+              placeholder="Escribe el título"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className="shadow-none"

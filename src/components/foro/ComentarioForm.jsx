@@ -3,24 +3,26 @@ import { Form, Button } from "react-bootstrap";
 
 function ComentarioForm({ onAgregarComentario }) {
   const [contenido, setContenido] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
-  const manejarComentario = (e) => {
+    const manejarComentario = async (e) => {
     e.preventDefault();
 
-    if (!contenido.trim()) {
-      return;
+    if (!contenido.trim()) return;
+
+    try {
+      setEnviando(true);
+      await onAgregarComentario({
+        contenido: contenido.trim(),
+        comentario: contenido.trim()
+      });
+      setContenido("");
+    } catch (error) {
+      console.error("Error al enviar el comentario:", error);
+      alert("No se pudo publicar el comentario. Revisa la consola para más detalles.");
+    } finally {
+      setEnviando(false);
     }
-
-    const nuevoComentario = {
-      id: Date.now(),
-      autor: "Usuario actual",
-      contenido: contenido,
-      fecha: "Ahora",
-    };
-
-    onAgregarComentario(nuevoComentario);
-
-    setContenido("");
   };
 
   return (

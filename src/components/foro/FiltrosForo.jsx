@@ -44,7 +44,7 @@ function FiltrosForo({
       <div className="buscador-foro">
         <input
           type="text"
-          placeholder="Buscar en el foro..."
+          placeholder="Buscar en el foro"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
