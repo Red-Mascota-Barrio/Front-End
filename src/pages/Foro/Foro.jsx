@@ -9,7 +9,7 @@ import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
 
 import { foroService } from "../../services/foroService.js";
-import "../../assets/foro/foro.css";
+import "../../styles/foro.css";
 
 function Foro() {
   const [hilos, setHilos] = useState([]);

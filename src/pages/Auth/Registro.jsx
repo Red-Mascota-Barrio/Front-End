@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { TermsModal } from '../../components/auth/TermsModal';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
-import '../../assets/auth.css';
+import '../../styles/auth.css';
 
 export const Registro = () => {
   const [step, setStep] = useState(1);

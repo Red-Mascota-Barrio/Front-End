@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
+import { foroService } from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
@@ -11,7 +12,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [loading, setLoading] = useState(true);
 
   // Manejar el envío del formulario
-  const manejarPublicacion = (e) => {
+  const manejarPublicacion = async (e) => {
     e.preventDefault();
 
     // Validar que los campos no estén vacíos

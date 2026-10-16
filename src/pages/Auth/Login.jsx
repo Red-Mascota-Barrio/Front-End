@@ -9,8 +9,8 @@ import { useAuth } from "../../context/AuthContext";
 import { authService } from "../../services/authService";
 
 // Importamos la imagen y nuestro CSS
-import imagenMascotas from "../../assets/perroFotoInicioSecion.png";
-import "../../assets/auth.css";
+import imagenMascotas from "../../assets/images/auth/perro-login.png";
+import "../../styles/auth.css";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);

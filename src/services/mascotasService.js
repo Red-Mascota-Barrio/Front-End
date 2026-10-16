@@ -1,5 +1,5 @@
 import api from './api';
-import SIN_FOTO from '../assets/pata.png';
+import SIN_FOTO from '../assets/images/common/pata.png';
 
 export { SIN_FOTO };
 
@@ -44,27 +44,17 @@ export const mascotasService = {
     const response = await api.get('/mascotas');
     return lista(response.data);
   },
+  // GET /mascotas/:id (Obtener perfil de una mascota por ID)
   obtener: async (id) => {
     const response = await api.get(`/mascotas/${id}`);
     return response.data;
   },
-  crear: async (mascotaData) => {
-    const response = await api.post('/mascotas', mascotaData);
-    return response.data;
-  },
-
   // POST /mascotas (Registrar nueva mascota)
   crear: async (datosMascota) => {
     // multipart/form-data para que Laravel reciba la foto con $request->file('foto')
     const res = await api.post('/mascotas', aFormData(datosMascota), {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return res.data;
-  },
-
-  // GET /mascotas/:id (Obtener perfil de una mascota por ID)
-  obtenerPorId: async (id) => {
-    const res = await api.get(`/mascotas/${id}`);
     return res.data;
   },
 

@@ -4,7 +4,7 @@ import { StatsSection } from '../../components/home/StatsSection';
 import { ConsejosCarousel } from '../../components/home/ConsejosCarousel';
 import { FeaturesSection } from '../../components/home/FeaturesSection';
 import { Footer } from '../../components/layout/Footer';
-import '../../assets/home.css';
+import '../../styles/home.css';
 
 export const Inicio = () => (
   <div className="inicio-page d-flex flex-column min-vh-100">

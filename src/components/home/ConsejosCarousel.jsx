@@ -1,7 +1,7 @@
 import { Container, Carousel } from 'react-bootstrap';
-import consejo1 from '../../assets/inicio/consejo-1.jpeg';
-import consejo2 from '../../assets/inicio/consejo-2.jpg';
-import consejo3 from '../../assets/inicio/consejo-3.jpg';
+import consejo1 from '../../assets/images/inicio/consejo-1.jpeg';
+import consejo2 from '../../assets/images/inicio/consejo-2.jpg';
+import consejo3 from '../../assets/images/inicio/consejo-3.jpg';
 
 const SLIDES = [
   { src: consejo1, alt: 'Consejo para mascotas 1' },
