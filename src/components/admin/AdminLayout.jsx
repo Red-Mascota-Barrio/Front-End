@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Button, Nav, Offcanvas } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { adminService, ESTADOS_REPORTE } from '../../services/adminService';
 import { confirmar, estadoReporteId } from '../../utils/admin';
 import { AdminIcon } from './AdminIcon';
-import { Badge } from './AdminUI';
 import logo from '../../assets/images/inicio/logo.png';
 import '../../styles/admin.css';
 
@@ -18,10 +18,14 @@ const TITULOS = {
 };
 
 const ItemMenu = ({ to, icono, children, end = false }) => (
-  <NavLink to={to} end={end} className={({ isActive }) => `adm-sidebar-item${isActive ? ' activo' : ''}`}>
+  <Nav.Link as={NavLink} to={to} end={end}>
     <AdminIcon nombre={icono} />
     {children}
-  </NavLink>
+  </Nav.Link>
+);
+
+const Seccion = ({ children }) => (
+  <div className="text-uppercase text-secondary fw-semibold small px-3 mt-3 mb-1 adm-sidebar-seccion">{children}</div>
 );
 
 export const AdminLayout = () => {
@@ -68,69 +72,96 @@ export const AdminLayout = () => {
   const seccion = TITULOS[pathname.replace(/\/$/, '')] ?? 'Panel';
 
   return (
-    <div className={`adm-app${menuAbierto ? ' menu-abierto' : ''}`}>
-      {/* SIDEBAR */}
-      <aside className="adm-sidebar">
-        <Link to="/admin" className="adm-sidebar-logo">
-          <img src={logo} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
-          Red de Mascotas
-        </Link>
+    <div className="adm-app d-flex">
+      {/* SIDEBAR: fijo en pantallas grandes, Offcanvas en móvil */}
+      <Offcanvas
+        show={menuAbierto}
+        onHide={() => setMenuAbierto(false)}
+        responsive="lg"
+        className="adm-sidebar"
+        aria-label="Menú del panel"
+      >
+        <Offcanvas.Header closeButton className="border-bottom">
+          <Offcanvas.Title className="fw-bold">Menú</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body className="d-flex flex-column p-3 w-100">
+          <Link to="/admin" className="d-flex align-items-center gap-2 fw-bold fs-5 text-decoration-none adm-marca px-2 mb-2">
+            <img src={logo} alt="" width="36" height="36" className="rounded-circle" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            Red de Mascotas
+          </Link>
 
-        <div className="adm-sidebar-seccion">Principal</div>
-        <ItemMenu to="/admin" icono="dashboard" end>Dashboard</ItemMenu>
+          <Nav className="flex-column gap-1 flex-grow-1 adm-nav">
+            <Seccion>Principal</Seccion>
+            <ItemMenu to="/admin" icono="dashboard" end>Dashboard</ItemMenu>
 
-        <div className="adm-sidebar-seccion">Gestión</div>
-        <ItemMenu to="/admin/usuarios" icono="usuarios">Usuarios</ItemMenu>
-        <ItemMenu to="/admin/mascotas" icono="corazon">Mascotas</ItemMenu>
-        <ItemMenu to="/admin/eventos" icono="calendario">Eventos</ItemMenu>
-        <ItemMenu to="/foro" icono="foro">Foros</ItemMenu>
+            <Seccion>Gestión</Seccion>
+            <ItemMenu to="/admin/usuarios" icono="usuarios">Usuarios</ItemMenu>
+            <ItemMenu to="/admin/mascotas" icono="corazon">Mascotas</ItemMenu>
+            <ItemMenu to="/admin/eventos" icono="calendario">Eventos</ItemMenu>
+            <ItemMenu to="/foro" icono="foro">Foros</ItemMenu>
 
-        <div className="adm-sidebar-divider" />
-        <div className="adm-sidebar-seccion">Moderación</div>
-        <NavLink to="/admin/reportes" className={({ isActive }) => `adm-sidebar-item${isActive ? ' activo' : ''}`}>
-          <AdminIcon nombre="alerta" />
-          Reportes
-          {reportesPendientes > 0 && <Badge clase="adm-badge-rojo">{reportesPendientes}</Badge>}
-        </NavLink>
+            <hr className="my-2" />
+            <Seccion>Moderación</Seccion>
+            <ItemMenu to="/admin/reportes" icono="alerta">
+              Reportes
+              {reportesPendientes > 0 && (
+                <span className="badge rounded-pill text-bg-danger ms-auto">{reportesPendientes}</span>
+              )}
+            </ItemMenu>
 
-        <div className="adm-sidebar-divider" />
-        <ItemMenu to="/" icono="casa">Ver sitio público</ItemMenu>
-        <button type="button" className="adm-sidebar-item adm-sidebar-cerrar" onClick={cerrarSesion}>
-          <AdminIcon nombre="salir" />
-          Cerrar sesión
-        </button>
-      </aside>
-      <div className="adm-sidebar-fondo" onClick={() => setMenuAbierto(false)} />
+            <hr className="my-2" />
+            <ItemMenu to="/" icono="casa">Ver sitio público</ItemMenu>
+            <Nav.Link as="button" type="button" className="text-danger mt-auto text-start" onClick={cerrarSesion}>
+              <AdminIcon nombre="salir" />
+              Cerrar sesión
+            </Nav.Link>
+          </Nav>
+        </Offcanvas.Body>
+      </Offcanvas>
 
       {/* CONTENIDO */}
-      <div className="adm-main">
-        <header className="adm-topbar">
-          <div className="adm-topbar-izq">
-            <button type="button" className="adm-menu-btn" onClick={() => setMenuAbierto(!menuAbierto)} aria-label="Abrir menú">
+      <div className="flex-grow-1 d-flex flex-column min-vw-0" style={{ minWidth: 0 }}>
+        <header className="navbar bg-white border-bottom px-3 px-lg-4 py-2 sticky-top shadow-sm">
+          <div className="d-flex align-items-center gap-2">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              className="d-lg-none"
+              onClick={() => setMenuAbierto(!menuAbierto)}
+              aria-label="Abrir menú"
+            >
               <AdminIcon nombre="menu" size={18} />
-            </button>
-            <div className="adm-breadcrumb">
-              <span>Panel Admin</span>
-              <AdminIcon nombre="chevron" size={14} />
-              <strong>{seccion}</strong>
-            </div>
+            </Button>
+            <nav aria-label="breadcrumb">
+              <ol className="breadcrumb mb-0 small">
+                <li className="breadcrumb-item text-secondary">Panel Admin</li>
+                <li className="breadcrumb-item active fw-semibold text-body" aria-current="page">{seccion}</li>
+              </ol>
+            </nav>
           </div>
-          <div className="adm-topbar-acciones">
-            <button
-              type="button"
-              className="adm-notif-btn"
+
+          <div className="d-flex align-items-center gap-3">
+            <Button
+              variant="light"
+              className="position-relative rounded-circle adm-btn-icono"
               title="Reportes pendientes"
               onClick={() => navigate('/admin/reportes')}
             >
               <AdminIcon nombre="campana" size={18} />
-              {reportesPendientes > 0 && <span className="adm-notif-badge">{reportesPendientes}</span>}
-            </button>
-            <span className="adm-topbar-label">{nombre}</span>
-            <div className="adm-avatar-admin" title={nombre}>{String(nombre).charAt(0)}</div>
+              {reportesPendientes > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {reportesPendientes}
+                </span>
+              )}
+            </Button>
+            <span className="small text-secondary fw-medium d-none d-sm-inline">{nombre}</span>
+            <div className="adm-avatar rounded-circle bg-success text-white fw-bold" title={nombre}>
+              {String(nombre).charAt(0).toUpperCase()}
+            </div>
           </div>
         </header>
 
-        <main className="adm-contenido">
+        <main className="flex-grow-1 p-3 p-md-4">
           <Outlet context={{ reportesPendientes, refrescarReportes }} />
         </main>
       </div>

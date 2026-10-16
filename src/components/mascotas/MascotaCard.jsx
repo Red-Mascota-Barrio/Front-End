@@ -1,10 +1,11 @@
-import { urlFoto } from '../../services/mascotasService';
+import { urlFoto, fotoDeMascota, SIN_FOTO } from '../../services/mascotasService';
 
 export default function MascotaCard({ mascota, onVerPerfil }) {
   return (
     <div className="card h-100 shadow-sm border-0">
       <img
-        src={urlFoto(mascota.foto)}
+        src={urlFoto(fotoDeMascota(mascota))}
+        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
         className="card-img-top"
         alt={mascota.nombre}
         style={{ height: '200px', objectFit: 'cover' }}

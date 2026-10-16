@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Button, Col, Row, Table } from 'react-bootstrap';
 import { adminService, mensajeError } from '../../services/adminService';
-import { urlFoto } from '../../services/mascotasService';
+import { urlFoto, fotoDeMascota, SIN_FOTO } from '../../services/mascotasService';
 import {
-  PageHeader, StatCard, Badge, Toolbar, SelectFiltro, TablaFooter,
-  EstadoVacio, Cargando, Aviso, AdminModal,
+  PageHeader, StatCard, Badge, Toolbar, SelectFiltro, TablaCard, TablaFooter,
+  EstadoVacio, Cargando, Aviso, AdminModal, ModalAcciones, BotonAccion,
 } from '../../components/admin/AdminUI';
 import {
   normalizar, estadoMascota, especieDeMascota, razaDeMascota, emojiEspecie, claseIconoEspecie,
@@ -13,6 +14,7 @@ import {
 
 const capitalizar = (t) => (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '');
 const siNo = (v) => (v === null || v === undefined || v === '' ? '—' : Number(v) ? 'Sí' : 'No');
+const alFallar = (e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; };
 
 export const AdminMascotas = () => {
   const [mascotas, setMascotas] = useState([]);
@@ -90,24 +92,28 @@ export const AdminMascotas = () => {
     }
   };
 
+  const fotoDetalle = detalle ? fotoDeMascota(detalle) : null;
+
   return (
     <>
       <PageHeader
         titulo="Gestión de mascotas"
         subtitulo={cargando ? 'Cargando mascotas…' : `${stats.total.toLocaleString('es-CO')} mascotas registradas en la plataforma`}
       >
-        <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" onClick={cargar} disabled={cargando}>
-          ↻ Actualizar
-        </button>
-        <Link to="/mascotas" className="adm-btn adm-btn-ghost adm-btn-sm">Ver listado público</Link>
+        <Button variant="outline-secondary" size="sm" onClick={cargar} disabled={cargando}>
+          <i className="bi bi-arrow-clockwise me-1" /> Actualizar
+        </Button>
+        <Button as={Link} to="/mascotas" variant="outline-secondary" size="sm">
+          <i className="bi bi-box-arrow-up-right me-1" /> Ver listado público
+        </Button>
       </PageHeader>
 
-      <div className="adm-grid-4 adm-mb-md">
-        <StatCard icono="corazon" numero={stats.total} label="Total mascotas" cargando={cargando} />
-        <StatCard icono="reloj" numero={stats.disponibles} label="En adopción" cargando={cargando} />
-        <StatCard icono="lupa" numero={stats.noDisponibles} label="No disponibles" cargando={cargando} />
-        <StatCard icono="check" numero={stats.adoptadas} label="Adoptadas" cargando={cargando} />
-      </div>
+      <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
+        <Col><StatCard icono="corazon" numero={stats.total} label="Total mascotas" cargando={cargando} /></Col>
+        <Col><StatCard icono="reloj" numero={stats.disponibles} label="En adopción" cargando={cargando} /></Col>
+        <Col><StatCard icono="lupa" numero={stats.noDisponibles} label="No disponibles" cargando={cargando} /></Col>
+        <Col><StatCard icono="check" numero={stats.adoptadas} label="Adoptadas" cargando={cargando} /></Col>
+      </Row>
 
       {error && <Aviso tipo="error">{error}</Aviso>}
 
@@ -132,7 +138,7 @@ export const AdminMascotas = () => {
         />
       </Toolbar>
 
-      <div className="adm-tabla-wrap">
+      <TablaCard>
         {cargando ? (
           <Cargando texto="Cargando mascotas…" />
         ) : filtrados.length === 0 ? (
@@ -143,55 +149,55 @@ export const AdminMascotas = () => {
           />
         ) : (
           <>
-            <div className="adm-tabla-scroll">
-              <table className="adm-tabla">
-                <thead>
-                  <tr>
-                    <th>Mascota</th>
-                    <th>Especie / Raza</th>
-                    <th>Tamaño</th>
-                    <th>Estado</th>
-                    <th>Vacunas</th>
-                    <th>Esterilizado</th>
-                    <th className="th-derecha">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibles.map((m) => {
-                    const especie = especieDeMascota(m);
-                    const est = estadoMascota(m);
-                    return (
-                      <tr key={m.id_mascotas}>
-                        <td>
-                          <div className="adm-tabla-usuario">
-                            <div className={`adm-tabla-mascota ${claseIconoEspecie(especie)}`}>
-                              {m.foto ? <img src={urlFoto(m.foto)} alt="" /> : emojiEspecie(especie)}
-                            </div>
-                            <div>
-                              <div className="adm-tabla-nombre">{m.nombre}</div>
-                              <div className="adm-tabla-sub">
-                                {[capitalizar(m.genero), m.edad_estimada].filter(Boolean).join(' · ') || '—'}
-                              </div>
+            <Table hover responsive className="align-middle mb-0 small">
+              <thead className="table-light">
+                <tr>
+                  <th>Mascota</th>
+                  <th>Especie / Raza</th>
+                  <th>Tamaño</th>
+                  <th>Estado</th>
+                  <th>Vacunas</th>
+                  <th>Esterilizado</th>
+                  <th className="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibles.map((m) => {
+                  const especie = especieDeMascota(m);
+                  const est = estadoMascota(m);
+                  const color = claseIconoEspecie(especie);
+                  const foto = fotoDeMascota(m);
+                  return (
+                    <tr key={m.id_mascotas}>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <div className={`adm-avatar rounded-3 border fs-5 bg-${color}-subtle border-${color}-subtle`}>
+                            {foto ? <img src={urlFoto(foto)} alt="" onError={alFallar} /> : emojiEspecie(especie)}
+                          </div>
+                          <div>
+                            <div className="fw-semibold">{m.nombre}</div>
+                            <div className="text-secondary" style={{ fontSize: '.75rem' }}>
+                              {[capitalizar(m.genero), m.edad_estimada].filter(Boolean).join(' · ') || '—'}
                             </div>
                           </div>
-                        </td>
-                        <td className="adm-td-sec">{[especie, razaDeMascota(m)].filter(Boolean).join(' · ') || '—'}</td>
-                        <td className="adm-td-sec">{m.tamano || '—'}</td>
-                        <td><Badge clase={est.clase}>{est.texto}</Badge></td>
-                        <td className="adm-td-tenue">{siNo(m.vacunas_al_dia)}</td>
-                        <td className="adm-td-tenue">{siNo(m.esterilizado)}</td>
-                        <td>
-                          <div className="adm-acciones-tabla">
-                            <button type="button" className="adm-accion-btn" title="Ver detalle" onClick={() => setDetalle(m)}>👁</button>
-                            <button type="button" className="adm-accion-btn peligro" title="Eliminar" onClick={() => eliminar(m)}>🗑</button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                      </td>
+                      <td className="text-secondary">{[especie, razaDeMascota(m)].filter(Boolean).join(' · ') || '—'}</td>
+                      <td className="text-secondary">{m.tamano || '—'}</td>
+                      <td><Badge variante={est.clase}>{est.texto}</Badge></td>
+                      <td className="text-body-tertiary">{siNo(m.vacunas_al_dia)}</td>
+                      <td className="text-body-tertiary">{siNo(m.esterilizado)}</td>
+                      <td>
+                        <div className="d-flex justify-content-end gap-1">
+                          <BotonAccion icono="ojo" titulo="Ver detalle" onClick={() => setDetalle(m)} />
+                          <BotonAccion icono="eliminar" titulo="Eliminar" peligro onClick={() => eliminar(m)} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
             <TablaFooter
               mostrando={visibles.length}
               total={filtrados.length}
@@ -202,7 +208,7 @@ export const AdminMascotas = () => {
             />
           </>
         )}
-      </div>
+      </TablaCard>
 
       <AdminModal
         abierto={Boolean(detalle)}
@@ -211,29 +217,34 @@ export const AdminMascotas = () => {
       >
         {detalle && (
           <>
-            {detalle.foto && (
+            {fotoDetalle && (
               <img
-                src={urlFoto(detalle.foto)}
+                src={urlFoto(fotoDetalle)}
                 alt={detalle.nombre}
-                style={{ width: '100%', height: 220, objectFit: 'cover', borderRadius: 16, marginBottom: 20 }}
+                onError={alFallar}
+                className="w-100 rounded-4 mb-3 object-fit-cover"
+                style={{ height: 220 }}
               />
             )}
-            <dl className="adm-detalle-lista" style={{ marginBottom: 20 }}>
-              <dt>Estado</dt><dd><Badge clase={estadoMascota(detalle).clase}>{estadoMascota(detalle).texto}</Badge></dd>
-              <dt>Especie</dt><dd>{especieDeMascota(detalle) || '—'}</dd>
-              <dt>Raza</dt><dd>{razaDeMascota(detalle) || '—'}</dd>
-              <dt>Género</dt><dd>{capitalizar(detalle.genero) || '—'}</dd>
-              <dt>Edad</dt><dd>{detalle.edad_estimada || '—'}</dd>
-              <dt>Peso</dt><dd>{detalle.peso_kg ? `${detalle.peso_kg} kg` : '—'}</dd>
-              <dt>Tamaño</dt><dd>{detalle.tamano || '—'}</dd>
-              <dt>Vacunas al día</dt><dd>{siNo(detalle.vacunas_al_dia)}</dd>
-              <dt>Esterilizado</dt><dd>{siNo(detalle.esterilizado)}</dd>
-              <dt>Notas</dt><dd>{detalle.notas_adicionales || '—'}</dd>
+            <dl className="row small mb-0">
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Estado</dt>
+              <dd className="col-7 col-sm-8"><Badge variante={estadoMascota(detalle).clase}>{estadoMascota(detalle).texto}</Badge></dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Especie</dt><dd className="col-7 col-sm-8">{especieDeMascota(detalle) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Raza</dt><dd className="col-7 col-sm-8">{razaDeMascota(detalle) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Género</dt><dd className="col-7 col-sm-8">{capitalizar(detalle.genero) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Edad</dt><dd className="col-7 col-sm-8">{detalle.edad_estimada || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Peso</dt><dd className="col-7 col-sm-8">{detalle.peso_kg ? `${detalle.peso_kg} kg` : '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Tamaño</dt><dd className="col-7 col-sm-8">{detalle.tamano || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Vacunas al día</dt><dd className="col-7 col-sm-8">{siNo(detalle.vacunas_al_dia)}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Esterilizado</dt><dd className="col-7 col-sm-8">{siNo(detalle.esterilizado)}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Notas</dt><dd className="col-7 col-sm-8">{detalle.notas_adicionales || '—'}</dd>
             </dl>
-            <div className="adm-modal-acciones">
-              <button type="button" className="adm-btn adm-btn-peligro" onClick={() => eliminar(detalle)}>🗑 Eliminar</button>
-              <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setDetalle(null)}>Cerrar</button>
-            </div>
+            <ModalAcciones>
+              <Button variant="outline-secondary" onClick={() => setDetalle(null)}>Cerrar</Button>
+              <Button variant="danger" onClick={() => eliminar(detalle)}>
+                <i className="bi bi-trash me-1" /> Eliminar
+              </Button>
+            </ModalAcciones>
           </>
         )}
       </AdminModal>

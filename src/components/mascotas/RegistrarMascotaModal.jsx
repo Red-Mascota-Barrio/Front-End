@@ -8,7 +8,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
     id_raza: '',
     edad: '',
     genero: 'Hembra',
-    foto_url: '',
+    foto: null,
     descripcion: '',
     esterilizado: false,
     vacunas_al_dia: false
@@ -17,6 +17,10 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
   const [especies, setEspecies] = useState([]);
   const [razas, setRazas] = useState([]);
   const [cargandoRazas, setCargandoRazas] = useState(false);
+  const [previa, setPrevia] = useState(null);
+
+  // Libera la URL temporal de la vista previa
+  useEffect(() => () => previa && URL.revokeObjectURL(previa), [previa]);
 
   // Cargar la lista de especies cuando se monta el modal.
   useEffect(() => {
@@ -55,7 +59,14 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
   }, [formData.id_especie]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
+
+    if (type === 'file') {
+      const archivo = files?.[0] ?? null;
+      setFormData(prev => ({ ...prev, foto: archivo }));
+      setPrevia(archivo ? URL.createObjectURL(archivo) : null);
+      return;
+    }
 
     if (name === 'id_especie') {
       setRazas([]);
@@ -174,17 +185,25 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                   </select>
                 </div>
 
-                {/* URL Foto */}
+                {/* Foto (se sube como archivo: el backend espera el campo "foto") */}
                 <div className="col-12">
-                  <label className="form-label"> Foto (Opcional)</label>
+                  <label className="form-label">Foto (Opcional)</label>
                   <input
-                    type="url"
+                    type="file"
                     className="form-control"
-                    name="foto_url"
-                    placeholder="https://..."
-                    value={formData.foto_url}
+                    name="foto"
+                    accept="image/png, image/jpeg, image/webp"
                     onChange={handleChange}
                   />
+                  <div className="form-text">JPG, PNG o WEBP · máximo 4 MB.</div>
+                  {previa && (
+                    <img
+                      src={previa}
+                      alt="Vista previa"
+                      className="img-thumbnail mt-2"
+                      style={{ maxHeight: 160, objectFit: 'cover' }}
+                    />
+                  )}
                 </div>
 
                 {/* Descripción */}

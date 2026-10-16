@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 
 /* ============================================================
    Helpers compartidos del panel de administración
+   (las clases de color devuelven variantes de Bootstrap: success, danger, warning…)
    ============================================================ */
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -60,11 +61,9 @@ export const iniciales = (nombre = '', apellido = '') => {
   return (partes[0][0] + (partes[1]?.[0] ?? '')).toUpperCase();
 };
 
-// Clase de color de avatar estable según el id
-export const claseAvatar = (id) => {
-  const n = Number(id) || 0;
-  return n % 7 === 0 ? '' : `adm-avatar-${n % 7}`;
-};
+// Color de fondo (Bootstrap) estable según el id, para los avatares con iniciales
+const COLORES_AVATAR = ['bg-success', 'bg-primary', 'bg-warning', 'bg-danger', 'bg-info', 'bg-secondary', 'bg-dark'];
+export const claseAvatar = (id) => COLORES_AVATAR[(Number(id) || 0) % COLORES_AVATAR.length];
 
 // Texto normalizado para búsquedas (sin tildes ni mayúsculas)
 export const normalizar = (txt) =>
@@ -98,9 +97,9 @@ export const emojiEspecie = (especie) => {
 
 export const claseIconoEspecie = (especie) => {
   const e = normalizar(especie);
-  if (e.includes('gat')) return 'azul';
-  if (e.includes('perr')) return '';
-  return 'naranja';
+  if (e.includes('gat')) return 'primary';
+  if (e.includes('perr')) return 'success';
+  return 'warning';
 };
 
 // Estado de la mascota según su última adopción
@@ -108,11 +107,11 @@ export const estadoMascota = (m) => {
   const adopciones = Array.isArray(m?.adopciones) ? m.adopciones : [];
   const ultima = adopciones.length ? adopciones[adopciones.length - 1] : null;
   const estado = normalizar(ultima?.estado_adopcion ?? m?.estado_adopcion ?? '');
-  if (estado === 'disponible') return { clave: 'disponible', texto: 'En adopción', clase: 'adm-badge-verde' };
-  if (estado === 'adoptado') return { clave: 'adoptado', texto: 'Adoptado', clase: 'adm-badge-gris' };
-  if (estado === 'cancelada') return { clave: 'cancelada', texto: 'Cancelada', clase: 'adm-badge-rojo' };
-  if (estado === 'no disponible') return { clave: 'no-disponible', texto: 'No disponible', clase: 'adm-badge-naranja' };
-  return { clave: 'sin-publicar', texto: 'Sin publicar', clase: 'adm-badge-azul' };
+  if (estado === 'disponible') return { clave: 'disponible', texto: 'En adopción', clase: 'success' };
+  if (estado === 'adoptado') return { clave: 'adoptado', texto: 'Adoptado', clase: 'secondary' };
+  if (estado === 'cancelada') return { clave: 'cancelada', texto: 'Cancelada', clase: 'danger' };
+  if (estado === 'no disponible') return { clave: 'no-disponible', texto: 'No disponible', clase: 'warning' };
+  return { clave: 'sin-publicar', texto: 'Sin publicar', clase: 'primary' };
 };
 
 /* ---------------- Eventos ---------------- */
@@ -127,33 +126,33 @@ export const emojiTipoEvento = (tipo) => {
 
 export const claseTipoEvento = (tipo) => {
   const t = normalizar(tipo);
-  if (t.includes('vacun')) return 'adm-badge-azul';
-  if (t.includes('adop')) return 'adm-badge-naranja';
-  if (t.includes('taller')) return 'adm-badge-gris';
-  return 'adm-badge-verde';
+  if (t.includes('vacun')) return 'primary';
+  if (t.includes('adop')) return 'warning';
+  if (t.includes('taller')) return 'secondary';
+  return 'success';
 };
 
 export const estadoEvento = (e) => {
   if (normalizar(e?.estado_evento ?? e?.estado) === 'inactivo') {
-    return { clave: 'cancelado', texto: 'Cancelado', clase: 'adm-badge-rojo' };
+    return { clave: 'cancelado', texto: 'Cancelado', clase: 'danger' };
   }
   const fecha = aFecha(e?.fecha_evento);
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  if (fecha && fecha < hoy) return { clave: 'realizado', texto: 'Realizado', clase: 'adm-badge-gris' };
-  return { clave: 'proximo', texto: 'Próximo', clase: 'adm-badge-verde' };
+  if (fecha && fecha < hoy) return { clave: 'realizado', texto: 'Realizado', clase: 'secondary' };
+  return { clave: 'proximo', texto: 'Próximo', clase: 'success' };
 };
 
 /* ---------------- Reportes ---------------- */
 export const gravedadReporte = (r) => {
   const tipo = normalizar(r?.tipo_reporte?.nombre_tipo ?? r?.tipoReporte?.nombre_tipo ?? '');
   if (tipo.includes('ofensivo') || tipo.includes('acoso')) {
-    return { clave: 'urgente', texto: '🔴 Urgente', clase: 'adm-badge-rojo' };
+    return { clave: 'urgente', texto: '🔴 Urgente', clase: 'danger' };
   }
   if (tipo.includes('falsa') || tipo.includes('peligros') || tipo.includes('spam') || tipo.includes('publicidad')) {
-    return { clave: 'moderado', texto: '🟠 Moderado', clase: 'adm-badge-naranja' };
+    return { clave: 'moderado', texto: '🟠 Moderado', clase: 'warning' };
   }
-  return { clave: 'bajo', texto: '⚪ Bajo', clase: 'adm-badge-gris' };
+  return { clave: 'bajo', texto: '⚪ Bajo', clase: 'secondary' };
 };
 
 // Laravel serializa las relaciones en snake_case (tipoReporte -> tipo_reporte)

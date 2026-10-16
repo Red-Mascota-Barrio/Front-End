@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
+import { Button, Card, Col, Row } from 'react-bootstrap';
 import { adminService, mensajeError, ESTADOS_REPORTE } from '../../services/adminService';
 import {
   PageHeader, StatCard, Badge, Toolbar, SelectFiltro, EstadoVacio, Cargando, Aviso,
@@ -10,12 +11,14 @@ import {
 } from '../../utils/admin';
 
 const ETIQUETA_ESTADO = {
-  [ESTADOS_REPORTE.PENDIENTE]: { texto: 'Pendiente', clase: 'adm-badge-rojo' },
-  [ESTADOS_REPORTE.EN_REVISION]: { texto: 'En revisión', clase: 'adm-badge-naranja' },
-  [ESTADOS_REPORTE.RESUELTO]: { texto: 'Resuelto', clase: 'adm-badge-verde' },
+  [ESTADOS_REPORTE.PENDIENTE]: { texto: 'Pendiente', clase: 'danger' },
+  [ESTADOS_REPORTE.EN_REVISION]: { texto: 'En revisión', clase: 'warning' },
+  [ESTADOS_REPORTE.RESUELTO]: { texto: 'Resuelto', clase: 'success' },
 };
 
 const ORDEN_GRAVEDAD = { urgente: 0, moderado: 1, bajo: 2 };
+// Borde izquierdo de la tarjeta según la gravedad
+const BORDE_GRAVEDAD = { urgente: 'border-start border-4 border-danger', moderado: 'border-start border-4 border-warning', bajo: '' };
 
 export const AdminReportes = () => {
   const { refrescarReportes } = useOutletContext() ?? {};
@@ -144,20 +147,20 @@ export const AdminReportes = () => {
   return (
     <>
       <PageHeader titulo="Reportes" subtitulo="Revisa y resuelve los reportes enviados por la comunidad">
-        <Badge clase={stats.pendientes ? 'adm-badge-rojo' : 'adm-badge-verde'} className="adm-badge-lg">
+        <Badge variante={stats.pendientes ? 'danger' : 'success'} className="fs-6 px-3 py-2">
           {stats.pendientes ? `⚠️ ${stats.pendientes} sin resolver` : '✅ Todo al día'}
         </Badge>
-        <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" onClick={cargar} disabled={cargando}>
-          ↻ Actualizar
-        </button>
+        <Button variant="outline-secondary" size="sm" onClick={cargar} disabled={cargando}>
+          <i className="bi bi-arrow-clockwise me-1" /> Actualizar
+        </Button>
       </PageHeader>
 
-      <div className="adm-grid-4 adm-mb-md">
-        <StatCard icono="alerta" numero={stats.pendientes} label="Pendientes" alerta cargando={cargando} />
-        <StatCard icono="check" numero={stats.resueltosMes} label="Resueltos este mes" cargando={cargando} />
-        <StatCard icono="foro" numero={stats.deHilos} label="De hilos del foro" cargando={cargando} />
-        <StatCard icono="usuarios" numero={stats.deComentarios} label="De comentarios" cargando={cargando} />
-      </div>
+      <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
+        <Col><StatCard icono="alerta" numero={stats.pendientes} label="Pendientes" alerta cargando={cargando} /></Col>
+        <Col><StatCard icono="check" numero={stats.resueltosMes} label="Resueltos este mes" cargando={cargando} /></Col>
+        <Col><StatCard icono="foro" numero={stats.deHilos} label="De hilos del foro" cargando={cargando} /></Col>
+        <Col><StatCard icono="usuarios" numero={stats.deComentarios} label="De comentarios" cargando={cargando} /></Col>
+      </Row>
 
       {error && <Aviso tipo="error">{error}</Aviso>}
 
@@ -177,90 +180,105 @@ export const AdminReportes = () => {
       </Toolbar>
 
       {cargando ? (
-        <div className="adm-tarjeta"><Cargando texto="Cargando reportes…" /></div>
+        <Card className="border-0 shadow-sm"><Cargando texto="Cargando reportes…" /></Card>
       ) : filtrados.length === 0 ? (
-        <div className="adm-tarjeta">
+        <Card className="border-0 shadow-sm">
           {filtroEstado === 'abiertos' && !busqueda ? (
             <EstadoVacio icono="✅" titulo="Todo resuelto" sub="No hay reportes pendientes por revisar." />
           ) : (
             <EstadoVacio icono="🔍" titulo="Sin resultados" sub="No hay reportes con estos filtros." />
           )}
-        </div>
+        </Card>
       ) : (
-        filtrados.map((r) => {
-          const gravedad = gravedadReporte(r);
-          const estId = estadoReporteId(r);
-          const resuelto = estId === ESTADOS_REPORTE.RESUELTO;
-          const est = ETIQUETA_ESTADO[estId] ?? ETIQUETA_ESTADO[1];
-          const tipo = rel(r, 'tipo_reporte', 'tipoReporte');
-          const reportado = rel(r, 'usuario_reportado', 'usuarioReportado');
-          const comentario = r.participacion;
-          const ocupado = procesando === r.id_reporte;
-          const textoComentario = comentario?.comentario ?? comentario?.contenido;
+        <div className="d-flex flex-column gap-3">
+          {filtrados.map((r) => {
+            const gravedad = gravedadReporte(r);
+            const estId = estadoReporteId(r);
+            const resuelto = estId === ESTADOS_REPORTE.RESUELTO;
+            const est = ETIQUETA_ESTADO[estId] ?? ETIQUETA_ESTADO[1];
+            const tipo = rel(r, 'tipo_reporte', 'tipoReporte');
+            const reportado = rel(r, 'usuario_reportado', 'usuarioReportado');
+            const comentario = r.participacion;
+            const ocupado = procesando === r.id_reporte;
+            const textoComentario = comentario?.comentario ?? comentario?.contenido;
 
-          return (
-            <div key={r.id_reporte} className={`adm-reporte-card ${resuelto ? 'resuelto' : gravedad.clave}`}>
-              <div className="adm-reporte-header">
-                <div>
-                  <div className="adm-reporte-titulo">{tipo?.nombre_tipo ?? 'Reporte'}{r.foro?.titulo ? ` en “${r.foro.titulo}”` : ''}</div>
-                  <div className="adm-reporte-meta">
-                    {reportado && (
-                      <span>👤 Usuario reportado: <strong>{reportado.nombre} {reportado.apellido}</strong></span>
-                    )}
-                    <span>📅 {haceCuanto(r.fecha_reporte)}</span>
-                    <span>📍 {r.comentario_id ? 'Comentario' : 'Hilo'}{r.foro?.titulo ? `: "${r.foro.titulo}"` : ''}</span>
+            return (
+              <Card
+                key={r.id_reporte}
+                className={`border-0 shadow-sm ${resuelto ? 'opacity-75' : BORDE_GRAVEDAD[gravedad.clave]}`}
+              >
+                <Card.Body>
+                  <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                      <h2 className="h6 fw-bold mb-1">
+                        {tipo?.nombre_tipo ?? 'Reporte'}{r.foro?.titulo ? ` en “${r.foro.titulo}”` : ''}
+                      </h2>
+                      <div className="d-flex flex-wrap gap-3 small text-secondary">
+                        {reportado && (
+                          <span><i className="bi bi-person me-1" />Usuario reportado: <strong>{reportado.nombre} {reportado.apellido}</strong></span>
+                        )}
+                        <span><i className="bi bi-calendar3 me-1" />{haceCuanto(r.fecha_reporte)}</span>
+                        <span><i className="bi bi-geo-alt me-1" />{r.comentario_id ? 'Comentario' : 'Hilo'}{r.foro?.titulo ? `: "${r.foro.titulo}"` : ''}</span>
+                      </div>
+                    </div>
+                    <div className="d-flex flex-wrap gap-1">
+                      {!resuelto && <Badge variante={gravedad.clase}>{gravedad.texto}</Badge>}
+                      <Badge variante={est.clase}>{est.texto}</Badge>
+                      <Badge variante="primary">💬 Foro</Badge>
+                    </div>
                   </div>
-                </div>
-                <div className="adm-reporte-badges">
-                  {!resuelto && <Badge clase={gravedad.clase}>{gravedad.texto}</Badge>}
-                  <Badge clase={est.clase}>{est.texto}</Badge>
-                  <Badge clase="adm-badge-azul">💬 Foro</Badge>
-                </div>
-              </div>
 
-              <div className="adm-reporte-cuerpo">{r.descripcion}</div>
-              {textoComentario && <div className="adm-reporte-cita">Comentario reportado: “{textoComentario}”</div>}
+                  <p className="bg-body-tertiary rounded-3 p-3 small mb-2">{r.descripcion}</p>
+                  {textoComentario && (
+                    <blockquote className="border-start border-3 ps-3 small text-secondary fst-italic mb-3">
+                      Comentario reportado: “{textoComentario}”
+                    </blockquote>
+                  )}
 
-              <div className="adm-reporte-acciones">
-                {r.foro_id && (
-                  <Link to={`/foro/${r.foro_id}`} className="adm-btn adm-btn-ghost adm-btn-sm">👁 Ver hilo</Link>
-                )}
-                {!r.contenidoEliminado && (r.foro_id || r.comentario_id) && (
-                  <button type="button" className="adm-btn adm-btn-sm adm-btn-peligro" disabled={ocupado} onClick={() => eliminarContenido(r)}>
-                    🗑 {r.comentario_id ? 'Eliminar comentario' : 'Eliminar hilo'}
-                  </button>
-                )}
-                {estId === ESTADOS_REPORTE.PENDIENTE && (
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn-sm adm-btn-advertencia"
-                    disabled={ocupado}
-                    onClick={() => cambiarEstado(r, ESTADOS_REPORTE.EN_REVISION, 'Reporte en revisión')}
-                  >
-                    🔎 Poner en revisión
-                  </button>
-                )}
-                {resuelto ? (
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn-ghost adm-btn-sm"
-                    disabled={ocupado}
-                    onClick={() => cambiarEstado(r, ESTADOS_REPORTE.PENDIENTE, 'Reporte reabierto')}
-                  >
-                    ↩ Reabrir
-                  </button>
-                ) : (
-                  <button type="button" className="adm-btn adm-btn-secundario adm-btn-sm" disabled={ocupado} onClick={() => resolver(r)}>
-                    ✅ Marcar como resuelto
-                  </button>
-                )}
-                <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" disabled={ocupado} onClick={() => descartar(r)}>
-                  Descartar
-                </button>
-              </div>
-            </div>
-          );
-        })
+                  <div className="d-flex flex-wrap gap-2">
+                    {r.foro_id && (
+                      <Button as={Link} to={`/foro/${r.foro_id}`} variant="outline-secondary" size="sm">
+                        <i className="bi bi-eye me-1" /> Ver hilo
+                      </Button>
+                    )}
+                    {!r.contenidoEliminado && (r.foro_id || r.comentario_id) && (
+                      <Button variant="outline-danger" size="sm" disabled={ocupado} onClick={() => eliminarContenido(r)}>
+                        <i className="bi bi-trash me-1" /> {r.comentario_id ? 'Eliminar comentario' : 'Eliminar hilo'}
+                      </Button>
+                    )}
+                    {estId === ESTADOS_REPORTE.PENDIENTE && (
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        disabled={ocupado}
+                        onClick={() => cambiarEstado(r, ESTADOS_REPORTE.EN_REVISION, 'Reporte en revisión')}
+                      >
+                        <i className="bi bi-search me-1" /> Poner en revisión
+                      </Button>
+                    )}
+                    {resuelto ? (
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        disabled={ocupado}
+                        onClick={() => cambiarEstado(r, ESTADOS_REPORTE.PENDIENTE, 'Reporte reabierto')}
+                      >
+                        <i className="bi bi-arrow-counterclockwise me-1" /> Reabrir
+                      </Button>
+                    ) : (
+                      <Button variant="success" size="sm" disabled={ocupado} onClick={() => resolver(r)}>
+                        <i className="bi bi-check-circle me-1" /> Marcar como resuelto
+                      </Button>
+                    )}
+                    <Button variant="link" size="sm" className="text-secondary" disabled={ocupado} onClick={() => descartar(r)}>
+                      Descartar
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </>
   );

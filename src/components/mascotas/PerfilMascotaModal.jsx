@@ -1,4 +1,4 @@
-import { urlFoto } from '../../services/mascotasService';
+import { urlFoto, fotoDeMascota, SIN_FOTO } from '../../services/mascotasService';
 
 export default function PerfilMascotaModal({ mascota, onClose }) {
   if (!mascota) return null;
@@ -15,7 +15,8 @@ export default function PerfilMascotaModal({ mascota, onClose }) {
             <div className="row g-4 align-items-center">
               <div className="col-md-5 text-center">
                 <img
-                  src={urlFoto(mascota.foto)}
+                  src={urlFoto(fotoDeMascota(mascota))}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = SIN_FOTO; }}
                   alt={mascota.nombre}
                   className="img-fluid rounded shadow-sm"
                   style={{ maxHeight: '250px', objectFit: 'cover', width: '100%' }}
