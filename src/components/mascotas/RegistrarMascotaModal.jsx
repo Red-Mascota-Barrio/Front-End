@@ -15,9 +15,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
   });
 
   const [especies, setEspecies] = useState([]);
+  const [cargandoEspecies, setCargandoEspecies] = useState(true);
+  const [errorEspecies, setErrorEspecies] = useState('');
   const [razas, setRazas] = useState([]);
   const [cargandoRazas, setCargandoRazas] = useState(false);
   const [previa, setPrevia] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState('');
 
   // Libera la URL temporal de la vista previa
   useEffect(() => () => previa && URL.revokeObjectURL(previa), [previa]);
@@ -30,7 +34,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
       .then(data => {
         if (activo) setEspecies(data);
       })
-      .catch(err => console.error('Error al obtener especies:', err));
+      .catch(err => {
+        console.error('Error al obtener especies:', err);
+        if (activo) setErrorEspecies('No se pudieron cargar las especies desde el servidor.');
+      })
+      .finally(() => {
+        if (activo) setCargandoEspecies(false);
+      });
 
     return () => {
       activo = false;
@@ -84,9 +94,25 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onGuardar(formData);
+    setGuardando(true);
+    setErrorGuardar('');
+    try {
+      await onGuardar(formData);
+    } catch (err) {
+      console.error('Error al guardar mascota:', err);
+      const respuesta = err?.response?.data;
+      const erroresValidacion = Object.values(respuesta?.error ?? {}).flat().join(' ');
+      setErrorGuardar(
+        erroresValidacion
+        || respuesta?.mensaje
+        || respuesta?.message
+        || 'No se pudo registrar la mascota. Comprueba los datos y vuelve a intentar.'
+      );
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -99,6 +125,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
           </div>
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
+              {errorGuardar && <div className="alert alert-danger" role="alert">{errorGuardar}</div>}
               <div className="row g-3">
                 {/* Nombre */}
                 <div className="col-md-6">
@@ -121,15 +148,19 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                     name="id_especie"
                     value={formData.id_especie}
                     onChange={handleChange}
+                    disabled={cargandoEspecies || Boolean(errorEspecies)}
                     required
                   >
-                    <option value="">-- Seleccionar Especie --</option>
+                    <option value="">
+                      {cargandoEspecies ? 'Cargando especies...' : '-- Seleccionar Especie --'}
+                    </option>
                     {especies.map((item) => (
-                      <option key={item.id ?? item.id_especie} value={item.id ?? item.id_especie}>
-                        {item.nombre ?? item.especie}
+                      <option key={item.id_especie ?? item.id} value={item.id_especie ?? item.id}>
+                        {item.nombre_especie ?? item.nombre ?? item.especie}
                       </option>
                     ))}
                   </select>
+                  {errorEspecies && <div className="form-text text-danger" role="alert">{errorEspecies}</div>}
                 </div>
 
                 {/* Desplegable Raza (Dependiente) */}
@@ -151,8 +182,8 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                         : '-- Seleccionar Raza --'}
                     </option>
                     {razas.map((item) => (
-                      <option key={item.id ?? item.id_raza} value={item.id ?? item.id_raza}>
-                        {item.nombre ?? item.raza}
+                      <option key={item.id_raza ?? item.id} value={item.id_raza ?? item.id}>
+                        {item.nombre_raza ?? item.nombre ?? item.raza}
                       </option>
                     ))}
                   </select>
@@ -255,11 +286,11 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
             </div>
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={guardando}>
                 Cancelar
               </button>
-              <button type="submit" className="btn btn-primary">
-                Guardar Mascota
+              <button type="submit" className="btn btn-primary" disabled={guardando}>
+                {guardando ? 'Guardando...' : 'Guardar Mascota'}
               </button>
             </div>
           </form>

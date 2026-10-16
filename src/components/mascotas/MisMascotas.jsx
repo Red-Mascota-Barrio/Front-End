@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { mascotasService } from '../../services/mascotasService';
 import MascotaCard from './MascotaCard';
 import RegistrarMascotaModal from './RegistrarMascotaModal';
 import PerfilMascotaModal from './PerfilMascotaModal';
 
 export default function MisMascotas() {
+  const [searchParams] = useSearchParams();
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
+  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(
+    () => searchParams.get('registrar') === '1'
+  );
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
   const cargar = useCallback(async () => {
@@ -40,7 +44,7 @@ export default function MisMascotas() {
       await cargar();
     } catch (err) {
       console.error('Error al registrar mascota:', err);
-      setError('No se pudo registrar la mascota.');
+      throw err;
     }
   };
 
@@ -104,4 +108,3 @@ export default function MisMascotas() {
     </div>
   );
 }
-

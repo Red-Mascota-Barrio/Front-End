@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
