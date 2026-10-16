@@ -1,83 +1,63 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
-import foroService from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
   const [categoria, setCategoria] = useState('');
-  const [categoriasList, setCategoriasList] = useState([]);
+  
+  // Estados para manejar las categorías y la carga
+  const [categoriasList, setCategoriasList] = useState([]); 
   const [loading, setLoading] = useState(true);
 
-  const manejarPublicacion = async (e) => {
+  // Manejar el envío del formulario
+  const manejarPublicacion = (e) => {
     e.preventDefault();
 
-    if (!titulo.trim() || !contenido.trim()) {
-      alert("Completa el título y el contenido.");
+    // Validar que los campos no estén vacíos
+    if (!titulo.trim() || !contenido.trim() || !categoria) {
       return;
     }
 
     const nuevoHilo = {
-      titulo: titulo.trim(),
-      contenido: contenido.trim(),
-      categoria_foro_id: Number(categoria) || 1,
+      id: Date.now(),
+      titulo: titulo,
+      contenido: contenido,
+      categoria_foro_id: categoria, // Enviamos el ID de la categoría al backend
+      autor: "Usuario actual",
+      respuestas: 0,
+      visitas: 0,
+      destacado: false,
     };
 
-    try {
-      const respuesta = await foroService.crear(nuevoHilo);
-
-      if (respuesta.resultado === "ok") {
-        onCrearHilo(respuesta.datos);
-        onCerrar();
-      } else {
-        alert(respuesta.mensaje || "No se pudo publicar el hilo.");
-      }
-    } catch (error) {
-      console.error("Error al publicar el hilo:", error);
-      console.error("Estado HTTP:", error.response?.status);
-      console.error("Respuesta de Laravel:", error.response?.data);
-
-      if (error.response) {
-        alert(
-          "Error HTTP: " +
-            error.response.status +
-            "\n" +
-            JSON.stringify(error.response.data, null, 2),
-        );
-      } else {
-        alert(
-          "No se recibió respuesta del servidor. Revisa la conexión con Laravel.",
-        );
-      }
-    }
+    onCrearHilo(nuevoHilo);
+    onCerrar();
   };
 
+  // Traer las categorías desde el backend
   useEffect(() => {
-    // Asegúrate de incluir /api/ si tu ruta de Laravel está en api.php
-    fetch('http://127.0.0.1:8000/api/categorias') 
+    fetch('http://127.0.0.1:8000/api/categorias')
       .then((response) => {
         if (!response.ok) {
-          console.log('no paso de aqui')
-          throw new Error('Ruta no encontrada o error del servidor');
-          
-        } 
-        console.log('paso de aqui')
+          throw new Error('Error al cargar categorías');
+        }
         return response.json();
       })
       .then((data) => {
-        // Obtenemos el arreglo (venga de data.datos o directo de data)
+        // Aseguramos obtener el arreglo ya sea de data.datos o directo
         const arrayCategorias = data.datos ? data.datos : data;
         
-        // Si por alguna razón no es un array, guardamos un array vacío
+        // Protección vital: Solo guardamos si es un arreglo válido
         if (Array.isArray(arrayCategorias)) {
           setCategoriasList(arrayCategorias);
+        } else {
+          setCategoriasList([]);
         }
-        console.log('categorias: ', arrayCategorias); // Para depuración: ver qué se recibe
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error al cargar las categorías:', error);
-        setCategoriasList([]); // Protección: asegura que siga siendo un array vacío
+        console.error('Error en fetch de categorías:', error);
+        setCategoriasList([]); // Evita que el .map() rompa la página
         setLoading(false);
       });
   }, []);
@@ -90,11 +70,12 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
 
       <Form onSubmit={manejarPublicacion}>
         <Modal.Body className="pt-3">
+          
           <Form.Group className="mb-3" controlId="titulo">
             <Form.Label className="fw-bold text-dark small">Título</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Escribe el título"
+              placeholder="Escribe el título..."
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className="shadow-none"
@@ -109,7 +90,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
               className="shadow-none"
-              disabled={loading}
+              disabled={loading} // Bloquea el select mientras carga
             >
               <option value="">
                 {loading
@@ -117,7 +98,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
                   : "Selecciona una categoría"}
               </option>
 
-              {/* Usamos un "&&" para asegurarnos de que categoriasList existe y es un array antes de mapear */}
+              {/* Mapeo protegido con las llaves de tu Base de Datos */}
               {Array.isArray(categoriasList) && categoriasList.map((cat) => (
                 <option key={cat.id_categoria} value={cat.id_categoria}>
                   {cat.nombre_categoria}
@@ -139,6 +120,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
               className="shadow-none"
             />
           </Form.Group>
+
         </Modal.Body>
 
         <Modal.Footer className="border-0 pt-0">
