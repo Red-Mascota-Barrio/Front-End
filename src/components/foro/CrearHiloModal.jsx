@@ -1,23 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
-  const [categoria, setCategoria] = useState("");
   const [contenido, setContenido] = useState("");
+  const [categoria, setCategoria] = useState('');
+  
+  // Estados para manejar las categorías y la carga
+  const [categoriasList, setCategoriasList] = useState([]); 
+  const [loading, setLoading] = useState(true);
 
-  const manejarPublicacion = async (e) => {
+  // Manejar el envío del formulario
+  const manejarPublicacion = (e) => {
     e.preventDefault();
 
-    if (!titulo.trim() || !contenido.trim()) {
-      alert("Completa el título y el contenido.");
+    // Validar que los campos no estén vacíos
+    if (!titulo.trim() || !contenido.trim() || !categoria) {
       return;
     }
 
     const nuevoHilo = {
-      titulo: titulo.trim(),
-      contenido: contenido.trim(),
-      categoria_foro_id: Number(categoria) || 1,
+      id: Date.now(),
+      titulo: titulo,
+      contenido: contenido,
+      categoria_foro_id: categoria, // Enviamos el ID de la categoría al backend
+      autor: "Usuario actual",
+      respuestas: 0,
+      visitas: 0,
+      destacado: false,
     };
 
     try {
@@ -48,6 +58,34 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
       }
     }
   };
+
+  // Traer las categorías desde el backend
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/categorias')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Error al cargar categorías');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Aseguramos obtener el arreglo ya sea de data.datos o directo
+        const arrayCategorias = data.datos ? data.datos : data;
+        
+        // Protección vital: Solo guardamos si es un arreglo válido
+        if (Array.isArray(arrayCategorias)) {
+          setCategoriasList(arrayCategorias);
+        } else {
+          setCategoriasList([]);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error en fetch de categorías:', error);
+        setCategoriasList([]); // Evita que el .map() rompa la página
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div

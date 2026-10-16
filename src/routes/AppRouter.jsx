@@ -24,7 +24,6 @@ export const AppRouter = () => {
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
       <Route path="/eventos" element={<Eventos />} />
-      <Route path="/mascotas" element={<Mascotas />} />
       <Route path="/foro" element={<Foro />} />
       <Route path="/foro/:id" element={<ForoDetalle />} />
       
