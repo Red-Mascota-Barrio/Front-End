@@ -16,7 +16,7 @@ const FORM_VACIO = { nombre: '', apellido: '', telefono: '', barrio: '', ciudad:
 export const AdminUsuarios = () => {
   const { user } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(true); 
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [filtroRol, setFiltroRol] = useState('');
