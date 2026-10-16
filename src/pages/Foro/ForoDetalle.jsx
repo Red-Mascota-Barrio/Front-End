@@ -78,7 +78,7 @@ function ForoDetalle() {
       <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#f0fdfa" }}>
         <AppNavbar />
         <main className="container my-5 text-center flex-grow-1">
-          <p className="text-muted">Cargando hilo...</p>
+          <p className="text-muted">Cargando foro</p>
         </main>
         <Footer />
       </div>
@@ -98,7 +98,7 @@ function ForoDetalle() {
           </button>
           <div className="card border-0 shadow-sm rounded-4 text-center py-5 bg-white">
             <div className="card-body">
-              <h1 className="h4 text-dark mb-0">Hilo no encontrado</h1>
+              <h1 className="h4 text-dark mb-0">Foro no encontrado</h1>
             </div>
           </div>
         </main>

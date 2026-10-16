@@ -7,8 +7,8 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { Eventos } from '../pages/Eventos/Eventos';
 import { Perfil } from '../pages/Perfil/Perfil';
 import { EditarPerfil } from '../pages/Perfil/EditarPerfil';
-import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
-import { Foro }  from '../pages/Foro/Foro';
+import Foro  from '../pages/Foro/Foro';
+//import Mascotas from '../pages/Mascotas/Mascotas'
 import ForoDetalle from '../pages/Foro/ForoDetalle';
 
 
@@ -24,7 +24,6 @@ export const AppRouter = () => {
       <Route path="/registro" element={<Registro />} />
       <Route path="/recuperar" element={<Recuperar />} />
       <Route path="/eventos" element={<Eventos />} />
-      <Route path="/mascotas" element={<Mascotas />} />
       <Route path="/foro" element={<Foro />} />
       <Route path="/foro/:id" element={<ForoDetalle />} />
       
@@ -39,15 +38,7 @@ export const AppRouter = () => {
         
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={[1]} />}>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="usuarios" element={<AdminUsuarios />} />
-          <Route path="mascotas" element={<AdminMascotas />} />
-          <Route path="eventos" element={<AdminEventos />} />
-          <Route path="reportes" element={<AdminReportes />} />
-        </Route>
-      </Route>
+      
 
       {/* Redirección automática por si escriben cualquier otra ruta */}
       <Route path="*" element={<Navigate to="/" replace />} />

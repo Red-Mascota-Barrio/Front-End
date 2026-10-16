@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+import { foroService } from "../../services/foroService";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
@@ -58,7 +58,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content border-0 shadow">
           <div className="modal-header">
-            <h5 className="modal-title fw-bold">Crear nuevo hilo</h5>
+            <h5 className="modal-title fw-bold">Crear nuevo foro</h5>
             <button
               type="button"
               className="btn-close"

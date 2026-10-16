@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 import ForoHeader from "../../components/foro/ForoHeader";
 import FiltrosForo from "../../components/foro/FiltrosForo";
@@ -35,20 +35,28 @@ function Foro() {
     const contenido = hilo?.contenido?.toLowerCase() || "";
     
     // Mapeo seguro de la categoría desde Laravel
-    const nombreCategoria = (
+    const catTexto = (
       hilo?.categoriaForo?.nombre_categoria || 
       hilo?.categoria || 
       ""
     ).toLowerCase();
+
+    const catId = Number(hilo?.categoria_foro_id || hilo?.id_categoria || 0);
 
     const textoBusqueda = busqueda.toLowerCase().trim();
 
     const coincideBusqueda =
       titulo.includes(textoBusqueda) || contenido.includes(textoBusqueda);
 
+    const catSeleccionada = categoria.toLowerCase();
+
     const coincideCategoria =
       categoria === "todas" ||
-      nombreCategoria.includes(categoria.toLowerCase());
+      (catSeleccionada === "perro" && (catId === 1 || catTexto.includes("perro"))) ||
+      // Si seleccionó Gato: valida si el ID es 2 o si el texto contiene "gato"
+      (catSeleccionada === "gato" && (catId === 2 || catTexto.includes("gato"))) ||
+      // Búsqueda general por si la categoría se llama distinto en base de datos
+      catTexto.includes(catSeleccionada);
 
     return coincideBusqueda && coincideCategoria;
   });

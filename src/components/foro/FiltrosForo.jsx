@@ -10,7 +10,7 @@ function FiltrosForo({
         <input
           type="text"
           className="form-control py-2"
-          placeholder="Buscar en el foro..."
+          placeholder="Buscar en el foro"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
