@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 
 function CrearHiloModal({ onCerrar, onCrearHilo }) {
   const [titulo, setTitulo] = useState("");
-  const [categoria, setCategoria] = useState("general");
   const [contenido, setContenido] = useState("");
+  const [categoria, setCategoria] = useState('');
+  const [categoriasList, setCategoriasList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const manejarPublicacion = (e) => {
     e.preventDefault();
 
-    if (!titulo.trim() || !contenido.trim()) {
+    if (!titulo.trim() || !contenido.trim() || !categoria) {
       return;
     }
 
@@ -17,7 +19,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
       id: Date.now(),
       titulo: titulo,
       contenido: contenido,
-      categoria: categoria,
+      categoria: categoria, // Esto enviará el id_categoria
       autor: "Usuario actual",
       respuestas: 0,
       visitas: 0,
@@ -25,9 +27,38 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
     };
 
     onCrearHilo(nuevoHilo);
-
     onCerrar();
   };
+
+  useEffect(() => {
+    // Asegúrate de incluir /api/ si tu ruta de Laravel está en api.php
+    fetch('http://127.0.0.1:8000/api/categorias') 
+      .then((response) => {
+        if (!response.ok) {
+          console.log('no paso de aqui')
+          throw new Error('Ruta no encontrada o error del servidor');
+          
+        } 
+        console.log('paso de aqui')
+        return response.json();
+      })
+      .then((data) => {
+        // Obtenemos el arreglo (venga de data.datos o directo de data)
+        const arrayCategorias = data.datos ? data.datos : data;
+        
+        // Si por alguna razón no es un array, guardamos un array vacío
+        if (Array.isArray(arrayCategorias)) {
+          setCategoriasList(arrayCategorias);
+        }
+        console.log('categorias: ', arrayCategorias); // Para depuración: ver qué se recibe
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error al cargar las categorías:', error);
+        setCategoriasList([]); // Protección: asegura que siga siendo un array vacío
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <Modal show={true} onHide={onCerrar} centered backdrop="static">
@@ -49,20 +80,34 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="categoria">
-            <Form.Label className="fw-bold text-dark small">Categoría</Form.Label>
+            <Form.Label className="fw-bold text-dark small">
+              Categoría
+            </Form.Label>
             <Form.Select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
               className="shadow-none"
+              disabled={loading}
             >
-              <option value="general">General</option>
-              <option value="estudio">Estudio</option>
-              <option value="proyectos">Proyectos</option>
+              <option value="">
+                {loading
+                  ? "Cargando categorías..."
+                  : "Selecciona una categoría"}
+              </option>
+
+              {/* Usamos un "&&" para asegurarnos de que categoriasList existe y es un array antes de mapear */}
+              {Array.isArray(categoriasList) && categoriasList.map((cat) => (
+                <option key={cat.id_categoria} value={cat.id_categoria}>
+                  {cat.nombre_categoria}
+                </option>
+              ))}
             </Form.Select>
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="contenido">
-            <Form.Label className="fw-bold text-dark small">Contenido</Form.Label>
+            <Form.Label className="fw-bold text-dark small">
+              Contenido
+            </Form.Label>
             <Form.Control
               as="textarea"
               rows={5}

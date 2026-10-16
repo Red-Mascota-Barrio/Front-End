@@ -1,9 +1,44 @@
+import { useState, useEffect } from "react";
+
 function FiltrosForo({
   busqueda,
   setBusqueda,
   categoria,
   setCategoria,
 }) {
+  // 1. Estados para manejar las categorías de la BD
+  const [categoriasList, setCategoriasList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 2. Traer las categorías desde el backend al cargar el componente
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/categorias')
+      .then((response) => {
+        if (!response.ok) {
+          console.log('estoy aqui')
+          throw new Error('Error al cargar categorías');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const arrayCategorias = data.datos ? data.datos : data;
+        
+        // Protección: Solo guardamos si es un arreglo válido
+        if (Array.isArray(arrayCategorias)) {
+          setCategoriasList(arrayCategorias);
+        } else {
+          setCategoriasList([]);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log('estoy aqui 2')
+        console.error('Error al cargar los filtros de categorías:', error);
+        setCategoriasList([]); // Evita pantalla en blanco
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <section className="filtros-foro">
       <div className="buscador-foro">
@@ -19,22 +54,21 @@ function FiltrosForo({
         <select
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
+          disabled={loading} // Se bloquea mientras carga
         >
           <option value="todas">
-            Todas las categorías
+            {loading ? "Cargando..." : "Todas las categorías"}
           </option>
 
-          <option value="general">
-            General
-          </option>
-
-          <option value="estudio">
-            Estudio
-          </option>
-
-          <option value="proyectos">
-            Proyectos
-          </option>
+          {/* 3. Mapeo protegido de las opciones */}
+          {Array.isArray(categoriasList) && categoriasList.map((cat) => (
+            <option 
+              key={cat.id_categoria} 
+              value={cat.nombre_categoria} // Usamos el nombre para que funcione con tu backend actual
+            >
+              {cat.nombre_categoria}
+            </option>
+          ))}
         </select>
       </div>
     </section>
