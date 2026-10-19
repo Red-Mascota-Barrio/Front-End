@@ -1,59 +1,69 @@
-export default function EventoCard({ evento, onInscribir }) {
-  const total = evento.cuposTotales || 0;
-  const cuposAgotados = total > 0 && evento.cuposOcupados >= total;
-  const porcentaje = total > 0 ? Math.min(100, (evento.cuposOcupados / total) * 100) : 0;
+import { Button } from 'react-bootstrap';
+import { Icono, IconoTipoEvento } from '../common/Icono';
+import { aFecha } from '../../utils/admin';
+import { claseBadgeTipo, estadoCupos } from '../../utils/eventos';
 
-  return (
-    <div className={`card h-100 shadow-sm border-0 rounded-4 overflow-hidden ${evento.destacado ? 'border border-warning border-2' : ''}`}>
-      <div className="card-body d-flex flex-column p-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          {evento.destacado ? (
-            <span className="badge bg-warning bg-opacity-10 text-warning border border-warning rounded-pill px-3 py-2 fw-medium">
-              ⭐ Destacado
-            </span>
-          ) : <span />}
-          <span className="badge bg-info bg-opacity-10 text-info border border-info rounded-pill px-3 py-2 fw-medium ms-auto">
-            {evento.tipo}
-          </span>
-        </div>
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        <h5 className="card-title fw-bold text-dark mb-2">{evento.titulo}</h5>
-        <p className="card-text text-muted small mb-4 flex-grow-1">{evento.descripcion}</p>
-
-        <div className="bg-light p-3 rounded-3 mb-3 small text-secondary">
-          <div className="mb-1">📅 <strong>Fecha:</strong> {evento.fecha} &nbsp; 🕒 <strong>Hora:</strong> {evento.hora}</div>
-          <div>📍 <strong>Lugar:</strong> {evento.lugar}</div>
-        </div>
-
-        {/* Indicador de cupos */}
-        <div className="mb-4 mt-auto">
-          <div className="d-flex justify-content-between small text-muted mb-1">
-            <span>Cupos ocupados</span>
-            <span className="fw-bold">{evento.cuposOcupados} / {total}</span>
-          </div>
-          <div className="progress rounded-pill" style={{ height: '8px' }}>
-            <div
-              className={`progress-bar rounded-pill ${cuposAgotados ? 'bg-danger' : 'bg-success'}`}
-              style={{ width: `${porcentaje}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Botón según estado */}
-        {evento.inscrito ? (
-          <button className="btn btn-outline-success rounded-pill w-100 fw-medium" disabled>
-            ✓ Ya estás inscrito
-          </button>
-        ) : cuposAgotados ? (
-          <button className="btn btn-secondary rounded-pill w-100 fw-medium" disabled>
-            Cupos llenos
-          </button>
-        ) : (
-          <button className="btn btn-primary rounded-pill w-100 fw-medium shadow-sm" onClick={() => onInscribir(evento)}>
-            Inscribirme
+// Botón de inscripción según el estado del evento
+export const BotonInscripcion = ({ evento, onInscribir, onCancelar, size = 'sm', principal = false }) => {
+  const { lleno } = estadoCupos(evento);
+  if (evento.inscrito) {
+    return (
+      <div className="d-flex flex-column align-items-start align-items-sm-end gap-1">
+        <span className="badge badge-verde"><Icono nombre="check-circle" /> Inscrito</span>
+        {onCancelar && (
+          <button type="button" className="btn btn-link btn-sm p-0 text-secondary" onClick={() => onCancelar(evento)}>
+            Cancelar inscripción
           </button>
         )}
       </div>
-    </div>
+    );
+  }
+  if (lleno) {
+    return <Button size={size} variant="secondary" disabled>Cupos llenos</Button>;
+  }
+  return (
+    <Button size={size} variant={principal ? 'primary' : 'outline-primary'} onClick={() => onInscribir(evento)}>
+      {principal ? <>Inscribirme al evento <Icono nombre="arrow-right" /></> : 'Inscribirme'}
+    </Button>
+  );
+};
+
+// Tarjeta de evento en lista (fecha a la izquierda), como en Eventos.html
+export default function EventoCard({ evento, onInscribir, onCancelar }) {
+  const fecha = aFecha(evento.fecha);
+  const { total, lleno, quedan } = estadoCupos(evento);
+
+  return (
+    <article className={`evento-card ${evento.inscrito ? 'inscrito' : ''}`}>
+      <div className="evento-fecha-barra" aria-label={evento.fecha}>
+        <div className="dia">{fecha ? String(fecha.getDate()).padStart(2, '0') : '--'}</div>
+        <div className="mes">{fecha ? MESES[fecha.getMonth()] : ''}</div>
+      </div>
+
+      <div className="evento-card-cuerpo">
+        <h3 title={evento.titulo}>{evento.titulo}</h3>
+        <p>{evento.descripcion}</p>
+        <div className="evento-card-meta">
+          {evento.hora && <span><Icono nombre="clock" /> {evento.hora}</span>}
+          {evento.lugar && <span><Icono nombre="geo-alt" /> {evento.lugar}</span>}
+          <span className={`badge ${claseBadgeTipo(evento.tipo)}`}>
+            <IconoTipoEvento tipo={evento.tipo} /> {evento.tipo}
+          </span>
+        </div>
+      </div>
+
+      <div className="evento-card-accion">
+        <BotonInscripcion evento={evento} onInscribir={onInscribir} onCancelar={onCancelar} />
+        {total > 0 ? (
+          <span className={`evento-cupos ${lleno ? 'lleno' : ''}`}>
+            {lleno ? 'Sin cupos' : `${quedan} cupos libres`}
+          </span>
+        ) : (
+          <span className="evento-cupos">{evento.cuposOcupados} inscritos</span>
+        )}
+      </div>
+    </article>
   );
 }

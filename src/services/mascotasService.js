@@ -1,4 +1,4 @@
-import api from './api';
+import { api } from './api';
 import SIN_FOTO from '../assets/images/common/pata.png';
 
 export { SIN_FOTO };

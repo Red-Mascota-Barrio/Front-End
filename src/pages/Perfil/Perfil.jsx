@@ -1,69 +1,69 @@
 import { useEffect, useState } from 'react';
 import { Container, Tabs, Tab, Spinner, Alert } from 'react-bootstrap';
-import { FaPaw, FaComments, FaCalendarCheck } from 'react-icons/fa';
 import { AppNavbar } from '../../components/layout/AppNavbar';
 import { Footer } from '../../components/layout/Footer';
+import { Icono } from '../../components/common/Icono';
 import { PerfilHeader } from '../../components/perfil/PerfilHeader';
 import { TabMisMascotas } from '../../components/perfil/TabMisMascotas';
 import { TabActividadForo } from '../../components/perfil/TabActividadForo';
 import { TabEventos } from '../../components/perfil/TabEventos';
 import { perfilService } from '../../services/perfilService';
 import { useAuth } from '../../context/AuthContext';
-import '../../styles/home.css';
 import '../../styles/perfil.css';
 
+const Titulo = ({ icono, children }) => (
+  <>
+    <Icono nombre={icono} className="me-2" />
+    {children}
+  </>
+);
+
 export const Perfil = () => {
-  const { user, updateUser } = useAuth();
-  const [estadisticas, setEstadisticas] = useState(null);
+  const { user, updateUser, statsUsuario } = useAuth();
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
 
-  // RF05: trae los datos actualizados del perfil y sus estadísticas
+  // RF05: refresca los datos del usuario con GET /user. Las cifras vienen de
+  // GET /estadisticas/usuario, que ya carga AuthContext (statsUsuario).
   useEffect(() => {
     perfilService
       .obtener()
-      .then((data) => {
-        const { estadisticas: stats, ...resto } = data?.usuario ?? data ?? {};
-        setEstadisticas(data?.estadisticas ?? stats ?? null);
-        if (resto && Object.keys(resto).length) updateUser(resto);
-      })
+      .then((data) => data && updateUser(data))
       .catch(() => setError(true)) // si falla, se muestran los datos guardados en sesión
       .finally(() => setCargando(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="inicio-page d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column min-vh-100">
       <AppNavbar />
       <main className="flex-grow-1">
-        {cargando ? (
-          <div className="text-center py-5"><Spinner animation="border" className="perfil-spinner" /></div>
-        ) : (
-          <>
-            {error && (
-              <Container className="pt-3">
-                <Alert variant="warning" className="small mb-0">
-                  No se pudieron actualizar las estadísticas. Mostrando la información guardada.
+        <Container className="perfil-main">
+          {cargando ? (
+            <div className="text-center py-5"><Spinner animation="border" role="status" /></div>
+          ) : (
+            <>
+              {error && (
+                <Alert variant="warning">
+                  <Icono nombre="exclamation-triangle" /> No se pudieron actualizar los datos del perfil. Mostrando la información guardada.
                 </Alert>
-              </Container>
-            )}
-            <PerfilHeader usuario={user} estadisticas={estadisticas} />
+              )}
+              <PerfilHeader usuario={user} estadisticas={statsUsuario} />
 
-            <Container className="perfil-contenido">
-              <Tabs defaultActiveKey="mascotas" className="perfil-tabs mb-4" fill>
-                <Tab eventKey="mascotas" title={<><FaPaw className="me-2" />Mis mascotas</>}>
-                  <TabMisMascotas />
+              <Tabs defaultActiveKey="mascotas" className="perfil-tabs" id="pestanas-perfil">
+                <Tab eventKey="mascotas" title={<Titulo icono="heart">Mis mascotas</Titulo>}>
+                  <TabMisMascotas cantidad={statsUsuario?.mascotas} />
                 </Tab>
-                <Tab eventKey="foro" title={<><FaComments className="me-2" />Actividad en el foro</>} mountOnEnter>
-                  <TabActividadForo />
+                <Tab eventKey="foro" title={<Titulo icono="chat-left-text">Mis publicaciones</Titulo>} mountOnEnter>
+                  <TabActividadForo idUsuario={user?.id_usuario} />
                 </Tab>
-                <Tab eventKey="eventos" title={<><FaCalendarCheck className="me-2" />Eventos</>} mountOnEnter>
+                <Tab eventKey="eventos" title={<Titulo icono="calendar-event">Eventos</Titulo>} mountOnEnter>
                   <TabEventos />
                 </Tab>
               </Tabs>
-            </Container>
-          </>
-        )}
+            </>
+          )}
+        </Container>
       </main>
       <Footer />
     </div>

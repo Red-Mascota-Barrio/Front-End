@@ -1,62 +1,57 @@
-import { useState, useEffect } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+import { useState } from "react";
+import { Modal, Form, Button, Alert } from "react-bootstrap";
 import { foroService } from "../../services/foroService";
+import { categoriasDesdeHilos } from "../../utils/foro";
+import { Icono } from "../common/Icono";
 
-function CrearHiloModal({ onCerrar, onCrearHilo }) {
+
+function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
+  const opciones = categorias.length ? categorias : categoriasDesdeHilos();
+
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  const [categoria, setCategoria] = useState('');
-  
-  // Estados para manejar las categorías y la carga
-  const [categoriasList, setCategoriasList] = useState([]); 
-  const [loading, setLoading] = useState(true);
+  // Antes arrancaba en '' pero el select mostraba "Perro": al publicar sin tocarlo no pasaba nada
+  const [categoria, setCategoria] = useState(String(opciones[0]?.id_categoria ?? ""));
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
 
   // Manejar el envío del formulario
   const manejarPublicacion = async (e) => {
     e.preventDefault();
-
-    // Validar que los campos no estén vacíos
     if (!titulo.trim() || !contenido.trim() || !categoria) {
+      setError("Completa el título, la categoría y el contenido.");
       return;
     }
 
     const nuevoHilo = {
-      id: Date.now(),
-      titulo: titulo,
-      contenido: contenido,
-      categoria_foro_id: categoria, // Enviamos el ID de la categoría al backend
-      autor: "Usuario actual",
-      respuestas: 0,
-      visitas: 0,
-      destacado: false,
+      titulo: titulo.trim(),
+      contenido: contenido.trim(),
+      categoria_foro_id: Number(categoria), // ForoController valida categoria_foro_id
     };
 
     try {
+      setEnviando(true);
+      setError(null);
       const respuesta = await foroService.crear(nuevoHilo);
 
-      if (respuesta.resultado === "ok") {
+      if (respuesta.resultado === "ok" || respuesta.datos) {
         onCrearHilo(respuesta.datos);
         onCerrar();
       } else {
-        alert(respuesta.mensaje || "No se pudo publicar el hilo.");
+        setError(respuesta.mensaje || "No se pudo publicar el hilo.");
       }
-    } catch (error) {
-      console.error("Error al publicar el hilo:", error);
-      console.error("Estado HTTP:", error.response?.status);
-      console.error("Respuesta de Laravel:", error.response?.data);
-
-      if (error.response) {
-        alert(
-          "Error HTTP: " +
-            error.response.status +
-            "\n" +
-            JSON.stringify(error.response.data, null, 2),
-        );
-      } else {
-        alert(
-          "No se recibió respuesta del servidor.",
-        );
-      }
+    } catch (err) {
+      console.error("Error al publicar el hilo:", err.response?.data ?? err);
+      const data = err.response?.data;
+      const validacion = data?.errors ?? data?.errores;
+      // 429: solo un hilo cada 30 min · 409: título repetido (mensajes de ForoController)
+      if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un hilo.");
+      else if ([409, 429].includes(err.response?.status)) setError(data?.mensaje);
+      else if (validacion) setError(Object.values(validacion).flat().join(" "));
+      else if (err.response) setError(data?.mensaje || data?.message || `Error del servidor (${err.response.status}).`);
+      else setError("No se recibió respuesta del servidor.");
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -89,86 +84,61 @@ function CrearHiloModal({ onCerrar, onCrearHilo }) {
   }, []);
 
   return (
-    <div
-      className="modal show d-block"
-      tabIndex="-1"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-    >
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow">
-          <div className="modal-header">
-            <h5 className="modal-title fw-bold">Crear nuevo foro</h5>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onCerrar}
-            ></button>
-          </div>
+    <Modal show onHide={enviando ? undefined : onCerrar} centered>
+      <Modal.Header closeButton={!enviando}>
+        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo hilo</Modal.Title>
+      </Modal.Header>
 
-          <form onSubmit={manejarPublicacion}>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label htmlFor="titulo" className="form-label fw-semibold">
-                  Título
-                </label>
-                <input
-                  id="titulo"
-                  type="text"
-                  className="form-control"
-                  placeholder="Escribe el título"
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  required
-                />
-              </div>
+      <Form onSubmit={manejarPublicacion} noValidate>
+        <Modal.Body>
+          {error && <Alert variant="danger"><Icono nombre="exclamation-circle" /> {error}</Alert>}
 
-              <div className="mb-3">
-                <label htmlFor="categoria" className="form-label fw-semibold">
-                  Categoría
-                </label>
-                <select
-                  id="categoria"
-                  className="form-select"
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                >
-                  <option value="1">Perro</option>
-                  <option value="2">Gato</option>
-                </select>
-              </div>
+          <Form.Group className="mb-3" controlId="titulo">
+            <Form.Label>Título</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="¿Sobre qué quieres hablar?"
+              maxLength={255}
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              required
+            />
+          </Form.Group>
 
-              <div className="mb-3">
-                <label htmlFor="contenido" className="form-label fw-semibold">
-                  Contenido
-                </label>
-                <textarea
-                  id="contenido"
-                  className="form-control"
-                  rows="6"
-                  placeholder="Escribe el contenido"
-                  value={contenido}
-                  onChange={(e) => setContenido(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+          <Form.Group className="mb-3" controlId="categoria">
+            <Form.Label>Categoría</Form.Label>
+            <Form.Select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+              {opciones.map((cat) => (
+                <option key={cat.id_categoria} value={cat.id_categoria}>
+                  {cat.nombre_categoria}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
 
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-light border"
-                onClick={onCerrar}
-              >
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Publicar hilo
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          <Form.Group controlId="contenido">
+            <Form.Label>Contenido</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={6}
+              placeholder="Cuenta tu experiencia o tu pregunta con detalle…"
+              value={contenido}
+              onChange={(e) => setContenido(e.target.value)}
+              required
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="light" onClick={onCerrar} disabled={enviando}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="primary" disabled={enviando}>
+            {enviando ? "Publicando…" : "Publicar hilo"}
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 }
 

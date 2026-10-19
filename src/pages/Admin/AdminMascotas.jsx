@@ -8,9 +8,10 @@ import {
   EstadoVacio, Cargando, Aviso, AdminModal, ModalAcciones, BotonAccion,
 } from '../../components/admin/AdminUI';
 import {
-  normalizar, estadoMascota, especieDeMascota, razaDeMascota, emojiEspecie, claseIconoEspecie,
+  normalizar, estadoMascota, especieDeMascota, razaDeMascota, claseIconoEspecie,
   confirmar, notificarExito, notificarError, usePaginacion,
 } from '../../utils/admin';
+import { IconoEspecie } from '../../components/common/Icono';
 
 const capitalizar = (t) => (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '');
 const siNo = (v) => (v === null || v === undefined || v === '' ? '—' : Number(v) ? 'Sí' : 'No');
@@ -143,7 +144,7 @@ export const AdminMascotas = () => {
           <Cargando texto="Cargando mascotas…" />
         ) : filtrados.length === 0 ? (
           <EstadoVacio
-            icono={mascotas.length ? '🔍' : '🐾'}
+            icono={mascotas.length ? 'lupa' : 'corazon'}
             titulo={mascotas.length ? 'Sin resultados' : 'No hay mascotas registradas'}
             sub={mascotas.length ? 'Prueba con otra búsqueda o filtro.' : undefined}
           />
@@ -172,7 +173,7 @@ export const AdminMascotas = () => {
                       <td>
                         <div className="d-flex align-items-center gap-2">
                           <div className={`adm-avatar rounded-3 border fs-5 bg-${color}-subtle border-${color}-subtle`}>
-                            {foto ? <img src={urlFoto(foto)} alt="" onError={alFallar} /> : emojiEspecie(especie)}
+                            {foto ? <img src={urlFoto(foto)} alt="" onError={alFallar} /> : <IconoEspecie especie={especie} />}
                           </div>
                           <div>
                             <div className="fw-semibold">{m.nombre}</div>
@@ -212,7 +213,7 @@ export const AdminMascotas = () => {
 
       <AdminModal
         abierto={Boolean(detalle)}
-        titulo={detalle ? `${emojiEspecie(especieDeMascota(detalle))} ${detalle.nombre}` : ''}
+        titulo={detalle ? <><IconoEspecie especie={especieDeMascota(detalle)} /> {detalle.nombre}</> : ''}
         onCerrar={() => setDetalle(null)}
       >
         {detalle && (

@@ -7,6 +7,7 @@ import {
   aFecha, haceCuanto, fechaLarga, estadoMascota, especieDeMascota,
   estadoReporteId, rel, estadoEvento,
 } from '../../utils/admin';
+import { AdminIcon } from '../../components/admin/AdminIcon';
 
 // Ejecuta la promesa y devuelve null si falla (el dashboard no debe romperse por un módulo)
 const seguro = (p) => p.catch(() => null);
@@ -109,7 +110,7 @@ export const AdminDashboard = () => {
             {cargando ? (
               <Cargando />
             ) : actividad.length === 0 ? (
-              <EstadoVacio icono="🌿" titulo="Sin actividad" sub="Aún no hay reportes ni eventos recientes." />
+              <EstadoVacio icono="pulso" titulo="Sin actividad" sub="Aún no hay reportes ni eventos recientes." />
             ) : (
               <ListGroup variant="flush">
                 {actividad.map((a) => (
@@ -136,7 +137,7 @@ export const AdminDashboard = () => {
             {cargando ? (
               <Cargando />
             ) : mascotasRecientes.length === 0 ? (
-              <EstadoVacio icono="🐾" titulo="Sin mascotas" sub="Todavía no hay mascotas registradas." />
+              <EstadoVacio icono="corazon" titulo="Sin mascotas" sub="Todavía no hay mascotas registradas." />
             ) : (
               <Table hover className="align-middle mb-0 small">
                 <tbody>
@@ -169,12 +170,12 @@ export const AdminDashboard = () => {
         <Card.Body>
           <h2 className="h6 fw-bold mb-3 adm-titulo">Acciones rápidas</h2>
           <div className="d-flex flex-wrap gap-2">
-            <Button as={Link} to="/admin/usuarios" variant="outline-success" size="sm">👥 Gestionar usuarios</Button>
-            <Button as={Link} to="/admin/mascotas" variant="outline-success" size="sm">🐾 Gestionar mascotas</Button>
-            <Button as={Link} to="/admin/eventos" variant="outline-success" size="sm">📅 Gestionar eventos</Button>
-            <Button as={Link} to="/foro" variant="outline-success" size="sm">💬 Moderar foros</Button>
+            <Button as={Link} to="/admin/usuarios" variant="outline-success" size="sm"><AdminIcon nombre="usuarios" /> Gestionar usuarios</Button>
+            <Button as={Link} to="/admin/mascotas" variant="outline-success" size="sm"><AdminIcon nombre="corazon" /> Gestionar mascotas</Button>
+            <Button as={Link} to="/admin/eventos" variant="outline-success" size="sm"><AdminIcon nombre="calendario" /> Gestionar eventos</Button>
+            <Button as={Link} to="/foro" variant="outline-success" size="sm"><AdminIcon nombre="foro" /> Moderar foros</Button>
             <Button as={Link} to="/admin/reportes" variant="outline-danger" size="sm">
-              ⚠️ Reportes pendientes ({pendientes})
+              <AdminIcon nombre="alerta" /> Reportes pendientes ({pendientes})
             </Button>
           </div>
         </Card.Body>

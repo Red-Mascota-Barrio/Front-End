@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Container, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
 import { mascotasService } from '../../services/mascotasService';
 import MascotaCard from './MascotaCard';
+import { Icono } from '../common/Icono';
 import RegistrarMascotaModal from './RegistrarMascotaModal';
 import PerfilMascotaModal from './PerfilMascotaModal';
+import '../../styles/mascotas.css';
 
 export default function MisMascotas() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -15,96 +18,96 @@ export default function MisMascotas() {
   );
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
+  // OJO: el back no tiene una ruta para listar solo las mascotas del usuario
+  // (la relación está en usuario_mascotas). Mientras tanto se usa GET /mascotas,
+  // que trae todas. Cuando exista GET /mis-mascotas, basta con cambiar esta llamada.
   const cargar = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      const data = await mascotasService.listar();
-      setMascotas(data);
+      setMascotas(await mascotasService.listar());
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
-      setError('No se pudieron cargar las mascotas desde la base de datos.');
+      setError('No se pudieron cargar las mascotas desde el servidor.');
     } finally {
       setCargando(false);
     }
   }, []);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void cargar();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    const id = window.setTimeout(() => void cargar(), 0);
+    return () => window.clearTimeout(id);
   }, [cargar]);
 
+  const abrirRegistro = () => setMostrarModalRegistro(true);
+  const cerrarRegistro = () => {
+    setMostrarModalRegistro(false);
+    // Quita ?registrar=1 para que el modal no se reabra al recargar
+    if (searchParams.has('registrar')) setSearchParams({}, { replace: true });
+  };
+
   const handleGuardarMascota = async (datosNuevos) => {
-    try {
-      await mascotasService.crear(datosNuevos);
-      setMostrarModalRegistro(false);
-      await cargar();
-    } catch (err) {
-      console.error('Error al registrar mascota:', err);
-      throw err;
-    }
+    await mascotasService.crear(datosNuevos); // si falla, el modal muestra el error
+    cerrarRegistro();
+    await cargar();
   };
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Módulo de Mascotas</h2>
-        <button
-          className="btn btn-primary"
-          onClick={() => setMostrarModalRegistro(true)}
-        >
-          + Registrar Mascota
-        </button>
+    <Container className="py-5">
+      <div className="encabezado-pagina d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <h1>Mis mascotas</h1>
+          <p>Registra a tus mascotas: quedan vinculadas a tu perfil automáticamente.</p>
+        </div>
+        <Button variant="primary" onClick={abrirRegistro}>
+          <i className="bi bi-plus-lg" aria-hidden="true" /> Registrar mascota
+        </Button>
       </div>
 
-      {cargando && (
+      <Alert variant="warning" className="d-flex gap-2">
+        <Icono nombre="info-circle" />
+        <span>
+          Por ahora se muestran <strong>todas</strong> las mascotas de la red: la API todavía no tiene una
+          ruta para listar solo las tuyas.
+        </span>
+      </Alert>
+
+      {cargando ? (
         <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status"></div>
-          <p className="mt-2 text-muted">Cargando datos desde el servidor...</p>
+          <Spinner animation="border" role="status" />
+          <p className="mt-2 text-muted">Cargando tus mascotas…</p>
         </div>
-      )}
-
-      {error && !cargando && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      {!cargando && !error && (
-        <div className="row g-4">
-          {mascotas.length === 0 ? (
-            <div className="col-12 text-center py-5 text-muted">
-              <p>No hay mascotas registradas en la base de datos.</p>
-            </div>
-          ) : (
-            mascotas.map((m) => (
-              <div key={m.id || m._id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                <MascotaCard
-                  mascota={m}
-                  onVerPerfil={setMascotaSeleccionada}
-                />
-              </div>
-            ))
-          )}
-        </div>
+      ) : error ? (
+        <Alert variant="danger" className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span><Icono nombre="exclamation-circle" /> {error}</span>
+          <Button size="sm" variant="outline-danger" onClick={cargar}>Reintentar</Button>
+        </Alert>
+      ) : (
+        <Row xs={1} sm={2} lg={3} xl={4} className="g-3">
+          {mascotas.map((m) => (
+            <Col key={m.id_mascotas ?? m.id_mascota ?? m.id}>
+              <MascotaCard mascota={m} onVerPerfil={setMascotaSeleccionada} />
+            </Col>
+          ))}
+          <Col>
+            <button type="button" className="tarjeta-agregar" onClick={abrirRegistro}>
+              <span className="tarjeta-agregar-icono"><Icono nombre="plus-circle" /></span>
+              <span className="tarjeta-agregar-titulo">Agregar mascota</span>
+              <span className="tarjeta-agregar-sub">
+                {mascotas.length ? 'Publicar en adopción' : 'Aún no tienes mascotas registradas'}
+              </span>
+            </button>
+          </Col>
+        </Row>
       )}
 
       {mostrarModalRegistro && (
-        <RegistrarMascotaModal
-          onClose={() => setMostrarModalRegistro(false)}
-          onGuardar={handleGuardarMascota}
-        />
+        <RegistrarMascotaModal onClose={cerrarRegistro} onGuardar={handleGuardarMascota} />
       )}
 
       {mascotaSeleccionada && (
-        <PerfilMascotaModal
-          mascota={mascotaSeleccionada}
-          onClose={() => setMascotaSeleccionada(null)}
-        />
+        <PerfilMascotaModal mascota={mascotaSeleccionada} onClose={() => setMascotaSeleccionada(null)} />
       )}
-    </div>
+    </Container>
   );
 }

@@ -1,40 +1,56 @@
-import { Container, Tabs, Tab } from 'react-bootstrap';
+import { Container, Row, Col, Nav, Tab } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaUser, FaLock, FaBell } from 'react-icons/fa';
 import { AppNavbar } from '../../components/layout/AppNavbar';
 import { Footer } from '../../components/layout/Footer';
 import { FormDatos } from '../../components/perfil/FormDatos';
 import { FormContrasena } from '../../components/perfil/FormContrasena';
 import { EliminarCuenta } from '../../components/perfil/EliminarCuenta';
 import { FormNotificaciones } from '../../components/perfil/FormNotificaciones';
-import '../../styles/home.css';
+import { Icono } from '../../components/common/Icono';
 import '../../styles/perfil.css';
 
-export const EditarPerfil = () => (
-  <div className="inicio-page d-flex flex-column min-vh-100">
-    <AppNavbar />
-    <main className="flex-grow-1 py-4">
-      <Container className="perfil-editar">
-        <Link to="/perfil" className="perfil-volver">
-          <FaArrowLeft className="me-2" /> Volver a mi perfil
-        </Link>
-        <h2 className="inicio-titulo text-start mt-3">Editar perfil</h2>
+const SECCIONES = [
+  { clave: 'datos', texto: 'Información personal', icono: 'person' },
+  { clave: 'seguridad', texto: 'Seguridad', icono: 'shield-lock' },
+  { clave: 'notificaciones', texto: 'Notificaciones', icono: 'bell' },
+];
 
-        <div className="inicio-card perfil-editar-card">
-          <Tabs defaultActiveKey="datos" className="perfil-tabs mb-4" fill>
-            <Tab eventKey="datos" title={<><FaUser className="me-2" />Datos</>}>
-              <FormDatos />
-            </Tab>
-            <Tab eventKey="seguridad" title={<><FaLock className="me-2" />Seguridad</>}>
-              <FormContrasena />
-              <hr className="my-4" />
-              <EliminarCuenta />
-            </Tab>
-            <Tab eventKey="notificaciones" title={<><FaBell className="me-2" />Notificaciones</>} mountOnEnter>
-              <FormNotificaciones />
-            </Tab>
-          </Tabs>
-        </div>
+// Editar perfil con navegación lateral (Editar_perfil.html del mockup)
+export const EditarPerfil = () => (
+  <div className="d-flex flex-column min-vh-100">
+    <AppNavbar />
+    <main className="flex-grow-1">
+      <Container className="perfil-layout">
+        <Link to="/perfil" className="perfil-volver"><Icono nombre="arrow-left" /> Volver a mi perfil</Link>
+        <h1 className="h3 fw-bold text-verde-oscuro mt-3 mb-4">Configuración de la cuenta</h1>
+
+        <Tab.Container defaultActiveKey="datos" mountOnEnter>
+          <Row className="g-4">
+            <Col lg={3}>
+              <Nav variant="pills" className="perfil-nav flex-column gap-1">
+                {SECCIONES.map((s) => (
+                  <Nav.Item key={s.clave}>
+                    <Nav.Link eventKey={s.clave}><Icono nombre={s.icono} /> {s.texto}</Nav.Link>
+                  </Nav.Item>
+                ))}
+              </Nav>
+            </Col>
+            <Col lg={9}>
+              <Tab.Content>
+                <Tab.Pane eventKey="datos">
+                  <FormDatos />
+                </Tab.Pane>
+                <Tab.Pane eventKey="seguridad">
+                  <FormContrasena />
+                  <EliminarCuenta />
+                </Tab.Pane>
+                <Tab.Pane eventKey="notificaciones">
+                  <FormNotificaciones />
+                </Tab.Pane>
+              </Tab.Content>
+            </Col>
+          </Row>
+        </Tab.Container>
       </Container>
     </main>
     <Footer />

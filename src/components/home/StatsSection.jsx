@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { FaPaw, FaHeart, FaUsers } from 'react-icons/fa';
-import { statsService } from '../../services/statsService';
+import { useAuth } from '../../context/AuthContext';
 
 const ITEMS = [
-  { clave: 'mascotas', etiqueta: 'Mascotas registradas', Icono: FaPaw },
-  { clave: 'adopciones', etiqueta: 'Adopciones exitosas', Icono: FaHeart },
-  { clave: 'usuarios', etiqueta: 'Usuarios en la red', Icono: FaUsers },
+  { clave: 'mascotas', etiqueta: 'Mascotas registradas', icono: 'bi-heart' },
+  { clave: 'adopciones', etiqueta: 'Adopciones exitosas', icono: 'bi-house-heart' },
+  { clave: 'usuarios', etiqueta: 'Usuarios en la red', icono: 'bi-people' },
 ];
 
 // Cuenta desde 0 hasta el valor real con una animación suave
@@ -15,7 +14,7 @@ const useContador = (objetivo, duracion = 1200) => {
 
   useEffect(() => {
     const n = Number(objetivo);
-    if (!Number.isFinite(n)) return undefined;
+    if (objetivo === null || !Number.isFinite(n)) return undefined;
 
     let inicio = null;
     let frame;
@@ -32,54 +31,40 @@ const useContador = (objetivo, duracion = 1200) => {
   return valor;
 };
 
-const TarjetaStat = ({ Icono, etiqueta, valor }) => {
+const ItemStat = ({ icono, etiqueta, valor }) => {
   const numero = Number(valor);
-  const esNumero = valor !== null && valor !== undefined && Number.isFinite(numero);
+  const esNumero = valor !== null && valor !== undefined && valor !== '' && Number.isFinite(numero);
   const animado = useContador(esNumero ? numero : null);
 
   return (
-    <div className="d-flex flex-column align-items-center text-center p-4 bg-white rounded-4 shadow-sm h-100 border">
-      <div 
-        className="d-flex justify-content-center align-items-center rounded-circle bg-primary bg-opacity-10 text-primary mb-3" 
-        style={{ width: '80px', height: '80px', fontSize: '2rem' }}
-      >
-        <Icono />
-      </div>
-      <h3 className="display-5 fw-bold text-dark mb-2">
-        {esNumero ? animado : (valor ?? '—')}
-      </h3>
-      <span className="text-secondary fw-medium fs-5">{etiqueta}</span>
+    <div className="stat-banner-item">
+      <div className="stat-banner-icono"><i className={`bi ${icono}`} aria-hidden="true" /></div>
+      <div className="numero">{esNumero ? animado.toLocaleString('es-CO') : (valor ?? '—')}</div>
+      <div className="etiqueta">{etiqueta}</div>
     </div>
   );
 };
 
+// Las cifras generales ya las carga AuthContext (GET /estadisticas); aquí solo se muestran
 export const StatsSection = () => {
-  const [stats, setStats] = useState(null);
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    statsService
-      .obtenerGenerales() 
-      .then(setStats)
-      .catch((error) => console.error('No se pudieron cargar las estadísticas:', error))
-      .finally(() => setCargando(false));
-  }, []);
+  const { statsGenerales, cargandoStats } = useAuth();
 
   return (
-    <section id="estadisticas" className="py-5 bg-light">
-      <Container className="py-4">
-        <h2 className="text-center fw-bold text-dark mb-5">Nuestra comunidad en cifras</h2>
-        <Row className="g-4">
-          {ITEMS.map(({ clave, etiqueta, Icono }) => (
-            <Col md={4} key={clave}>
-              <TarjetaStat
-                Icono={Icono}
-                etiqueta={etiqueta}
-                valor={cargando ? '...' : stats?.[clave]}
-              />
-            </Col>
-          ))}
-        </Row>
+    <section id="estadisticas" className="stat-banner-wrap">
+      <Container>
+        <div className="stat-banner">
+          <Row className="g-4">
+            {ITEMS.map(({ clave, etiqueta, icono }) => (
+              <Col xs={12} sm={4} key={clave}>
+                <ItemStat
+                  icono={icono}
+                  etiqueta={etiqueta}
+                  valor={cargandoStats ? '…' : statsGenerales?.[clave]}
+                />
+              </Col>
+            ))}
+          </Row>
+        </div>
       </Container>
     </section>
   );

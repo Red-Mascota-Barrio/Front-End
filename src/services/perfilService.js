@@ -1,59 +1,61 @@
 import { api } from './api';
 
-// Todas las rutas del módulo Perfil están centralizadas aquí.
-// Si alguna ruta de tu API Laravel se llama distinto, solo cámbiala en este archivo.
+/*
+ * Rutas del módulo Perfil según routes/api.php del Back-End.
+ * Antes el front llamaba a /perfil, /perfil/foto, /perfil/contrasena, /perfil/mascotas…
+ * que NO existen en Laravel (todas respondían 404).
+ */
 const RUTAS = {
-  perfil: '/perfil',                          // GET (datos + estadísticas) / PUT (editar) / DELETE (eliminar cuenta)
-  foto: '/perfil/foto',                       // POST multipart (campo "foto")
-  contrasena: '/perfil/contrasena',           // PUT
-  misMascotas: '/perfil/mascotas',            // GET
-  actividadForo: '/perfil/actividad-foro',    // GET
-  misEventos: '/perfil/eventos',              // GET
-  preferencias: '/notificaciones/preferencias', // GET / PUT
+  yo: '/user',                                   // GET  datos del usuario autenticado (con rol)
+  estadisticas: '/estadisticas/usuario',         // GET  mascotas, publicaciones, eventos, adopciones
+  usuario: (id) => `/usuarios/${id}`,            // PUT  editar perfil propio
+  misEventos: '/mis-eventos',                    // GET  eventos con inscripción activa
+  foros: '/foros',                               // GET  se filtra por usuario_id para la actividad
+  preferencias: '/notificaciones/preferencias',  // GET / PUT
 };
 
-// Laravel responde { mensaje, datos }; devolvemos directamente "datos"
+// Funciones que el back todavía no expone. La UI las muestra deshabilitadas.
+export const PERFIL_SOPORTA = {
+  foto: false,        // falta POST para subir foto_perfil
+  contrasena: false,  // falta PUT para cambiar contraseña con la actual (existe /recuperar)
+  eliminarCuenta: false, // DELETE /usuarios/{id} es solo para admin
+  misMascotas: false, // falta GET de las mascotas del usuario (usuario_mascotas)
+};
+
+// Laravel responde { resultado, mensaje, datos }; devolvemos directamente "datos"
 const datos = (response) => response.data?.datos ?? response.data;
+const lista = (response) => {
+  const d = datos(response);
+  return Array.isArray(d) ? d : [];
+};
+
+const sinRuta = (accion) =>
+  Promise.reject(
+    Object.assign(new Error(`El servidor todavía no tiene una ruta para ${accion}.`), {
+      response: { data: { mensaje: `El servidor todavía no tiene una ruta para ${accion}.` } },
+    }),
+  );
 
 export const perfilService = {
-  // RF05 - Ver perfil: datos del usuario + estadísticas + estado de verificación
-  obtener: async () => datos(await api.get(RUTAS.perfil)),
+  obtener: async () => datos(await api.get(RUTAS.yo)),
+  estadisticas: async () => datos(await api.get(RUTAS.estadisticas)),
 
-  // RF05 - Editar datos del perfil
-  actualizar: async (payload) => datos(await api.put(RUTAS.perfil, payload)),
+  // Campos que acepta UsuarioController@update: nombre, apellido, telefono, barrio, ciudad, direccion, descripcion
+  actualizar: async (idUsuario, payload) => datos(await api.put(RUTAS.usuario(idUsuario), payload)),
 
-  // Subir / cambiar foto de perfil (multipart/form-data)
-  subirFoto: async (archivo) => {
-    const formData = new FormData();
-    formData.append('foto', archivo);
-    const response = await api.post(RUTAS.foto, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return datos(response);
+  misEventos: async () => lista(await api.get(RUTAS.misEventos)),
+
+  // Hilos creados por el usuario (el back no tiene un endpoint de actividad propio)
+  actividadForo: async (idUsuario) => {
+    const hilos = lista(await api.get(RUTAS.foros));
+    return hilos.filter((h) => Number(h.usuario_id) === Number(idUsuario));
   },
 
-  // Cambio de contraseña
-  cambiarContrasena: async (payload) => {
-    // { contrasena_actual, contrasena, contrasena_confirmation }
-    const response = await api.put(RUTAS.contrasena, payload);
-    return response.data;
-  },
+  // PreferenciaNotificacionController devuelve el modelo directamente (sin "datos")
+  obtenerPreferencias: async () => (await api.get(RUTAS.preferencias)).data,
+  guardarPreferencias: async (prefs) => (await api.put(RUTAS.preferencias, prefs)).data,
 
-  // Eliminar cuenta (se pide la contraseña como confirmación)
-  eliminarCuenta: async (contrasena) => {
-    const response = await api.delete(RUTAS.perfil, { data: { contrasena } });
-    return response.data;
-  },
-
-  // Pestañas del perfil
-  misMascotas: async () => datos(await api.get(RUTAS.misMascotas)),
-  actividadForo: async () => datos(await api.get(RUTAS.actividadForo)),
-  misEventos: async () => datos(await api.get(RUTAS.misEventos)),
-
-  // Pestaña Notificaciones (RNF12 - preferencias)
-  obtenerPreferencias: async () => datos(await api.get(RUTAS.preferencias)),
-  guardarPreferencias: async (preferencias) => {
-    const response = await api.put(RUTAS.preferencias, { preferencias });
-    return response.data;
-  },
+  subirFoto: () => sinRuta('subir la foto de perfil'),
+  cambiarContrasena: () => sinRuta('cambiar la contraseña'),
+  eliminarCuenta: () => sinRuta('eliminar la cuenta'),
 };

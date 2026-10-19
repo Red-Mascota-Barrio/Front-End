@@ -6,28 +6,31 @@ import { useAuth } from '../../context/AuthContext';
 import { mensajeError } from '../../utils/perfil';
 import { FotoPerfilUploader } from './FotoPerfilUploader';
 
+// Campos que acepta PUT /usuarios/{id} (UsuarioController@update)
+const valoresIniciales = (u) => ({
+  nombre: u?.nombre ?? '',
+  apellido: u?.apellido ?? '',
+  telefono: u?.telefono ?? '',
+  barrio: u?.barrio ?? '',
+  ciudad: u?.ciudad ?? '',
+  descripcion: u?.descripcion ?? u?.biografia ?? '',
+});
+
 export const FormDatos = () => {
   const { user, updateUser } = useAuth();
   const [mensaje, setMensaje] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm({
-    defaultValues: {
-      nombre: user?.nombre ?? '',
-      apellido: user?.apellido ?? '',
-      telefono: user?.telefono ?? '',
-      barrio: user?.barrio ?? '',
-      biografia: user?.biografia ?? '',
-    },
+    defaultValues: valoresIniciales(user),
   });
 
   const onSubmit = async (valores) => {
     try {
       setGuardando(true);
       setMensaje(null);
-      const data = await perfilService.actualizar(valores);
-      const actualizado = data?.usuario ?? data?.user ?? valores;
-      updateUser(actualizado);
+      const actualizado = await perfilService.actualizar(user.id_usuario, valores);
+      updateUser(actualizado && typeof actualizado === 'object' ? actualizado : valores);
       reset(valores);
       setMensaje({ tipo: 'success', texto: 'Tus datos se guardaron correctamente.' });
     } catch (error) {
@@ -38,84 +41,97 @@ export const FormDatos = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-4 shadow-sm border">
-      <h5 className="fw-bold mb-4 text-dark">Información personal</h5>
-      <div className="mb-4 text-center">
-        <FotoPerfilUploader />
+    <section className="perfil-seccion">
+      <div className="perfil-seccion-header">
+        <h2>Información personal</h2>
+        <p>Así te verán los demás miembros de la comunidad.</p>
       </div>
-      
-      <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-        {mensaje && <Alert variant={mensaje.tipo} className="py-2 small rounded-3">{mensaje.texto}</Alert>}
+      <div className="perfil-seccion-body">
+        <FotoPerfilUploader />
 
-        <Row className="g-3">
-          <Col md={6}>
-            <Form.Group controlId="nombre">
-              <Form.Label className="small fw-bold text-muted">NOMBRE</Form.Label>
-              <Form.Control
-                className="py-2 shadow-none"
-                {...register('nombre', { required: 'El nombre es obligatorio', maxLength: { value: 60, message: 'Máximo 60 caracteres' } })}
-                isInvalid={!!errors.nombre}
-              />
-              <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group controlId="apellido">
-              <Form.Label className="small fw-bold text-muted">APELLIDO</Form.Label>
-              <Form.Control
-                className="py-2 shadow-none"
-                {...register('apellido', { required: 'El apellido es obligatorio', maxLength: { value: 60, message: 'Máximo 60 caracteres' } })}
-                isInvalid={!!errors.apellido}
-              />
-              <Form.Control.Feedback type="invalid">{errors.apellido?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group controlId="correo">
-              <Form.Label className="small fw-bold text-muted">CORREO ELECTRÓNICO</Form.Label>
-              <Form.Control className="py-2 shadow-none bg-light" value={user?.correo ?? ''} disabled readOnly />
-              <Form.Text className="text-muted">El correo no se puede modificar.</Form.Text>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group controlId="telefono">
-              <Form.Label className="small fw-bold text-muted">TELÉFONO</Form.Label>
-              <Form.Control
-                type="tel"
-                className="py-2 shadow-none"
-                {...register('telefono', { pattern: { value: /^[0-9+\s-]{7,15}$/, message: 'Teléfono no válido' } })}
-                isInvalid={!!errors.telefono}
-              />
-              <Form.Control.Feedback type="invalid">{errors.telefono?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-          <Col xs={12}>
-            <Form.Group controlId="barrio">
-              <Form.Label className="small fw-bold text-muted">BARRIO</Form.Label>
-              <Form.Control className="py-2 shadow-none" {...register('barrio')} />
-            </Form.Group>
-          </Col>
-          <Col xs={12}>
-            <Form.Group controlId="biografia">
-              <Form.Label className="small fw-bold text-muted">SOBRE MÍ</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                className="shadow-none"
-                {...register('biografia', { maxLength: { value: 250, message: 'Máximo 250 caracteres' } })}
-                isInvalid={!!errors.biografia}
-              />
-              <Form.Control.Feedback type="invalid">{errors.biografia?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-        </Row>
+        <Form onSubmit={handleSubmit(onSubmit)} noValidate>
+          {mensaje && <Alert variant={mensaje.tipo}>{mensaje.texto}</Alert>}
 
-        <div className="d-grid mt-4">
-          <Button type="submit" variant="primary" className="rounded-pill py-2 shadow-sm fw-medium" disabled={guardando || !isDirty}>
-            {guardando ? 'Guardando...' : 'Guardar cambios'}
-          </Button>
-        </div>
-      </Form>
-    </div>
+          <Row className="g-3">
+            <Col md={6}>
+              <Form.Group controlId="nombre">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  {...register('nombre', { required: 'El nombre es obligatorio', maxLength: { value: 255, message: 'Demasiado largo' } })}
+                  isInvalid={!!errors.nombre}
+                />
+                <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="apellido">
+                <Form.Label>Apellido</Form.Label>
+                <Form.Control
+                  {...register('apellido', { required: 'El apellido es obligatorio', maxLength: { value: 255, message: 'Demasiado largo' } })}
+                  isInvalid={!!errors.apellido}
+                />
+                <Form.Control.Feedback type="invalid">{errors.apellido?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="correo">
+                <Form.Label>Correo electrónico</Form.Label>
+                <Form.Control value={user?.correo ?? ''} disabled readOnly />
+                <Form.Text>El correo no se puede modificar.</Form.Text>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="telefono">
+                <Form.Label>Teléfono</Form.Label>
+                <Form.Control
+                  type="tel"
+                  {...register('telefono', {
+                    maxLength: { value: 20, message: 'Máximo 20 caracteres' },
+                    pattern: { value: /^[0-9+\s-]{7,20}$/, message: 'Teléfono no válido' },
+                  })}
+                  isInvalid={!!errors.telefono}
+                />
+                <Form.Control.Feedback type="invalid">{errors.telefono?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="barrio">
+                <Form.Label>Barrio</Form.Label>
+                <Form.Control {...register('barrio', { maxLength: { value: 100, message: 'Máximo 100 caracteres' } })} isInvalid={!!errors.barrio} />
+                <Form.Control.Feedback type="invalid">{errors.barrio?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="ciudad">
+                <Form.Label>Ciudad</Form.Label>
+                <Form.Control {...register('ciudad', { maxLength: { value: 100, message: 'Máximo 100 caracteres' } })} isInvalid={!!errors.ciudad} />
+                <Form.Control.Feedback type="invalid">{errors.ciudad?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col xs={12}>
+              <Form.Group controlId="descripcion">
+                <Form.Label>Sobre mí</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  {...register('descripcion', { maxLength: { value: 250, message: 'Máximo 250 caracteres' } })}
+                  isInvalid={!!errors.descripcion}
+                />
+                <Form.Control.Feedback type="invalid">{errors.descripcion?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <Button type="button" variant="light" onClick={() => reset()} disabled={guardando || !isDirty}>
+              Descartar
+            </Button>
+            <Button type="submit" variant="primary" disabled={guardando || !isDirty}>
+              {guardando ? 'Guardando…' : 'Guardar cambios'}
+            </Button>
+          </div>
+        </Form>
+      </div>
+    </section>
   );
 };

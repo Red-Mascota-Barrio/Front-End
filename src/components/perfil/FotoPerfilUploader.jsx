@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { Button, Alert } from 'react-bootstrap';
-import { FaCamera } from 'react-icons/fa';
 import { AvatarPerfil } from './AvatarPerfil';
-import { perfilService } from '../../services/perfilService';
+import { Icono } from '../common/Icono';
+import { perfilService, PERFIL_SOPORTA } from '../../services/perfilService';
 import { useAuth } from '../../context/AuthContext';
 import { mensajeError } from '../../utils/perfil';
 
@@ -36,7 +36,7 @@ export const FotoPerfilUploader = () => {
     setSubiendo(true);
     try {
       const data = await perfilService.subirFoto(archivo);
-      const nueva = data?.foto_perfil ?? data?.usuario?.foto_perfil ?? data?.foto ?? null;
+      const nueva = data?.foto_perfil ?? data?.usuario?.foto_perfil ?? null;
       if (nueva) updateUser({ foto_perfil: nueva });
       setMensaje({ tipo: 'success', texto: 'Foto de perfil actualizada.' });
     } catch (error) {
@@ -48,29 +48,33 @@ export const FotoPerfilUploader = () => {
   };
 
   return (
-    <div className="d-flex flex-column align-items-center text-center mb-4">
-      <div className="position-relative mb-3">
-        <AvatarPerfil usuario={user} previa={previa} size={130} />
-      </div>
-      
-      <input ref={inputRef} type="file" accept={TIPOS.join(',')} hidden onChange={onSeleccionar} />
-      
-      <div>
-        <Button 
-          variant="outline-primary" 
-          size="sm" 
-          className="rounded-pill px-4 py-2 shadow-sm fw-medium d-inline-flex align-items-center gap-2"
-          disabled={subiendo} 
-          onClick={() => inputRef.current.click()}
-        >
-          <FaCamera />
-          {subiendo ? 'Subiendo...' : user?.foto_perfil ? 'Cambiar foto' : 'Subir foto'}
-        </Button>
-        <div className="text-muted small mt-2">JPG, PNG o WEBP · máx. {MAX_MB} MB</div>
+    <div className="mb-4">
+      <div className="avatar-upload-wrap mb-0">
+        <AvatarPerfil usuario={user} previa={previa} size={88} />
+
+        <input ref={inputRef} type="file" accept={TIPOS.join(',')} hidden onChange={onSeleccionar} />
+
+        <div className="avatar-upload-info">
+          <h3>Foto de perfil</h3>
+          <p>
+            {PERFIL_SOPORTA.foto
+              ? `JPG, PNG o WEBP · máx. ${MAX_MB} MB`
+              : 'Muy pronto podrás subir tu foto (la API aún no tiene la ruta).'}
+          </p>
+          <Button
+            variant="light"
+            size="sm"
+            disabled={subiendo || !PERFIL_SOPORTA.foto}
+            onClick={() => inputRef.current.click()}
+          >
+            <Icono nombre="camera" />
+            {subiendo ? 'Subiendo…' : user?.foto_perfil ? 'Cambiar foto' : 'Subir foto'}
+          </Button>
+        </div>
       </div>
 
       {mensaje && (
-        <Alert variant={mensaje.tipo} className="py-2 small mt-3 mb-0 rounded-3 w-100">
+        <Alert variant={mensaje.tipo} className="mt-3 mb-0">
           {mensaje.texto}
         </Alert>
       )}

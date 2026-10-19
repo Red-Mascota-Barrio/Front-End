@@ -1,0 +1,310 @@
+/* ============================================================
+   layout.css — Piezas compartidas del mockup sobre Bootstrap
+   Navbar, footer, héroes de página, tarjetas laterales,
+   filtros en píldora y estados vacíos.
+   ============================================================ */
+
+/* ---------- NAVBAR ---------- */
+.app-navbar {
+  --bs-navbar-padding-y: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--borde);
+  box-shadow: var(--sombra-xs);
+  backdrop-filter: blur(8px);
+  min-height: 66px;
+}
+.app-navbar .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  color: var(--verde-oscuro);
+  letter-spacing: -0.02em;
+  white-space: normal;
+  line-height: 1.2;
+}
+.app-navbar .navbar-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--verde-fondo);
+  border: 1.5px solid var(--borde);
+}
+.app-navbar .navbar-toggler { border: 1px solid var(--borde); padding: 6px 10px; }
+.app-navbar .navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(22, 164, 122, 0.2); }
+
+.app-navbar .nav-principal .nav-link {
+  position: relative;
+  padding: 7px 14px;
+  border-radius: var(--radio-sm);
+  color: var(--texto-secundario);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color var(--transicion), background var(--transicion);
+}
+.app-navbar .nav-principal .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--verde-principal);
+  transform: translateX(-50%) scaleX(0);
+  transition: transform var(--transicion);
+}
+.app-navbar .nav-principal .nav-link:hover,
+.app-navbar .nav-principal .nav-link.active { color: var(--verde-oscuro); }
+.app-navbar .nav-principal .nav-link:hover::after,
+.app-navbar .nav-principal .nav-link.active::after { transform: translateX(-50%) scaleX(1); }
+.app-navbar .nav-principal .nav-link.active { font-weight: 600; }
+
+.navbar-saludo { font-size: 0.8125rem; color: var(--texto-secundario); }
+
+.avatar-inicial {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--verde-fondo);
+  border: 1.5px solid var(--borde);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  transition: border-color var(--transicion);
+  flex-shrink: 0;
+}
+.avatar-inicial img { width: 100%; height: 100%; object-fit: cover; }
+a:hover > .avatar-inicial,
+.avatar-inicial:hover { border-color: var(--verde-principal); }
+
+@media (max-width: 991.98px) {
+  .app-navbar .navbar-collapse { padding: 10px 0 16px; }
+  .app-navbar .nav-principal .nav-link::after { display: none; }
+  .app-navbar .nav-principal .nav-link.active { background: var(--verde-fondo); }
+}
+
+/* ---------- FOOTER ---------- */
+.app-footer {
+  background: var(--verde-oscuro);
+  color: rgba(255, 255, 255, 0.72);
+  padding: 56px 0 28px;
+  margin-top: auto;
+}
+.app-footer .footer-marca h3 {
+  color: #fff;
+  font-size: 1.0625rem;
+  margin-bottom: 10px;
+}
+.app-footer .footer-marca p { font-size: 0.8125rem; line-height: 1.7; margin-bottom: 0; }
+.app-footer .footer-contacto { margin-top: 14px; font-size: 0.75rem; opacity: 0.7; }
+.app-footer h4 {
+  color: #fff;
+  font-family: var(--font-principal);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+.app-footer .footer-col a {
+  display: block;
+  font-size: 0.8125rem;
+  margin-bottom: 9px;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity var(--transicion), color var(--transicion);
+}
+.app-footer .footer-col a:hover { opacity: 1; color: #fff; }
+.app-footer .footer-fondo {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
+  padding-top: 24px;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* ---------- HÉROE DE PÁGINA (busqueda / eventos / foro) ---------- */
+.pagina-hero {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: var(--gradiente-hero);
+  padding: 52px 0;
+}
+.pagina-hero::before {
+  content: '';
+  position: absolute;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  top: -170px;
+  right: -80px;
+  pointer-events: none;
+}
+.pagina-hero .container { position: relative; z-index: 1; }
+.pagina-hero h1 {
+  font-size: clamp(1.65rem, 3.6vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.pagina-hero p { font-size: 0.9375rem; opacity: 0.85; margin-bottom: 0; }
+
+/* Contenido debajo del héroe. Antes "subía" 36px sobre el verde (como el mockup), pero
+   con el gutter de .row (g-4 = 24px) solo se montaban 12px y parecía un error de
+   alineación. Ahora empieza limpio debajo del héroe. */
+.pagina-solapada { padding-top: 32px; padding-bottom: 72px; }
+
+/* Barra de resultados / filtros encima del listado */
+.barra-herramientas {
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xs);
+  padding: 12px 16px;
+}
+.barra-herramientas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f4f0;
+}
+
+/* ---------- TARJETA LATERAL (sidebar) ---------- */
+.tarjeta-lateral {
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  padding: 20px;
+  box-shadow: var(--sombra-xs);
+  margin-bottom: 16px;
+}
+.tarjeta-lateral-titulo {
+  font-family: var(--font-principal);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  letter-spacing: 0;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f4f0;
+}
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mini-stat {
+  text-align: center;
+  background: var(--fondo-sutil);
+  border-radius: var(--radio-md);
+  padding: 14px 8px;
+}
+.mini-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  line-height: 1.1;
+}
+.mini-stat-lbl { font-size: 0.6875rem; color: var(--texto-tenue); margin-top: 3px; }
+
+@media (min-width: 992px) {
+  .sticky-lateral { position: sticky; top: 82px; }
+}
+
+/* ---------- FILTROS EN PÍLDORA (eventos / foro) ---------- */
+.filtros-pildora { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-pildora {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  cursor: pointer;
+  transition: all var(--transicion);
+}
+.btn-pildora:hover { border-color: var(--verde-principal); color: var(--verde-oscuro); background: var(--verde-fondo); }
+.btn-pildora.activo { background: var(--verde-oscuro); border-color: var(--verde-oscuro); color: #fff; }
+.btn-pildora .contador { opacity: 0.7; font-weight: 500; }
+
+/* ---------- TÍTULOS DE SECCIÓN ---------- */
+.seccion { padding: 72px 0; }
+.seccion-titulo {
+  font-size: clamp(1.5rem, 3vw, 1.875rem);
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  margin-bottom: 8px;
+}
+.seccion-subtitulo { font-size: 0.9375rem; color: var(--texto-secundario); margin-bottom: 6px; }
+.subtitulo-lista {
+  font-family: var(--font-principal);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+
+/* ---------- ESTADO VACÍO ---------- */
+.estado-vacio { text-align: center; padding: 64px 24px; }
+.estado-vacio-icono {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radio-xl);
+  background: var(--verde-fondo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--verde-oscuro);
+  margin: 0 auto 20px;
+}
+.estado-vacio h3 { font-size: 1.125rem; margin-bottom: 8px; }
+.estado-vacio p { font-size: 0.875rem; color: var(--texto-secundario); margin-bottom: 24px; }
+
+/* ---------- AVATAR CON INICIALES ---------- */
+.avatar-gradiente {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--verde-principal), var(--verde-oscuro));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.avatar-gradiente img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- CAJA INFORMATIVA ---------- */
+.caja-info {
+  background: var(--verde-fondo);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-md);
+  padding: 12px 16px;
+  font-size: 0.84rem;
+  color: var(--verde-oscuro);
+  line-height: 1.6;
+}
+.avatar-gradiente.avatar-sm { width: 38px; height: 38px; font-size: 0.75rem; }

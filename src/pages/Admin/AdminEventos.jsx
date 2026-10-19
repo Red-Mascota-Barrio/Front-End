@@ -6,9 +6,10 @@ import {
   EstadoVacio, Cargando, Aviso, AdminModal, ModalAcciones, BotonAccion,
 } from '../../components/admin/AdminUI';
 import {
-  normalizar, fechaCorta, estadoEvento, emojiTipoEvento, claseTipoEvento, rel,
+  normalizar, fechaCorta, estadoEvento, claseTipoEvento, rel,
   confirmar, notificarExito, notificarError, usePaginacion,
 } from '../../utils/admin';
+import { IconoTipoEvento } from '../../components/common/Icono';
 
 const FORM_VACIO = { nombre: '', tipo_evento_id: '', fecha_evento: '', hora_evento: '', ubicacion: '', descripcion: '' };
 
@@ -251,7 +252,7 @@ export const AdminEventos = () => {
           <Cargando texto="Cargando eventos…" />
         ) : filtrados.length === 0 ? (
           <EstadoVacio
-            icono={eventos.length ? '🔍' : '📅'}
+            icono={eventos.length ? 'lupa' : 'calendario'}
             titulo={eventos.length ? 'Sin resultados' : 'Aún no hay eventos'}
             sub={eventos.length ? 'Prueba con otra búsqueda o filtro.' : 'Crea el primero con “Crear evento”.'}
           />
@@ -282,7 +283,7 @@ export const AdminEventos = () => {
                           {org ? `Organiza: ${org.nombre} ${org.apellido ?? ''}` : e.descripcion}
                         </div>
                       </td>
-                      <td><Badge variante={claseTipoEvento(tipo)}>{emojiTipoEvento(tipo)} {tipo}</Badge></td>
+                      <td><Badge variante={claseTipoEvento(tipo)}><IconoTipoEvento tipo={tipo} /> {tipo}</Badge></td>
                       <td className="text-secondary text-nowrap">
                         {fechaCorta(e.fecha_evento)}
                         <div className="text-body-tertiary" style={{ fontSize: '.75rem' }}>{String(e.hora_evento ?? '').slice(0, 5)}</div>
@@ -320,7 +321,7 @@ export const AdminEventos = () => {
 
       <AdminModal
         abierto={Boolean(modal)}
-        titulo={modal === 'nuevo' ? '📅 Nuevo evento' : '✏️ Editar evento'}
+        titulo={modal === 'nuevo' ? 'Nuevo evento' : 'Editar evento'}
         onCerrar={() => setModal(null)}
       >
         <Form onSubmit={guardar} noValidate>
@@ -336,7 +337,7 @@ export const AdminEventos = () => {
                 <option value="">Selecciona…</option>
                 {tipos.map((t) => (
                   <option key={t.id_tipo_evento} value={t.id_tipo_evento}>
-                    {emojiTipoEvento(t.nombre_tipo)} {t.nombre_tipo}
+                    {t.nombre_tipo}
                   </option>
                 ))}
               </Form.Select>

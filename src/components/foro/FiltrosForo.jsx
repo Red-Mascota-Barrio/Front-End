@@ -1,77 +1,44 @@
-import { useState, useEffect } from "react";
+import { Icono, IconoEspecie } from '../common/Icono';
+import { especieDeCategoria } from '../../utils/foro';
 
-function FiltrosForo({
-  busqueda,
-  setBusqueda,
-  categoria,
-  setCategoria,
-}) {
-  // 1. Estados para manejar las categorías de la BD
-  const [categoriasList, setCategoriasList] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // 2. Traer las categorías desde el backend al cargar el componente
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/categorias')
-      .then((response) => {
-        if (!response.ok) {
-          console.log('estoy aqui')
-          throw new Error('Error al cargar categorías');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const arrayCategorias = data.datos ? data.datos : data;
-        
-        // Protección: Solo guardamos si es un arreglo válido
-        if (Array.isArray(arrayCategorias)) {
-          setCategoriasList(arrayCategorias);
-        } else {
-          setCategoriasList([]);
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log('estoy aqui 2')
-        console.error('Error al cargar los filtros de categorías:', error);
-        setCategoriasList([]); // Evita pantalla en blanco
-        setLoading(false);
-      });
-  }, []);
-
+// Buscador + categorías en píldora
+function FiltrosForo({ busqueda, setBusqueda, categoria, setCategoria, categorias = [], total = 0 }) {
   return (
-    <div className="row g-3 mb-4">
-      <div className="col-md-8">
+    <div className="mb-4">
+      <div className="foro-busqueda mb-3">
+        <Icono nombre="search" />
         <input
-          type="text"
-          className="form-control py-2"
-          placeholder="Buscar en el foro"
+          type="search"
+          className="form-control"
+          placeholder="Buscar en el foro…"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
+          aria-label="Buscar en el foro"
         />
       </div>
 
-      <div className="col-md-4">
-        <select
-          className="form-select py-2"
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-          disabled={loading} // Se bloquea mientras carga
+      <div className="filtros-pildora" role="group" aria-label="Filtrar por categoría">
+        <button
+          type="button"
+          className={`btn-pildora ${categoria === 'todas' ? 'activo' : ''}`}
+          onClick={() => setCategoria('todas')}
         >
-          <option value="todas">
-            {loading ? "Cargando..." : "Todas las categorías"}
-          </option>
-
-          {/* 3. Mapeo protegido de las opciones */}
-          {Array.isArray(categoriasList) && categoriasList.map((cat) => (
-            <option 
-              key={cat.id_categoria} 
-              value={cat.nombre_categoria} // Usamos el nombre para que funcione con tu backend actual
+          Todos <span className="contador">{total}</span>
+        </button>
+        {categorias.map((cat) => {
+          const id = String(cat.id_categoria);
+          return (
+            <button
+              key={id}
+              type="button"
+              className={`btn-pildora ${categoria === id ? 'activo' : ''}`}
+              onClick={() => setCategoria(id)}
+              title={cat.descripcion}
             >
-              {cat.nombre_categoria}
-            </option>
-          ))}
-        </select>
+              <IconoEspecie especie={especieDeCategoria(cat)} /> {cat.nombre_categoria}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

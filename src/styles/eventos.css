@@ -1,0 +1,110 @@
+/* ============================================================
+   eventos.css — Página de eventos (eventos.css del mockup)
+   ============================================================ */
+
+/* ---------- Evento destacado ---------- */
+.evento-featured {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-xl);
+  overflow: hidden;
+  box-shadow: var(--sombra-sm);
+  margin-bottom: 28px;
+  transition: all var(--transicion);
+}
+.evento-featured:hover { box-shadow: var(--sombra-md); border-color: var(--verde-claro); }
+.evento-featured-img { position: relative; min-height: 260px; background: var(--verde-fondo); overflow: hidden; }
+.evento-featured-img img { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
+.evento-featured-badge { position: absolute; top: 14px; left: 14px; }
+.evento-featured-info { padding: 32px 28px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.evento-featured-info h2 { font-size: 1.375rem; font-weight: 800; line-height: 1.2; margin: 8px 0 6px; }
+.evento-featured-info p { font-size: 0.875rem; color: var(--texto-secundario); line-height: 1.7; margin: 0; }
+.evento-meta-list { display: flex; flex-direction: column; gap: 7px; }
+.evento-meta-item { display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: var(--texto-secundario); }
+.evento-meta-item strong { color: var(--texto-principal); }
+
+/* ---------- Evento en lista ---------- */
+.evento-card {
+  display: flex;
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+  transition: all var(--transicion);
+}
+.evento-card:hover { box-shadow: var(--sombra-sm); border-color: var(--verde-claro); transform: translateY(-3px); }
+.evento-card.inscrito { border-left: 3px solid var(--verde-principal); }
+.evento-fecha-barra {
+  width: 76px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 6px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(160deg, var(--verde-oscuro), var(--verde-principal));
+}
+.evento-fecha-barra .dia { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; line-height: 1; }
+.evento-fecha-barra .mes {
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+.evento-card-cuerpo { flex: 1; min-width: 0; padding: 16px 20px; }
+.evento-card-cuerpo h3 {
+  font-family: var(--font-principal);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.evento-card-cuerpo p {
+  font-size: 0.8125rem;
+  color: var(--texto-secundario);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.evento-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; font-size: 0.75rem; color: var(--texto-tenue); }
+.evento-card-accion { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; padding: 0 18px; flex-shrink: 0; }
+.evento-cupos { font-size: 0.6875rem; color: var(--texto-tenue); }
+.evento-cupos.lleno { color: #9f1239; font-weight: 600; }
+
+/* Calendario agrupado por mes */
+.calendario-mes {
+  font-family: var(--font-principal);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--verde-oscuro);
+  margin: 24px 0 12px;
+}
+.calendario-mes:first-child { margin-top: 0; }
+
+@media (max-width: 991.98px) {
+  .evento-featured { grid-template-columns: 1fr; }
+  .evento-featured-img { min-height: 200px; }
+  .evento-featured-info { padding: 20px; }
+}
+@media (max-width: 575.98px) {
+  .evento-card { flex-direction: column; }
+  .evento-fecha-barra { width: 100%; flex-direction: row; justify-content: flex-start; gap: 8px; padding: 10px 16px; }
+  .evento-card-accion { align-items: flex-start; padding: 0 20px 16px; }
+}
+
+.evento-meta-item .bi,
+.evento-card-meta .bi { color: var(--verde-principal); }
