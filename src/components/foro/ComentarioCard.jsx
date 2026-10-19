@@ -7,25 +7,53 @@ function ComentarioCard({ comentario }) {
 
   const manejarReporte = async (motivoId) => {
     try {
-      const datosReporte = {
-        tipo_reporte_id: Number(motivoId), 
-        comentario_id: comentario.id_participacion || comentario.id_comentario || comentario.id, // El ID del comentario
-        descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
-      };
+      const idComentarioValido = Number(
+        comentario.id_participacion ||
+        comentario.id_comentario ||
+        comentario.id_foro_comentario ||
+        comentario.id ||
+        0
+      );
 
-      console.log("Datos que se enviarán al backend:", datosReporte);
-      console.log("Objeto comentario completo:", comentario);
+      if (!idComentarioValido) {
+        alert("No se pudo identificar el ID del comentario a reportar.");
+        return;
+      }
+
+      const datosReporte = {
+        tipo_reporte_id: Number(motivoId),
+        motivo_id: Number(motivoId),
+        comentario_id: idComentarioValido,
+        id_comentario: idComentarioValido,
+        descripcion: "Reportado desde la interfaz de la comunidad",
+      };
 
       const respuesta = await foroService.crearReporte(datosReporte);
 
-      if (respuesta.resultado === "ok") {
+      if (
+        respuesta.resultado === "ok" ||
+        respuesta.status === "success" ||
+        respuesta.success
+      ) {
         alert("¡Reporte enviado con éxito! Gracias por avisarnos.");
       } else {
-        alert(respuesta.mensaje || "No se pudo enviar el reporte.");
+        alert(respuesta.mensaje || respuesta.message || "No se pudo enviar el reporte.");
       }
     } catch (error) {
-      console.error("Error al enviar el reporte:", error);
-      alert("Hubo un error al procesar el reporte.");
+      console.error("Error al enviar el reporte:", error.response?.data || error); //aca es donde manda el mensaje 
+
+      // Mostrar directamente el mensaje de Laravel (ej: "No puedes reportarte a ti mismo.")
+      const mensajeBackend = 
+        error.response?.data?.mensaje || 
+        error.response?.data?.message;
+
+      if (mensajeBackend) {
+        alert(mensajeBackend);
+      } else if (error.response?.status === 401) {
+        alert("Debes iniciar sesión para reportar un comentario.");
+      } else {
+        alert("Hubo un error al procesar el reporte.");
+      }
     }
   };
 

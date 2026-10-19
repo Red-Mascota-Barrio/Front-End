@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Form, Button } from "react-bootstrap";
 
 function ComentarioForm({ onAgregarComentario }) {
   const [contenido, setContenido] = useState("");
@@ -37,7 +36,7 @@ function ComentarioForm({ onAgregarComentario }) {
           id="comentario"
           className="form-control"
           rows="4"
-          placeholder="Escribe tu comentario..."
+          placeholder="Escribe tu comentario"
           value={contenido}
           onChange={(e) => setContenido(e.target.value)}
           disabled={enviando}
