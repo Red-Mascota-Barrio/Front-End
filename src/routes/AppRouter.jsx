@@ -11,13 +11,13 @@ import { InicioAdmin } from '../pages/Inicio/InicioAdmin';
 import Foro from '../pages/Foro/Foro';
 import ForoDetalle from '../pages/Foro/ForoDetalle';
 import { MascotasPage } from '../pages/Mascotas/Mascotas';
-import { MisMascotasPage } from '../pages/Mascotas/MisMascotas';
 import { AdminLayout } from '../components/admin/AdminLayout';
 import { AdminDashboard } from '../pages/Admin/AdminDashboard';
 import { AdminUsuarios } from '../pages/Admin/AdminUsuarios';
 import { AdminMascotas } from '../pages/Admin/AdminMascotas';
 import { AdminEventos } from '../pages/Admin/AdminEventos';
 import { AdminReportes } from '../pages/Admin/AdminReportes';
+import MisMascotas from '../components/mascotas/MisMascotas';
 
 
 export const AppRouter = () => {
@@ -44,7 +44,7 @@ export const AppRouter = () => {
 
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/perfil/editar" element={<EditarPerfil />} />
-        <Route path="/mis-mascotas" element={<MisMascotasPage />} />
+        <Route path="/mis-mascotas" element={<MisMascotas />} />
         
       </Route>
 

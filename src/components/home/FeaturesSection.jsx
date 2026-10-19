@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const FEATURES = [
   { titulo: 'Adopta', texto: 'Busca mascotas por especie, raza y estado de adopción.', to: '/mascotas', Icono: FaSearch },
   { titulo: 'Foros', texto: 'Comparte consejos y dudas con la comunidad.', to: '/foros', Icono: FaComments },
-  { titulo: 'Mis mascotas', texto: 'Registra y administra a tus peludos.', to: '/mis-mascotas', Icono: FaDog },
+  { titulo: 'Mis mascotas', texto: 'Registra y administra a tus peludos.', to: '/mis-mascotas?registrar=1', Icono: FaDog },
   { titulo: 'Eventos', texto: 'Inscríbete a jornadas de adopción y vacunación.', to: '/eventos', Icono: FaCalendarAlt },
 ];
 
