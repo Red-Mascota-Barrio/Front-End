@@ -117,9 +117,10 @@ export const TablaFooter = ({ mostrando, total, nombre, pagina, totalPaginas, on
   </Card.Footer>
 );
 
-export const EstadoVacio = ({ icono = '🔍', titulo, sub }) => (
+// `icono`: nombre de Bootstrap Icons (search, people, calendar-event…)
+export const EstadoVacio = ({ icono = 'search', titulo, sub }) => (
   <div className="text-center py-5 px-3 text-secondary">
-    <div className="display-6 mb-2">{icono}</div>
+    <div className="display-6 mb-2 text-success-emphasis"><AdminIcon nombre={icono} /></div>
     <div className="fs-5 fw-bold text-body">{titulo}</div>
     {sub && <div className="small">{sub}</div>}
   </div>

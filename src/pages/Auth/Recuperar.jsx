@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
-import { FaPaw, FaArrowLeft, FaKey, FaEnvelope } from 'react-icons/fa';
+import { Form, Button, Alert } from 'react-bootstrap';
+import { FaArrowLeft, FaKey, FaEnvelope } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { authService } from '../../services/authService';
-import { PasswordModal } from '../../components/auth/PasswordMoldal';
-import '../../assets/auth.css';
+import { PasswordModal } from '../../components/auth/PasswordModal';
+import { useAuth } from '../../context/AuthContext';
+import logo from '../../assets/images/inicio/logo.png';
+import { Icono } from '../../components/common/Icono';
+import '../../styles/auth.css';
 
 export const Recuperar = () => {
   const [step, setStep] = useState(1);
@@ -14,9 +17,13 @@ export const Recuperar = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
+  const { token, logout } = useAuth();
+
+  // Al restablecer, el back borra todos los tokens del usuario: si había sesión, se cierra aquí también
   const handleCloseModal = () => {
     setShowPasswordModal(false);
-    navigate('/login'); 
+    if (token) logout();
+    navigate('/login');
   };
 
   // Guardamos el correo ingresado en el paso 1 para enviarlo junto con la nueva clave en el paso 2
@@ -73,124 +80,114 @@ export const Recuperar = () => {
   };
 
   return (
-    <Container fluid className="vh-100 p-0 bg-light d-flex justify-content-center align-items-center">
-      <div className="bg-white p-4 p-md-5 rounded-4 shadow-sm border" style={{ maxWidth: '450px', width: '100%' }}>
+    <div className="auth-centrado">
+      <div className="auth-tarjeta">
+        <Link to="/" className="auth-logo mb-4">
+          <img src={logo} alt="" />
+          Red de Mascotas de Barrio
+        </Link>
 
-        <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2 text-primary">
-          <FaPaw size={24} />
-          <span className="fw-bold fs-5">Red de Mascotas</span>
-        </div>
+        {errorMsg && <Alert variant="danger" role="alert"><Icono nombre="exclamation-circle" /> {errorMsg}</Alert>}
+        {mensaje && <Alert variant="success">{mensaje}</Alert>}
 
-        {errorMsg && <Alert variant="danger" className="py-2 small text-center rounded-3 shadow-sm mb-3">{errorMsg}</Alert>}
-        {mensaje && <Alert variant="success" className="py-2 small text-center rounded-3 shadow-sm mb-3">{mensaje}</Alert>}
-
-        {/* PASO 1: Ingresar Correo */}
+        {/* PASO 1: Ingresar correo */}
         {step === 1 && (
-          <div>
+          <>
             <div className="text-center mb-4">
-              <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3 shadow-sm">
-                <FaEnvelope size={22} />
-              </div>
-              <h4 className="fw-bold text-dark">¿Olvidaste tu contraseña?</h4>
-              <p className="text-muted small">
-                Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un código para restablecerla.
+              <div className="icono-circular"><FaEnvelope /></div>
+              <h1 className="h3 fw-bold">¿Olvidaste tu contraseña?</h1>
+              <p className="auth-subtitulo mb-0">
+                Ingresa el correo asociado a tu cuenta y te enviaremos un código para restablecerla.
               </p>
             </div>
 
-            <Form onSubmit={handleSubmit(onSubmitCorreo)}>
+            <Form onSubmit={handleSubmit(onSubmitCorreo)} noValidate>
               <Form.Group className="mb-4" controlId="correoRecuperacion">
-                <Form.Label className="small fw-bold text-muted">CORREO ELECTRÓNICO</Form.Label>
+                <Form.Label>Correo electrónico</Form.Label>
                 <Form.Control
                   type="email"
                   placeholder="tucorreo@ejemplo.com"
-                  {...register("correo", { required: "El correo es obligatorio" })}
+                  autoComplete="email"
+                  {...register('correo', { required: 'El correo es obligatorio' })}
                   isInvalid={!!errors.correo}
-                  className="py-2 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.correo?.message}</Form.Control.Feedback>
               </Form.Group>
 
-              <div className="d-grid mb-3">
-                <Button type="submit" variant="primary" disabled={loading} className="rounded-pill py-2 shadow-sm fw-medium">
-                  {loading ? 'Enviando...' : 'Enviar instrucciones'}
-                </Button>
-              </div>
+              <Button type="submit" variant="primary" disabled={loading} className="w-100 mb-3">
+                {loading ? 'Enviando…' : 'Enviar código'}
+              </Button>
 
               <div className="text-center">
-                <Link to="/login" className="text-muted small text-decoration-none fw-medium d-inline-flex align-items-center gap-2">
+                <Link to="/login" className="link-sutil d-inline-flex align-items-center gap-2">
                   <FaArrowLeft /> Volver al inicio de sesión
                 </Link>
               </div>
             </Form>
-          </div>
+          </>
         )}
 
-        {/* PASO 2: Ingresar Código y Nueva Contraseña */}
+        {/* PASO 2: Código y nueva contraseña */}
         {step === 2 && (
-          <div>
+          <>
             <div className="text-center mb-4">
-              <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3 shadow-sm">
-                <FaKey size={22} />
-              </div>
-              <h4 className="fw-bold text-dark">Crear nueva contraseña</h4>
-              <p className="text-muted small">
-                Ingresa el código que recibiste por correo y tu nueva contraseña segura.
+              <div className="icono-circular"><FaKey /></div>
+              <h1 className="h3 fw-bold">Crear nueva contraseña</h1>
+              <p className="auth-subtitulo mb-0">
+                Ingresa el código que recibiste en <strong>{correoGuardado}</strong> y tu nueva contraseña.
               </p>
             </div>
 
-            <Form onSubmit={handleSubmit(onSubmitNuevaClave)}>
-              <Form.Group className="mb-3 text-center" controlId="codigoRecuperacion">
-                <Form.Label className="small fw-bold text-muted d-block text-start">CÓDIGO DE RECUPERACIÓN</Form.Label>
+            <Form onSubmit={handleSubmit(onSubmitNuevaClave)} noValidate>
+              <Form.Group className="mb-3" controlId="codigoRecuperacion">
+                <Form.Label>Código de recuperación</Form.Label>
                 <Form.Control
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   placeholder="123456"
                   maxLength={6}
-                  {...register("codigo_otp", { required: "Ingresa el código OTP" })}
+                  className="campo-otp"
+                  {...register('codigo_otp', { required: 'Ingresa el código OTP' })}
                   isInvalid={!!errors.codigo_otp}
-                  className="py-2 text-center tracking-widest fs-5 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.codigo_otp?.message}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-4" controlId="nuevaPassword">
-                <Form.Label className="small fw-bold text-muted">NUEVA CONTRASEÑA</Form.Label>
+                <Form.Label>Nueva contraseña</Form.Label>
                 <Form.Control
                   type="password"
                   placeholder="Mínimo 8 caracteres"
-                  {...register("password", {
-                    required: "Obligatorio",
-                    minLength: { value: 8, message: "Debe tener al menos 8 caracteres" }
+                  autoComplete="new-password"
+                  {...register('password', {
+                    required: 'Obligatorio',
+                    minLength: { value: 8, message: 'Debe tener al menos 8 caracteres' },
                   })}
                   isInvalid={!!errors.password}
-                  className="py-2 shadow-none"
                   disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
               </Form.Group>
 
-              <div className="d-grid mb-3">
-                <Button type="submit" variant="primary" disabled={loading} className="rounded-pill py-2 shadow-sm fw-medium">
-                  {loading ? 'Actualizando...' : 'Restablecer contraseña'}
-                </Button>
-              </div>
+              <Button type="submit" variant="primary" disabled={loading} className="w-100 mb-3">
+                {loading ? 'Actualizando…' : 'Restablecer contraseña'}
+              </Button>
 
               <div className="text-center">
-                <Button variant="link" onClick={() => setStep(1)} className="text-muted small text-decoration-none d-inline-flex align-items-center gap-1 p-0 fw-medium">
+                <Button variant="link" onClick={() => setStep(1)} className="text-secondary text-decoration-none p-0">
                   <FaArrowLeft /> Volver a pedir código
                 </Button>
               </div>
             </Form>
-          </div>
+          </>
         )}
       </div>
 
       {/* Modal de éxito al actualizar la contraseña */}
       <PasswordModal show={showPasswordModal} handleClose={handleCloseModal} />
-      
-    </Container>
+    </div>
   );
 };
-
-export default Recuperar;

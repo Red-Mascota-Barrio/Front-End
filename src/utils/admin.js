@@ -86,13 +86,12 @@ export const usuarioActivo = (u) => u?.estado === undefined || u?.estado === nul
 export const especieDeMascota = (m) => m?.raza?.especie?.nombre_especie ?? m?.especie ?? '';
 export const razaDeMascota = (m) => m?.raza?.nombre_raza ?? m?.raza_nombre ?? '';
 
-export const emojiEspecie = (especie) => {
+// 'perro' | 'gato' | 'otro' (para elegir el ícono: ver components/common/Icono.jsx)
+export const tipoEspecie = (especie) => {
   const e = normalizar(especie);
-  if (e.includes('gat')) return '🐱';
-  if (e.includes('perr') || e.includes('can')) return '🐶';
-  if (e.includes('conej')) return '🐰';
-  if (e.includes('ave') || e.includes('pajar')) return '🐦';
-  return '🐾';
+  if (e.includes('gat')) return 'gato';
+  if (e.includes('perr') || e.includes('can')) return 'perro';
+  return 'otro';
 };
 
 export const claseIconoEspecie = (especie) => {
@@ -115,13 +114,14 @@ export const estadoMascota = (m) => {
 };
 
 /* ---------------- Eventos ---------------- */
-export const emojiTipoEvento = (tipo) => {
+// Nombre del ícono de Bootstrap Icons según el tipo de evento
+export const iconoTipoEvento = (tipo) => {
   const t = normalizar(tipo);
-  if (t.includes('vacun')) return '💉';
-  if (t.includes('adop')) return '🏠';
-  if (t.includes('taller')) return '📚';
-  if (t.includes('recrea')) return '🌳';
-  return '📅';
+  if (t.includes('vacun')) return 'capsule';
+  if (t.includes('adop')) return 'house-heart';
+  if (t.includes('taller')) return 'book';
+  if (t.includes('recrea')) return 'tree';
+  return 'calendar-event';
 };
 
 export const claseTipoEvento = (tipo) => {
@@ -147,12 +147,12 @@ export const estadoEvento = (e) => {
 export const gravedadReporte = (r) => {
   const tipo = normalizar(r?.tipo_reporte?.nombre_tipo ?? r?.tipoReporte?.nombre_tipo ?? '');
   if (tipo.includes('ofensivo') || tipo.includes('acoso')) {
-    return { clave: 'urgente', texto: '🔴 Urgente', clase: 'danger' };
+    return { clave: 'urgente', texto: 'Urgente', icono: 'exclamation-octagon', clase: 'danger' };
   }
   if (tipo.includes('falsa') || tipo.includes('peligros') || tipo.includes('spam') || tipo.includes('publicidad')) {
-    return { clave: 'moderado', texto: '🟠 Moderado', clase: 'warning' };
+    return { clave: 'moderado', texto: 'Moderado', icono: 'exclamation-triangle', clase: 'warning' };
   }
-  return { clave: 'bajo', texto: '⚪ Bajo', clase: 'secondary' };
+  return { clave: 'bajo', texto: 'Bajo', icono: 'dash-circle', clase: 'secondary' };
 };
 
 // Laravel serializa las relaciones en snake_case (tipoReporte -> tipo_reporte)

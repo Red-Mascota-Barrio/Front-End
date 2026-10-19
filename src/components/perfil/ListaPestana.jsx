@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Spinner, Alert } from 'react-bootstrap';
+import { Spinner, Alert, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { Icono } from '../common/Icono';
 
 // Carga una lista desde el servicio y maneja estados de carga / error / vacío.
+// `vacio` acepta un texto o { icono (Bootstrap Icons), titulo, sub, accion: { texto, to } }.
 export const ListaPestana = ({ cargar, vacio, children }) => {
   const [items, setItems] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -19,24 +22,26 @@ export const ListaPestana = ({ cargar, vacio, children }) => {
   if (cargando) {
     return (
       <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" role="status" />
-        <p className="mt-2 text-muted small">Cargando contenido...</p>
+        <Spinner animation="border" role="status" />
+        <p className="mt-2 text-muted small">Cargando contenido…</p>
       </div>
     );
   }
 
   if (error) {
-    return (
-      <Alert variant="danger" className="rounded-3 text-center my-3">
-        No se pudo cargar la información. Intenta de nuevo más tarde.
-      </Alert>
-    );
+    return <Alert variant="danger" className="text-center"><Icono nombre="exclamation-circle" /> No se pudo cargar la información. Intenta de nuevo más tarde.</Alert>;
   }
 
   if (items.length === 0) {
+    const v = typeof vacio === 'string' ? { titulo: vacio } : vacio ?? {};
     return (
-      <div className="text-center py-5 text-muted bg-light rounded-4 border p-4 my-3">
-        <p className="mb-0">{vacio}</p>
+      <div className="perfil-tab-vacio">
+        {v.icono && <div className="perfil-tab-vacio-icono"><Icono nombre={v.icono} /></div>}
+        <p className="perfil-tab-vacio-titulo">{v.titulo}</p>
+        {v.sub && <p className="perfil-tab-vacio-sub">{v.sub}</p>}
+        {v.accion && (
+          <Button as={Link} to={v.accion.to} variant="primary">{v.accion.texto}</Button>
+        )}
       </div>
     );
   }

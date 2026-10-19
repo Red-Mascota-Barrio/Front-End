@@ -1,41 +1,34 @@
 import { Modal, Button } from 'react-bootstrap';
+import { fechaCorta } from '../../utils/admin';
+import { Icono } from '../common/Icono';
 
 export default function InscripcionModal({ evento, onClose, onConfirmar, enviando = false }) {
   return (
     <Modal show={Boolean(evento)} onHide={onClose} centered backdrop="static">
-      <Modal.Header closeButton className="border-0 pb-0">
-        <Modal.Title className="fw-bold">Confirmar inscripción</Modal.Title>
-      </Modal.Header>
-      
-      <Modal.Body className="pt-3">
-        <p className="text-secondary mb-3">
-          ¿Deseas inscribirte al evento <strong className="text-dark">{evento?.titulo}</strong>?
-        </p>
-        
-        <div className="bg-light p-3 rounded-3 small text-secondary">
-          <div className="mb-1">📅 <strong>Fecha:</strong> {evento?.fecha}</div>
-          <div className="mb-1">🕒 <strong>Hora:</strong> {evento?.hora}</div>
-          <div>📍 <strong>Lugar:</strong> {evento?.lugar}</div>
+      <Modal.Header closeButton={!enviando}>
+        <div>
+          <Modal.Title as="h2" className="h5 mb-1">Confirmar inscripción</Modal.Title>
+          <p className="text-muted small mb-0">{evento?.titulo}</p>
         </div>
+      </Modal.Header>
+
+      <Modal.Body>
+        <div className="caja-info d-flex flex-column gap-1">
+          <div><Icono nombre="calendar-event" /> <strong>Fecha:</strong> {fechaCorta(evento?.fecha)}</div>
+          {evento?.hora && <div><Icono nombre="clock" /> <strong>Hora:</strong> {evento.hora}</div>}
+          <div><Icono nombre="geo-alt" /> <strong>Lugar:</strong> {evento?.lugar}</div>
+        </div>
+        <p className="text-muted small mt-3 mb-0">
+          Te avisaremos si hay cambios en el evento. Puedes ver tus inscripciones en tu perfil.
+        </p>
       </Modal.Body>
-      
-      <Modal.Footer className="border-0 pt-0">
-        <Button 
-          variant="light" 
-          className="rounded-pill px-4 text-secondary border" 
-          onClick={onClose} 
-          disabled={enviando}
-        >
+
+      <Modal.Footer>
+        <Button variant="light" onClick={onClose} disabled={enviando}>
           Cancelar
         </Button>
-        
-        <Button 
-          variant="success" 
-          className="rounded-pill px-4 shadow-sm fw-medium" 
-          onClick={() => onConfirmar(evento.id)} 
-          disabled={enviando}
-        >
-          {enviando ? 'Inscribiendo...' : 'Confirmar asistencia'}
+        <Button variant="primary" onClick={() => onConfirmar(evento.id)} disabled={enviando}>
+          {enviando ? 'Inscribiendo…' : 'Confirmar asistencia'}
         </Button>
       </Modal.Footer>
     </Modal>

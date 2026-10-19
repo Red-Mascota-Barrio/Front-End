@@ -86,8 +86,4 @@ export const adminService = {
     }
     throw new Error('El reporte no tiene contenido asociado.');
   },
-<<<<<<< Updated upstream
 };
-=======
-};
->>>>>>> Stashed changes

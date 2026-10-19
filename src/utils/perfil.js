@@ -17,10 +17,16 @@ export const esVerificado = (usuario) =>
   );
 
 export const iniciales = (usuario) =>
-  `${usuario?.nombre?.[0] ?? ''}${usuario?.apellido?.[0] ?? ''}`.toUpperCase() || '🐾';
+  `${usuario?.nombre?.[0] ?? ''}${usuario?.apellido?.[0] ?? ''}`.toUpperCase() || '?';
 
 export const mensajeError = (error, porDefecto) => {
   const data = error.response?.data;
-  const primerError = data?.errores ? Object.values(data.errores).flat()[0] : null;
+  // Laravel devuelve los errores de validación en "error" (o "errors" con $request->validate)
+  const errores = data?.error ?? data?.errors ?? data?.errores;
+  const primerError = errores && typeof errores === 'object' ? Object.values(errores).flat()[0] : null;
   return primerError || data?.mensaje || porDefecto;
 };
+
+// Id del rol del usuario (1 = Administrador, 2 = Usuario) sin importar cómo lo devuelva Laravel
+export const rolDeUsuario = (usuario) =>
+  Number(usuario?.rol_id ?? usuario?.id_rol ?? usuario?.rol?.id_rol ?? usuario?.rol?.id ?? 2);

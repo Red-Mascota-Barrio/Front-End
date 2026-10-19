@@ -191,7 +191,7 @@ export const AdminUsuarios = () => {
           <Cargando texto="Cargando usuarios…" />
         ) : filtrados.length === 0 ? (
           <EstadoVacio
-            icono={usuarios.length ? '🔍' : '👥'}
+            icono={usuarios.length ? 'lupa' : 'usuarios'}
             titulo={usuarios.length ? 'Sin resultados' : 'No hay usuarios para mostrar'}
             sub={usuarios.length ? 'Prueba con otra búsqueda o filtro.' : undefined}
           />
@@ -266,7 +266,7 @@ export const AdminUsuarios = () => {
         )}
       </TablaCard>
 
-      <AdminModal abierto={Boolean(editando)} titulo="✏️ Editar usuario" onCerrar={() => setEditando(null)}>
+      <AdminModal abierto={Boolean(editando)} titulo="Editar usuario" onCerrar={() => setEditando(null)}>
         <Form onSubmit={guardar} noValidate>
           <Row className="g-3">
             <Form.Group as={Col} sm={6} controlId="uNombre">

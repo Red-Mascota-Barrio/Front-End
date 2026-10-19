@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Modal } from 'react-bootstrap';
+import { Icono } from '../common/Icono';
 import { mascotasService } from '../../services/mascotasService';
 
 export default function RegistrarMascotaModal({ onClose, onGuardar }) {
@@ -15,9 +17,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
   });
 
   const [especies, setEspecies] = useState([]);
+  const [cargandoEspecies, setCargandoEspecies] = useState(true);
+  const [errorEspecies, setErrorEspecies] = useState('');
   const [razas, setRazas] = useState([]);
   const [cargandoRazas, setCargandoRazas] = useState(false);
   const [previa, setPrevia] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState('');
 
   // Libera la URL temporal de la vista previa
   useEffect(() => () => previa && URL.revokeObjectURL(previa), [previa]);
@@ -30,7 +36,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
       .then(data => {
         if (activo) setEspecies(data);
       })
-      .catch(err => console.error('Error al obtener especies:', err));
+      .catch(err => {
+        console.error('Error al obtener especies:', err);
+        if (activo) setErrorEspecies('No se pudieron cargar las especies desde el servidor.');
+      })
+      .finally(() => {
+        if (activo) setCargandoEspecies(false);
+      });
 
     return () => {
       activo = false;
@@ -84,21 +96,38 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onGuardar(formData);
+    setGuardando(true);
+    setErrorGuardar('');
+    try {
+      await onGuardar(formData);
+    } catch (err) {
+      console.error('Error al guardar mascota:', err);
+      const respuesta = err?.response?.data;
+      const erroresValidacion = Object.values(respuesta?.error ?? {}).flat().join(' ');
+      setErrorGuardar(
+        erroresValidacion
+        || respuesta?.mensaje
+        || respuesta?.message
+        || 'No se pudo registrar la mascota. Comprueba los datos y vuelve a intentar.'
+      );
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
-    <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content">
-          <div className="modal-header bg-primary text-white">
-            <h5 className="modal-title">Registrar Mascota</h5>
-            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
-          </div>
-          <form onSubmit={handleSubmit}>
+    <Modal show onHide={guardando ? undefined : onClose} centered size="lg" backdrop={guardando ? 'static' : true} scrollable>
+          <Modal.Header closeButton={!guardando}>
+            <div>
+              <Modal.Title as="h2" className="h4 mb-1">Registrar mascota</Modal.Title>
+              <p className="text-muted small mb-0">Completa los datos de tu mascota. Los campos con * son obligatorios.</p>
+            </div>
+          </Modal.Header>
+          <form onSubmit={handleSubmit} className="d-flex flex-column overflow-hidden">
             <div className="modal-body">
+              {errorGuardar && <div className="alert alert-danger" role="alert">{errorGuardar}</div>}
               <div className="row g-3">
                 {/* Nombre */}
                 <div className="col-md-6">
@@ -121,15 +150,19 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                     name="id_especie"
                     value={formData.id_especie}
                     onChange={handleChange}
+                    disabled={cargandoEspecies || Boolean(errorEspecies)}
                     required
                   >
-                    <option value="">-- Seleccionar Especie --</option>
+                    <option value="">
+                      {cargandoEspecies ? 'Cargando especies...' : '-- Seleccionar Especie --'}
+                    </option>
                     {especies.map((item) => (
-                      <option key={item.id ?? item.id_especie} value={item.id ?? item.id_especie}>
-                        {item.nombre ?? item.especie}
+                      <option key={item.id_especie ?? item.id} value={item.id_especie ?? item.id}>
+                        {item.nombre_especie ?? item.nombre ?? item.especie}
                       </option>
                     ))}
                   </select>
+                  {errorEspecies && <div className="form-text text-danger" role="alert">{errorEspecies}</div>}
                 </div>
 
                 {/* Desplegable Raza (Dependiente) */}
@@ -151,8 +184,8 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                         : '-- Seleccionar Raza --'}
                     </option>
                     {razas.map((item) => (
-                      <option key={item.id ?? item.id_raza} value={item.id ?? item.id_raza}>
-                        {item.nombre ?? item.raza}
+                      <option key={item.id_raza ?? item.id} value={item.id_raza ?? item.id}>
+                        {item.nombre_raza ?? item.nombre ?? item.raza}
                       </option>
                     ))}
                   </select>
@@ -160,12 +193,14 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
 
                 {/* Edad */}
                 <div className="col-md-3">
-                  <label className="form-label">Edad</label>
+                  <label className="form-label">Edad (años)</label>
                   <input
-                    type="text"
+                    type="number"
+                    min="0"
+                    max="40"
                     className="form-control"
                     name="edad"
-                    placeholder="Ej. 3 años"
+                    placeholder="Ej. 3"
                     value={formData.edad}
                     onChange={handleChange}
                   />
@@ -219,52 +254,57 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                   ></textarea>
                 </div>
 
-                {/* Checkboxes */}
-                <div className="col-md-6">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      name="esterilizado"
-                      id="esterilizado"
-                      checked={formData.esterilizado}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label" htmlFor="esterilizado">
-                      ¿Esterilizado/a?
-                    </label>
-                  </div>
-                </div>
+                {/* Checkboxes (bloque de salud del mockup) */}
+                <div className="col-12">
+                  <div className="caja-info">
+                    <div className="fw-bold mb-2"><Icono nombre="heart-pulse" /> Salud</div>
+                    <div className="d-flex flex-wrap gap-4">
+                        <div>
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              name="esterilizado"
+                              id="esterilizado"
+                              checked={formData.esterilizado}
+                              onChange={handleChange}
+                            />
+                            <label className="form-check-label" htmlFor="esterilizado">
+                              ¿Esterilizado/a?
+                            </label>
+                          </div>
+                        </div>
 
-                <div className="col-md-6">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      name="vacunas_al_dia"
-                      id="vacunas_al_dia"
-                      checked={formData.vacunas_al_dia}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label" htmlFor="vacunas_al_dia">
-                      ¿Vacunas al día?
-                    </label>
+                        <div>
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              name="vacunas_al_dia"
+                              id="vacunas_al_dia"
+                              checked={formData.vacunas_al_dia}
+                              onChange={handleChange}
+                            />
+                            <label className="form-check-label" htmlFor="vacunas_al_dia">
+                              ¿Vacunas al día?
+                            </label>
+                          </div>
+                        </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button type="button" className="btn btn-light" onClick={onClose} disabled={guardando}>
                 Cancelar
               </button>
-              <button type="submit" className="btn btn-primary">
-                Guardar Mascota
+              <button type="submit" className="btn btn-primary" disabled={guardando}>
+                {guardando ? 'Guardando...' : 'Guardar Mascota'}
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

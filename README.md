@@ -1,16 +1,51 @@
-# React + Vite
+# Red de Mascotas de Barrio — Front-End
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite + **Bootstrap 5 / React-Bootstrap**. Consume la API Laravel del repositorio `Back-End`.
 
-Currently, two official plugins are available:
+## Puesta en marcha
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env      # VITE_API_URL=http://localhost:8000/api
+npm run dev               # http://localhost:5173
+npm run lint
+npm run build
+```
 
-## React Compiler
+## Estructura de `src/`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+├── main.jsx              # Carga Bootstrap → tema → App (el orden importa)
+├── App.jsx               # Router + AuthProvider
+├── index.css             # Reset mínimo
+├── assets/images/        # auth/, common/, inicio/
+├── components/
+│   ├── common/Icono.jsx  # <Icono nombre="..."/> (Bootstrap Icons) e íconos de especie / tipo de evento
+│   ├── layout/           # AppNavbar, Footer
+│   ├── home/ auth/ mascotas/ eventos/ foro/ perfil/
+│   └── admin/            # AdminLayout (sidebar), AdminUI (piezas del panel), AdminIcon
+├── context/AuthContext.jsx   # sesión (token, user, role) + estadísticas
+├── pages/                # Una página por ruta (Inicio, Auth, Mascotas, Eventos, Foro, Perfil, Admin)
+├── routes/               # AppRouter (rutas) y ProtectedRoute (roles 1 = admin, 2 = usuario)
+├── services/             # Una capa por recurso de la API (axios en api.js)
+├── styles/
+│   ├── theme.css         # Tema Bootstrap con la paleta del mockup (variables --bs-* y --verde-*)
+│   ├── layout.css        # Navbar, footer, héroes, tarjetas laterales, estados vacíos
+│   └── home|auth|mascotas|eventos|foro|perfil|admin.css   # estilos de cada módulo
+└── utils/                # Helpers: fechas y normalización (admin.js), foro, eventos, mascotas, perfil
+```
 
-## Expanding the ESLint configuration
+## Convenciones
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Estilos:** primero clases de Bootstrap; los colores/radios salen de `styles/theme.css`.
+  No redefinir `.btn`, `.badge` ni `.navbar`: se personalizan con variables `--bs-*`.
+- **Íconos:** Bootstrap Icons vía `<Icono nombre="calendar-event" />`; especies con `<IconoEspecie />`.
+  Evitar emojis en la interfaz.
+- **API:** las rutas de cada recurso viven en su `services/*.js`. Laravel responde
+  `{ resultado, mensaje, datos }` y los errores de validación en `error`.
+
+## Pendiente en el Back-End (el front ya lo contempla)
+
+- `GET /mis-mascotas` (mascotas del usuario) y `GET /categorias` (categorías del foro).
+- Rutas de perfil: subir foto, cambiar contraseña con la actual y eliminar la propia cuenta.

@@ -1,34 +1,39 @@
-import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { perfilService } from '../../services/perfilService';
+import { adaptarEvento } from '../../services/eventosService';
+import { fechaCorta } from '../../utils/admin';
+import { Icono, IconoTipoEvento } from '../common/Icono';
 import { ListaPestana } from './ListaPestana';
 
-const fecha = (f) =>
-  f ? new Date(f).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' }) : 'Fecha por definir';
-
+// Eventos con inscripción activa (GET /mis-eventos)
 export const TabEventos = () => (
-  <ListaPestana cargar={perfilService.misEventos} vacio="No estás inscrito en ningún evento 📅">
+  <ListaPestana
+    cargar={perfilService.misEventos}
+    vacio={{
+      icono: 'calendar-event',
+      titulo: 'Aún no te has inscrito a ningún evento',
+      sub: 'Encuentra jornadas de vacunación y ferias de adopción en tu barrio.',
+      accion: { texto: 'Ver eventos disponibles', to: '/eventos' },
+    }}
+  >
     {(eventos) => (
-      <div className="d-flex flex-column gap-3">
-        {eventos.map((e) => (
-          <div 
-            className="d-flex align-items-start p-4 bg-white rounded-4 shadow-sm border gap-3" 
-            key={e.id}
-          >
-            <div className="p-3 bg-primary bg-opacity-10 text-primary rounded-3 fs-4 d-flex align-items-center justify-content-center">
-              <FaCalendarAlt />
+      <div className="lista-tarjeta">
+        {eventos.map((original, i) => {
+          const e = adaptarEvento(original);
+          return (
+            <div className="actividad-item" key={e.id ?? i}>
+              <div className="actividad-icono"><IconoTipoEvento tipo={e.tipo} /></div>
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <h3 className="actividad-titulo text-truncate">{e.titulo}</h3>
+                <p className="actividad-meta">
+                  <Icono nombre="calendar3" /> {e.fecha ? fechaCorta(e.fecha) : 'Fecha por definir'}
+                  {e.hora && <> · <Icono nombre="clock" /> {e.hora}</>}
+                  {e.lugar && <> · <Icono nombre="geo-alt" /> {e.lugar}</>}
+                </p>
+              </div>
+              <span className="badge badge-verde flex-shrink-0"><Icono nombre="check-circle" /> Inscrito</span>
             </div>
-            <div className="flex-grow-1 text-start">
-              <h6 className="fw-bold text-dark mb-1">{e.titulo ?? e.nombre}</h6>
-              <p className="mb-2 text-muted small">{fecha(e.fecha_inicio ?? e.fecha)}</p>
-              {e.lugar && (
-                <div className="text-secondary small d-flex align-items-center gap-1">
-                  <FaMapMarkerAlt className="text-danger" />
-                  <span>{e.lugar}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     )}
   </ListaPestana>

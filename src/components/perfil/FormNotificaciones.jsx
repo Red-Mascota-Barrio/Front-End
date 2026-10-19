@@ -3,16 +3,24 @@ import { Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { perfilService } from '../../services/perfilService';
 import { mensajeError } from '../../utils/perfil';
 
-// Tipos de notificación que genera el backend
+// Columnas de preferencias_notificacion (PreferenciaNotificacionController@update)
 const TIPOS = [
-  { tipo: 'solicitud', titulo: 'Solicitudes de adopción', detalle: 'Cuando alguien solicita adoptar una de tus mascotas.' },
-  { tipo: 'comentario', titulo: 'Comentarios', detalle: 'Cuando comentan tus publicaciones en el foro.' },
-  { tipo: 'evento', titulo: 'Eventos', detalle: 'Cambios en los eventos a los que estás inscrito.' },
-  { tipo: 'reporte', titulo: 'Reportes', detalle: 'Novedades sobre reportes que hiciste o recibiste.' },
+  { campo: 'notificar_adopcion', titulo: 'Adopciones', detalle: 'Cuando alguien solicita adoptar una de tus mascotas.' },
+  { campo: 'notificar_foro', titulo: 'Foro', detalle: 'Cuando comentan tus publicaciones en el foro.' },
+  { campo: 'notificar_evento', titulo: 'Eventos', detalle: 'Cambios en los eventos a los que estás inscrito.' },
+  { campo: 'notificar_reporte', titulo: 'Reportes', detalle: 'Novedades sobre reportes que hiciste o recibiste.' },
 ];
 
+const FRECUENCIAS = [
+  { valor: 'inmediata', texto: 'Inmediata' },
+  { valor: 'diaria', texto: 'Resumen diario' },
+  { valor: 'semanal', texto: 'Resumen semanal' },
+];
+
+const POR_DEFECTO = { ...Object.fromEntries(TIPOS.map((t) => [t.campo, true])), frecuencia: 'inmediata' };
+
 export const FormNotificaciones = () => {
-  const [prefs, setPrefs] = useState(() => Object.fromEntries(TIPOS.map((t) => [t.tipo, true])));
+  const [prefs, setPrefs] = useState(POR_DEFECTO);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
@@ -21,10 +29,12 @@ export const FormNotificaciones = () => {
     perfilService
       .obtenerPreferencias()
       .then((data) => {
-        const lista = Array.isArray(data) ? data : data?.preferencias ?? [];
-        if (lista.length) {
-          setPrefs((previo) => ({ ...previo, ...Object.fromEntries(lista.map((p) => [p.tipo, Boolean(p.activo)])) }));
-        }
+        if (!data || typeof data !== 'object') return;
+        setPrefs((previo) => ({
+          ...previo,
+          ...Object.fromEntries(TIPOS.filter((t) => t.campo in data).map((t) => [t.campo, Boolean(Number(data[t.campo]))])),
+          frecuencia: data.frecuencia ?? previo.frecuencia,
+        }));
       })
       .catch(() => setMensaje({ tipo: 'warning', texto: 'No se pudieron cargar tus preferencias; se muestran los valores por defecto.' }))
       .finally(() => setCargando(false));
@@ -34,7 +44,7 @@ export const FormNotificaciones = () => {
     try {
       setGuardando(true);
       setMensaje(null);
-      await perfilService.guardarPreferencias(TIPOS.map(({ tipo }) => ({ tipo, activo: prefs[tipo] })));
+      await perfilService.guardarPreferencias(prefs);
       setMensaje({ tipo: 'success', texto: 'Preferencias de notificación guardadas.' });
     } catch (error) {
       setMensaje({ tipo: 'danger', texto: mensajeError(error, 'No se pudieron guardar las preferencias.') });
@@ -46,49 +56,53 @@ export const FormNotificaciones = () => {
   if (cargando) {
     return (
       <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" role="status" />
-        <p className="mt-2 text-muted small">Cargando preferencias...</p>
+        <Spinner animation="border" role="status" />
+        <p className="mt-2 text-muted small">Cargando preferencias…</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 bg-white rounded-4 shadow-sm border">
-      <h5 className="fw-bold mb-4 text-dark">Preferencias de notificación</h5>
-      {mensaje && <Alert variant={mensaje.tipo} className="py-2 small rounded-3">{mensaje.texto}</Alert>}
+    <section className="perfil-seccion">
+      <div className="perfil-seccion-header">
+        <h2>Preferencias de notificación</h2>
+        <p>Elige qué avisos quieres recibir y con qué frecuencia.</p>
+      </div>
+      <div className="perfil-seccion-body">
+        {mensaje && <Alert variant={mensaje.tipo}>{mensaje.texto}</Alert>}
 
-      <div className="d-flex flex-column gap-3 mb-4">
-        {TIPOS.map(({ tipo, titulo, detalle }) => (
-          <div 
-            key={tipo} 
-            className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 border"
-          >
-            <div className="pe-3">
-              <strong className="text-dark d-block mb-1">{titulo}</strong>
-              <span className="text-muted small">{detalle}</span>
+        <div className="mb-4">
+          {TIPOS.map(({ campo, titulo, detalle }) => (
+            <div key={campo} className="notif-item">
+              <label htmlFor={`pref-${campo}`} className="flex-grow-1 cursor-pointer">
+                <div className="notif-item-titulo">{titulo}</div>
+                <div className="notif-item-sub">{detalle}</div>
+              </label>
+              <Form.Check
+                type="switch"
+                id={`pref-${campo}`}
+                checked={prefs[campo]}
+                onChange={(e) => setPrefs((p) => ({ ...p, [campo]: e.target.checked }))}
+                aria-label={titulo}
+                className="mb-0"
+              />
             </div>
-            <Form.Check
-              type="switch"
-              id={`pref-${tipo}`}
-              checked={prefs[tipo]}
-              onChange={(e) => setPrefs((p) => ({ ...p, [tipo]: e.target.checked }))}
-              aria-label={titulo}
-              className="fs-5 cursor-pointer"
-            />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="d-grid">
-        <Button 
-          variant="primary" 
-          className="rounded-pill py-2 shadow-sm fw-medium" 
-          onClick={guardar} 
-          disabled={guardando}
-        >
-          {guardando ? 'Guardando...' : 'Guardar preferencias'}
-        </Button>
+        <Form.Group controlId="frecuencia" className="mb-4" style={{ maxWidth: 280 }}>
+          <Form.Label>Frecuencia</Form.Label>
+          <Form.Select value={prefs.frecuencia} onChange={(e) => setPrefs((p) => ({ ...p, frecuencia: e.target.value }))}>
+            {FRECUENCIAS.map((f) => <option key={f.valor} value={f.valor}>{f.texto}</option>)}
+          </Form.Select>
+        </Form.Group>
+
+        <div className="d-flex justify-content-end">
+          <Button variant="primary" onClick={guardar} disabled={guardando}>
+            {guardando ? 'Guardando…' : 'Guardar preferencias'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };

@@ -1,65 +1,38 @@
 import { useState } from "react";
 import ReportarModal from "./ReportarModal";
-import { foroService } from "../../services/foroService";
+import { Icono } from "../common/Icono";
+import { haceCuanto } from "../../utils/admin";
+import { nombreAutor, inicialesAutor, colorAvatar, enviarReporte } from "../../utils/foro";
 
 function ComentarioCard({ comentario }) {
   const [mostrarReporte, setMostrarReporte] = useState(false);
-
-  const manejarReporte = async (motivoId) => {
-    try {
-      const datosReporte = {
-        tipo_reporte_id: Number(motivoId), 
-        comentario_id: comentario.id_participacion || comentario.id_comentario || comentario.id, // El ID del comentario
-        descripcion: "Reportado desde la interfaz", // Opcional o déjalo vacío/null
-      };
-
-      console.log("Datos que se enviarán al backend:", datosReporte);
-      console.log("Objeto comentario completo:", comentario);
-
-      const respuesta = await foroService.crearReporte(datosReporte);
-
-      if (respuesta.resultado === "ok") {
-        alert("¡Reporte enviado con éxito! Gracias por avisarnos.");
-      } else {
-        alert(respuesta.mensaje || "No se pudo enviar el reporte.");
-      }
-    } catch (error) {
-      console.error("Error al enviar el reporte:", error);
-      alert("Hubo un error al procesar el reporte.");
-    }
-  };
+  const id = comentario.id_participacion ?? comentario.id;
+  const fecha = comentario.fecha_participacion ?? comentario.created_at ?? comentario.fecha;
 
   return (
     <>
-      <div className="card shadow-sm mb-3 border-0">
-        <div className="card-body">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <strong className="text-dark">
-              {comentario.usuario
-                ? `${comentario.usuario.nombre || ""} ${comentario.usuario.apellido || ""}`.trim()
-                : comentario.autor || "Usuario"}
-            </strong>
-            <small className="text-muted">{comentario.fecha}</small>
+      <article className="comentario-item">
+        <div className="d-flex align-items-center gap-3">
+          <div className={`avatar-gradiente avatar-sm ${colorAvatar(comentario)}`} aria-hidden="true">
+            {inicialesAutor(comentario)}
           </div>
-
-          <p className="card-text text-secondary mb-3">
-            {comentario.comentario || comentario.contenido || ""}
-          </p>
-
-          <button
-            type="button"
-            className="btn btn-link text-danger p-0 text-decoration-none small"
-            onClick={() => setMostrarReporte(true)}
-          >
-            Reportar
-          </button>
+          <div className="flex-grow-1 d-flex flex-column">
+            <span className="comentario-autor">{nombreAutor(comentario)}</span>
+            {fecha && <span className="comentario-fecha">{haceCuanto(fecha)}</span>}
+          </div>
+          {id && (
+            <button type="button" className="btn-reportar" onClick={() => setMostrarReporte(true)}>
+              <Icono nombre="flag" /> Reportar
+            </button>
+          )}
         </div>
-      </div>
+        <p className="comentario-cuerpo">{comentario.comentario || comentario.contenido || ""}</p>
+      </article>
 
       {mostrarReporte && (
         <ReportarModal
           onCerrar={() => setMostrarReporte(false)}
-          onReportar={manejarReporte}
+          onReportar={(tipo) => enviarReporte({ tipoReporteId: tipo, comentarioId: id })}
         />
       )}
     </>

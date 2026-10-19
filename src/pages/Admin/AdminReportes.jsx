@@ -9,6 +9,7 @@ import {
   normalizar, haceCuanto, gravedadReporte, estadoReporteId, rel, aFecha,
   confirmar, notificarExito, notificarError,
 } from '../../utils/admin';
+import { AdminIcon } from '../../components/admin/AdminIcon';
 
 const ETIQUETA_ESTADO = {
   [ESTADOS_REPORTE.PENDIENTE]: { texto: 'Pendiente', clase: 'danger' },
@@ -148,7 +149,7 @@ export const AdminReportes = () => {
     <>
       <PageHeader titulo="Reportes" subtitulo="Revisa y resuelve los reportes enviados por la comunidad">
         <Badge variante={stats.pendientes ? 'danger' : 'success'} className="fs-6 px-3 py-2">
-          {stats.pendientes ? `⚠️ ${stats.pendientes} sin resolver` : '✅ Todo al día'}
+          {stats.pendientes ? `${stats.pendientes} sin resolver` : 'Todo al día'}
         </Badge>
         <Button variant="outline-secondary" size="sm" onClick={cargar} disabled={cargando}>
           <i className="bi bi-arrow-clockwise me-1" /> Actualizar
@@ -184,9 +185,9 @@ export const AdminReportes = () => {
       ) : filtrados.length === 0 ? (
         <Card className="border-0 shadow-sm">
           {filtroEstado === 'abiertos' && !busqueda ? (
-            <EstadoVacio icono="✅" titulo="Todo resuelto" sub="No hay reportes pendientes por revisar." />
+            <EstadoVacio icono="check" titulo="Todo resuelto" sub="No hay reportes pendientes por revisar." />
           ) : (
-            <EstadoVacio icono="🔍" titulo="Sin resultados" sub="No hay reportes con estos filtros." />
+            <EstadoVacio icono="lupa" titulo="Sin resultados" sub="No hay reportes con estos filtros." />
           )}
         </Card>
       ) : (
@@ -222,9 +223,9 @@ export const AdminReportes = () => {
                       </div>
                     </div>
                     <div className="d-flex flex-wrap gap-1">
-                      {!resuelto && <Badge variante={gravedad.clase}>{gravedad.texto}</Badge>}
+                      {!resuelto && <Badge variante={gravedad.clase}><AdminIcon nombre={gravedad.icono} /> {gravedad.texto}</Badge>}
                       <Badge variante={est.clase}>{est.texto}</Badge>
-                      <Badge variante="primary">💬 Foro</Badge>
+                      <Badge variante="primary"><AdminIcon nombre="foro" /> Foro</Badge>
                     </div>
                   </div>
 

@@ -8,8 +8,8 @@ export const ProtectedRoute = ({ allowedRoles }) => {
   // Mientras React lee el localStorage, mostramos un pequeño loader
   if (loading) {
     return (
-      <div className="vh-100 d-flex justify-content-center align-items-center bg-light">
-        <Spinner animation="border" style={{ color: '#0f765c' }} />
+      <div className="vh-100 d-flex justify-content-center align-items-center ">
+        <Spinner animation="border" role="status" />
       </div>
     );
   }

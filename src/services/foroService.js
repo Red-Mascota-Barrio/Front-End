@@ -17,20 +17,19 @@ export const foroService = {
   },
 
   crearComentario: async (foroId, datosComentario) => {
+    // ParticipacionForoController@store valida foro_id y comentario (máx. 500)
     const payload = {
-      id_foro: Number(foroId),
-      foro_id: Number(foroId), // Se envían ambos por si Laravel valida 'id_foro' o 'foro_id'
-      contenido: datosComentario.contenido,
-      comentario: datosComentario.contenido.trim(), // Se envían ambos alias
+      foro_id: Number(foroId),
+      comentario: datosComentario.contenido.trim(),
     };
 
     const respuesta = await api.post("/comentarios", payload);
     return respuesta.data;
   },
 
+  // ReporteController@store: tipo_reporte_id + (comentario_id | foro_id)
   crearReporte: async (datosReporte) => {
     const respuesta = await api.post("/reportes", datosReporte);
     return respuesta.data;
   },
-
 };

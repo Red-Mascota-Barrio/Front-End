@@ -1,71 +1,62 @@
-﻿import { api } from './api';
-
-const DEMO_EVENTOS = [
-  {
-    id: 1,
-    titulo: 'Jornada de adopción',
-    tipo: 'Jornada',
-    fecha: '2026-10-15',
-    hora: '10:00',
-    lugar: 'Parque Central',
-    descripcion: 'Evento comunitario para promover adopciones responsables.',
-    cupos: 40,
-    cuposOcupados: 18,
-    destacado: true,
-    inscrito: false,
-  },
-  {
-    id: 2,
-    titulo: 'Taller de cuidado canino',
-    tipo: 'Taller',
-    fecha: '2026-10-20',
-    hora: '18:30',
-    lugar: 'Centro de Bienestar Animal',
-    descripcion: 'Aprende sobre alimentación, higiene y primeros auxilios para mascotas.',
-    cupos: 25,
-    cuposOcupados: 12,
-    destacado: false,
-    inscrito: false,
-  },
-  {
-    id: 3,
-    titulo: 'Campaña de vacunación',
-    tipo: 'Campaña',
-    fecha: '2026-10-27',
-    hora: '09:00',
-    lugar: 'Plaza de la Comunidad',
-    descripcion: 'Campaña de vacunación gratuita para perros y gatos.',
-    cupos: 60,
-    cuposOcupados: 41,
-    destacado: false,
-    inscrito: false,
-  },
-];
+import { api } from './api';
+import { TIPOS_EVENTO } from './adminService';
 
 const normalizarLista = (data) => {
   if (Array.isArray(data)) return data;
-  return data?.eventos ?? data?.data ?? data?.datos ?? [];
+  const d = data?.datos ?? data?.data ?? data?.eventos ?? [];
+  return Array.isArray(d) ? d : d?.data ?? d?.eventos ?? [];
 };
 
+const nombreTipo = (e) =>
+  e.tipo ??
+  e.tipo_evento?.nombre_tipo ??
+  e.tipoEvento?.nombre_tipo ??
+  TIPOS_EVENTO.find((t) => t.id_tipo_evento === Number(e.tipo_evento_id))?.nombre_tipo ??
+  'Evento';
+
+/**
+ * EventoController@index devuelve: nombre, fecha_evento, hora_evento, ubicacion, descripcion,
+ * estado_evento (Activo | Inactivo), tipo_evento { nombre_tipo } y total_inscritos (withCount).
+ * La vista trabaja con titulo / fecha / hora / lugar / tipo; este adaptador traduce los campos.
+ * El back NO maneja cupos: cuposTotales queda en 0 (= sin límite).
+ */
+export const adaptarEvento = (e) => ({
+  ...e,
+  id: e.id ?? e.id_evento,
+  titulo: e.titulo ?? e.nombre ?? 'Evento sin nombre',
+  descripcion: e.descripcion ?? '',
+  fecha: String(e.fecha ?? e.fecha_evento ?? '').slice(0, 10),
+  hora: e.hora ?? (e.hora_evento ? String(e.hora_evento).slice(0, 5) : ''),
+  lugar: e.lugar ?? e.ubicacion ?? '',
+  tipo: nombreTipo(e),
+  foto: e.foto ?? e.foto_evento ?? null,
+  cuposTotales: Number(e.cuposTotales ?? e.cupos_totales ?? e.cupos ?? 0),
+  cuposOcupados: Number(e.cuposOcupados ?? e.total_inscritos ?? 0),
+  destacado: Boolean(e.destacado),
+  inscrito: Boolean(e.inscrito ?? e.esta_inscrito),
+  activo: String(e.estado_evento ?? e.estado ?? 'Activo').toLowerCase() !== 'inactivo',
+});
+
 export const eventosService = {
+  // Solo eventos activos. Si la API falla, el error llega a la vista (sin datos de prueba).
   listar: async () => {
-    try {
-      const response = await api.get('/eventos');
-      return {
-        eventos: normalizarLista(response.data),
-        demo: false,
-      };
-    } catch (error) {
-      console.warn('No se pudo conectar con /eventos. Usando datos demo.', error);
-      return {
-        eventos: DEMO_EVENTOS,
-        demo: true,
-      };
-    }
+    const response = await api.get('/eventos');
+    return normalizarLista(response.data).map(adaptarEvento).filter((e) => e.activo);
+  },
+
+  // IDs de los eventos en los que el usuario tiene inscripción activa (GET /mis-eventos)
+  idsInscritos: async () => {
+    const response = await api.get('/mis-eventos');
+    return new Set(normalizarLista(response.data).map((e) => Number(e.id_evento ?? e.id)));
   },
 
   inscribir: async (id) => {
     const response = await api.post(`/eventos/${id}/inscribirse`);
+    return response.data;
+  },
+
+  cancelarInscripcion: async (id) => {
+    const response = await api.delete(`/eventos/${id}/inscribirse`);
     return response.data;
   },
 };
