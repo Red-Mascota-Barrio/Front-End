@@ -98,6 +98,17 @@ export const Mascotas = () => {
     return () => clearTimeout(id);
   }, [cargar]);
 
+   const handleEliminarMascota = async (id) => {
+    try {
+      await mascotasService.eliminar(id);
+      setMascotaSeleccionada(null);
+      await cargar();
+    } catch (err) {
+      console.error('Error al eliminar la mascota:', err);
+      setError('No se pudo eliminar la mascota.');
+    }
+  };
+
   // Especies disponibles con su conteo (la especie llega en raza.especie.nombre_especie)
   const especies = useMemo(() => {
     const conteo = new Map();

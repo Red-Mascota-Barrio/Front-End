@@ -62,6 +62,11 @@ export const mascotasService = {
     return res.data;
   },
 
+  eliminar:async (id) => {
+    const { data } = await api.delete(`/mascotas/${id}`);
+    return data;
+  },
+
   // --- NUEVOS MÉTODOS PARA ESPECIES Y RAZAS DESDE LA BD ---
 
   // GET /especies (Obtener lista de especies)

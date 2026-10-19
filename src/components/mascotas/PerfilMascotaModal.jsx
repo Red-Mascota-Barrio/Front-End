@@ -9,7 +9,7 @@ const siNo = (v) => (v === null || v === undefined ? '—' : Number(v) || v === 
 
 // Detalle de una mascota (diseño de info_mascota.html del mockup).
 // Usa los nombres de columna reales: edad_estimada, peso_kg, vacunas_al_dia, notas_adicionales…
-export default function PerfilMascotaModal({ mascota, onClose }) {
+export default function PerfilMascotaModal({ mascota, onClose, onEliminar }) {
   if (!mascota) return null;
 
   const especie = especieDeMascota(mascota);
@@ -63,6 +63,21 @@ export default function PerfilMascotaModal({ mascota, onClose }) {
       <Modal.Footer>
         <Button variant="light" onClick={onClose}>Cerrar</Button>
       </Modal.Footer>
+      <Button 
+          variant="danger" 
+          onClick={() => {
+            if (window.confirm(`¿Estás seguro de que deseas eliminar a ${mascota.nombre}?`)) {
+              const idMascota = mascota.id_mascotas || mascota.id || mascota._id;
+              onEliminar(idMascota);
+            }
+          }}
+        >
+          Eliminar Mascota
+        </Button>
+
+        <Button variant="secondary" onClick={onClose}>
+          Cerrar
+        </Button>
     </Modal>
   );
 }
