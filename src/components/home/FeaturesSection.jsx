@@ -1,29 +1,53 @@
 import { Container, Row, Col } from 'react-bootstrap';
-import { FaSearch, FaComments, FaDog, FaCalendarAlt, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import '../../assets/home.css';
+import { Icono } from '../common/Icono';
 
-// Cada tarjeta es característica y acceso rápido a la vez.
-// Si la ruta es privada, ProtectedRoute manda al login automáticamente.
 const FEATURES = [
-  { titulo: 'Adopta', texto: 'Busca mascotas por especie, raza y estado de adopción.', to: '/mascotas', Icono: FaSearch },
-  { titulo: 'Foros', texto: 'Comparte consejos y dudas con la comunidad.', to: '/foros', Icono: FaComments },
-  { titulo: 'Mis mascotas', texto: 'Registra y administra a tus peludos.', to: '/mis-mascotas', Icono: FaDog },
-  { titulo: 'Eventos', texto: 'Inscríbete a jornadas de adopción y vacunación.', to: '/eventos', Icono: FaCalendarAlt },
+  {
+    titulo: 'Adoptar',
+    texto: 'Encuentra tu compañero perfecto entre perros y gatos que buscan un hogar. Filtra por especie, tamaño y género.',
+    to: '/mascotas',
+    link: 'Ver mascotas',
+    icono: 'heart',
+  },
+  {
+    titulo: 'Comunidad',
+    texto: 'Participa en foros sobre cuidado animal, comparte experiencias y recibe consejos de otros dueños.',
+    to: '/foro',
+    link: 'Ir al foro',
+    icono: 'people',
+  },
+  {
+    titulo: 'Mis mascotas',
+    texto: 'Registra a tus peludos con su foto, raza y estado de salud, y publícalos en adopción.',
+    to: '/mis-mascotas?registrar=1',
+    link: 'Registrar mascota',
+    icono: 'clipboard-heart',
+  },
+  {
+    titulo: 'Eventos',
+    texto: 'Inscríbete a jornadas de vacunación, ferias de adopción y actividades de bienestar animal.',
+    to: '/eventos',
+    link: 'Ver eventos',
+    icono: 'calendar-event',
+  },
 ];
 
 export const FeaturesSection = () => (
-  <section className="inicio-seccion">
+  <section className="seccion">
     <Container>
-      <h2 className="inicio-titulo">Accesos rápidos</h2>
+      <p className="seccion-subtitulo text-center">¿Qué puedes hacer aquí?</p>
+      <h2 className="seccion-titulo text-center mb-5">Una plataforma para todo lo animal</h2>
       <Row className="g-4">
-        {FEATURES.map(({ titulo, texto, to, Icono }) => (
+        {FEATURES.map(({ titulo, texto, to, link, icono }) => (
           <Col sm={6} lg={3} key={titulo}>
-            <Link to={to} className="inicio-card">
-              <div className="inicio-icono-circulo"><Icono /></div>
-              <h5>{titulo}</h5>
-              <p>{texto}</p>
-              <span className="inicio-ir">Ir ahora <FaArrowRight size={12} /></span>
+            <Link to={to} className="caracteristica">
+              <div className="caracteristica-icono">
+                <Icono nombre={icono} />
+              </div>
+              <h3 className="caracteristica-titulo">{titulo}</h3>
+              <p className="caracteristica-texto">{texto}</p>
+              <span className="caracteristica-link">{link} <Icono nombre="arrow-right" /></span>
             </Link>
           </Col>
         ))}

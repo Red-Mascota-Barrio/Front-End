@@ -1,14 +1,23 @@
-import { Navbar, Nav, Container } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
-import logo from '../../assets/inicio/logo.png';
-import '../../assets/home.css';
+import { urlFoto, iniciales } from '../../utils/perfil';
+import logo from '../../assets/images/inicio/logo.png';
+
+const ENLACES = [
+  { to: '/', texto: 'Inicio', end: true },
+  { to: '/mascotas', texto: 'Adoptar' },
+  { to: '/foro', texto: 'Foros' },
+  { to: '/eventos', texto: 'Eventos' },
+];
 
 export const AppNavbar = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token, role, logout } = useAuth();
   const navigate = useNavigate();
   const haySesion = Boolean(token && user);
+  const esAdmin = Number(role) === 1;
+  const foto = urlFoto(user);
 
   const handleLogout = async () => {
     try {
@@ -22,37 +31,59 @@ export const AppNavbar = () => {
   };
 
   return (
-    <Navbar expand="lg" sticky="top" className="inicio-header shadow-sm">
-      <Container fluid>
+    <Navbar expand="lg" sticky="top" className="app-navbar" collapseOnSelect>
+      <Container fluid className="px-3 px-lg-4">
         <Navbar.Brand as={Link} to="/">
-          <img src={logo} alt="Logo" className="inicio-logo" />
+          <img src={logo} alt="" />
           Red de Mascotas de Barrio
         </Navbar.Brand>
 
-        <Navbar.Toggle aria-controls="navbar-principal" />
+        <Navbar.Toggle aria-controls="navbar-principal" aria-label="Abrir menú" />
 
-        <Navbar.Collapse id="navbar-principal" className="justify-content-end">
-          <Nav className="align-items-lg-center gap-lg-2">
-            <Nav.Link as={Link} to="/">Inicio</Nav.Link>
-            <Nav.Link as={Link} to="/mascotas">Adopta</Nav.Link>
-            <Nav.Link as={Link} to="/foros">Foros</Nav.Link>
-            <Nav.Link as={Link} to="/mis-mascotas">Mascotas</Nav.Link>
+        <Navbar.Collapse id="navbar-principal">
+          <Nav className="nav-principal mx-lg-auto gap-lg-1">
+            {ENLACES.map(({ to, texto, end }) => (
+              <Nav.Link key={to} as={NavLink} to={to} end={end} eventKey={to}>
+                {texto}
+              </Nav.Link>
+            ))}
+          </Nav>
 
+          <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 mt-2 mt-lg-0">
             {haySesion ? (
               <>
-                <span className="inicio-saludo">Hola, {user.nombre ?? user.correo}</span>
-                <Nav.Link as={Link} to="/dashboard" className="btn-nav-solid">Mi panel</Nav.Link>
-                <Nav.Link as="button" type="button" className="btn-nav-outline" onClick={handleLogout}>
-                  Cerrar sesión
-                </Nav.Link>
+                {esAdmin && (
+                  <Button as={Link} to="/admin" variant="outline-primary" size="sm">
+                    <i className="bi bi-speedometer2" aria-hidden="true" /> Panel admin
+                  </Button>
+                )}
+                <Link
+                  to="/perfil"
+                  className="d-flex align-items-center gap-2 text-decoration-none px-lg-1"
+                  title="Mi perfil"
+                >
+                  <span className="avatar-inicial">
+                    {foto ? <img src={foto} alt="" /> : iniciales(user)}
+                  </span>
+                  <span className="navbar-saludo d-lg-none d-xl-inline">
+                    Hola, <strong>{user.nombre ?? user.correo}</strong>
+                  </span>
+                </Link>
+                <Button variant="light" size="sm" onClick={handleLogout}>
+                  <i className="bi bi-box-arrow-right" aria-hidden="true" /> Salir
+                </Button>
               </>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login" className="btn-nav-outline">Iniciar sesión</Nav.Link>
-                <Nav.Link as={Link} to="/registro" className="btn-nav-solid">Registrarse</Nav.Link>
+                <Button as={Link} to="/login" variant="light" size="sm">
+                  Iniciar sesión
+                </Button>
+                <Button as={Link} to="/registro" variant="primary" size="sm">
+                  Registrarse
+                </Button>
               </>
             )}
-          </Nav>
+          </div>
         </Navbar.Collapse>
       </Container>
     </Navbar>
