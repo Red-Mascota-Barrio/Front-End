@@ -1,0 +1,207 @@
+/* ============================================================
+   auth.css — Login, Registro y Recuperar (auth.css del mockup)
+   ============================================================ */
+
+.auth-contenedor { min-height: 100vh; background: #fff; }
+
+/* ---------- Panel visual (degradado verde) ---------- */
+.auth-visual {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  padding: 56px 48px;
+  background: linear-gradient(155deg, var(--verde-oscuro) 0%, #0a7a5e 45%, var(--verde-principal) 100%);
+}
+.auth-visual::before,
+.auth-visual::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+.auth-visual::before { width: 480px; height: 480px; top: -140px; right: -120px; }
+.auth-visual::after { width: 280px; height: 280px; bottom: -80px; left: -70px; }
+
+.auth-visual-contenido { position: relative; z-index: 1; text-align: center; max-width: 380px; }
+.auth-visual-icono {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 22px;
+  padding: 10px;
+  border-radius: var(--radio-xl);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.auth-visual-icono img { width: 100%; height: 100%; border-radius: 50%; background: #fff; object-fit: cover; }
+.auth-visual-contenido h2 {
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.auth-visual-contenido p { font-size: 0.9375rem; opacity: 0.85; line-height: 1.7; margin-bottom: 28px; }
+
+.chip-beneficio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 99px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  margin: 4px;
+}
+
+.auth-visual-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-lg);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.beneficio {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.875rem;
+  opacity: 0.92;
+  text-align: left;
+}
+.beneficio-icono { flex-shrink: 0; font-size: 1rem; }
+
+/* ---------- Panel del formulario ---------- */
+.auth-formulario { padding: 56px 48px; background: #fff; }
+.auth-caja { width: 100%; max-width: 400px; }
+.auth-caja-ancha { max-width: 460px; }
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  color: var(--verde-oscuro);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+.auth-logo:hover { color: var(--verde-oscuro); }
+.auth-logo img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--borde);
+  background: var(--verde-fondo);
+}
+
+.auth-caja h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.025em;
+}
+.auth-subtitulo { color: var(--texto-secundario); font-size: 0.875rem; margin-bottom: 28px; }
+
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--texto-tenue);
+  font-size: 0.78rem;
+}
+.separador::before,
+.separador::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+
+.enlace-auth { text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--texto-secundario); }
+.enlace-auth a { color: var(--verde-principal); font-weight: 600; text-decoration: none; }
+.enlace-auth a:hover { text-decoration: underline; }
+
+.link-sutil { font-size: 0.8125rem; color: var(--verde-principal); font-weight: 500; text-decoration: none; }
+.link-sutil:hover { text-decoration: underline; }
+
+/* Botón del ojo dentro del campo de contraseña */
+.campo-password { position: relative; }
+.campo-password .form-control { padding-right: 46px; }
+.ojo-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--texto-tenue);
+  padding: 6px;
+  line-height: 1;
+  font-size: 1rem;
+  transition: color var(--transicion);
+}
+.ojo-btn:hover { color: var(--texto-secundario); }
+.campo-password .form-control.is-invalid { background-image: none; }
+
+/* Campo OTP grande */
+.campo-otp { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.35em; }
+
+/* ---------- Pasos del registro ---------- */
+.pasos-registro { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 28px; }
+.paso { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--texto-tenue); }
+.paso-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--borde);
+  color: var(--texto-tenue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.paso.activo { color: var(--verde-oscuro); font-weight: 600; }
+.paso.activo .paso-num,
+.paso.hecho .paso-num { background: var(--verde-principal); color: #fff; }
+.paso-linea { width: 28px; height: 1px; background: var(--borde); }
+
+.icono-circular {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--verde-fondo);
+  color: var(--verde-oscuro);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+}
+
+/* Página de recuperar (tarjeta centrada) */
+.auth-centrado {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--fondo-pagina);
+}
+.auth-tarjeta {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-md);
+  padding: 40px 36px;
+}
+
+@media (max-width: 991.98px) {
+  .auth-formulario { padding: 40px 20px; }
+}
+@media (max-width: 575.98px) {
+  .auth-tarjeta { padding: 28px 20px; }
+}

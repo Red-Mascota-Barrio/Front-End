@@ -1,0 +1,240 @@
+/* ============================================================
+   mascotas.css — Búsqueda / Mis mascotas / detalle (mascotas.css del mockup)
+   ============================================================ */
+
+/* ---------- Barra de búsqueda dentro del héroe ---------- */
+.barra-busqueda {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 680px;
+  margin-top: 28px;
+  padding: 8px 8px 8px 20px;
+  background: #fff;
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-lg);
+}
+.barra-busqueda-icono { color: var(--texto-tenue); font-size: 1.05rem; }
+.barra-busqueda input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--texto-principal);
+}
+.barra-busqueda input::placeholder { color: #a7b4c2; }
+
+/* ---------- Panel de filtros ---------- */
+.panel-filtros {
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  padding: 20px;
+  box-shadow: var(--sombra-xs);
+}
+.filtros-titulo { font-size: 0.8125rem; font-weight: 700; color: var(--verde-oscuro); margin-bottom: 16px; }
+.filtro-titulo {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--texto-tenue);
+  margin-bottom: 10px;
+}
+.filtro-opciones { display: flex; flex-direction: column; gap: 4px; }
+.filtro-opcion {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radio-sm);
+  border: 1.5px solid transparent;
+  background: none;
+  text-align: left;
+  font-size: 0.84rem;
+  color: var(--texto-secundario);
+  transition: all var(--transicion);
+}
+.filtro-opcion:hover { background: var(--verde-fondo); color: var(--verde-oscuro); }
+.filtro-opcion.activo {
+  background: var(--verde-fondo);
+  color: var(--verde-oscuro);
+  border-color: var(--borde-fuerte);
+  font-weight: 600;
+}
+.filtro-opcion-count {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--texto-tenue);
+  background: #f1f5f9;
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+.filtro-divider { height: 1px; background: #f0f4f0; margin: 16px 0; }
+
+/* ---------- Chips de filtros activos ---------- */
+.chip-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--verde-fondo);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+  transition: all var(--transicion);
+}
+.chip-filtro:hover { background: #d1fae5; border-color: var(--verde-principal); }
+.chip-filtro-x { font-size: 0.9rem; line-height: 1; opacity: 0.6; }
+
+.resultados-count { font-size: 0.875rem; color: var(--texto-secundario); margin: 0; }
+.resultados-count strong { color: var(--texto-principal); }
+
+/* ---------- Tarjeta de mascota ---------- */
+.mascota-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  background: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: var(--sombra-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.mascota-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--sombra-md);
+  border-color: var(--verde-claro);
+}
+.mascota-card:focus-visible { outline: 3px solid rgba(22, 164, 122, 0.35); outline-offset: 2px; }
+.mascota-card-img { position: relative; overflow: hidden; background: var(--verde-fondo); }
+.mascota-card-img img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.32s ease;
+}
+.mascota-card:hover .mascota-card-img img { transform: scale(1.04); }
+/* Imagen por defecto (huella) cuando la mascota no tiene foto */
+img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
+.mascota-card-badge { position: absolute; top: 12px; left: 12px; }
+.mascota-card-cuerpo { padding: 14px 16px; flex: 1; }
+.mascota-card-cuerpo h3 {
+  font-family: var(--font-principal);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.mascota-card-cuerpo p { font-size: 0.8125rem; color: var(--texto-secundario); margin: 0; }
+.mascota-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.mascota-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--texto-secundario);
+  background: var(--fondo-sutil);
+  border: 1px solid #edf0ed;
+}
+.mascota-card-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  border-top: 1px solid #f0f4f0;
+  font-size: 0.75rem;
+  color: var(--texto-tenue);
+}
+.mascota-card-ver-mas { font-weight: 600; color: var(--verde-principal); }
+
+/* Tarjeta "agregar mascota" (perfil / mis mascotas) */
+.tarjeta-agregar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: 2px dashed var(--borde-fuerte);
+  border-radius: var(--radio-lg);
+  background: var(--fondo-sutil);
+  color: var(--verde-principal);
+  text-decoration: none;
+  transition: all var(--transicion);
+}
+.tarjeta-agregar:hover {
+  border-color: var(--verde-principal);
+  background: var(--verde-fondo);
+  color: var(--verde-principal);
+  transform: translateY(-3px);
+}
+.tarjeta-agregar-icono { font-size: 2.25rem; margin-bottom: 12px; line-height: 1; }
+.tarjeta-agregar-titulo { font-size: 0.875rem; font-weight: 700; margin: 0; }
+.tarjeta-agregar-sub { font-size: 0.75rem; color: var(--texto-tenue); margin-top: 4px; }
+
+/* ---------- Detalle de mascota (modal) ---------- */
+.detalle-foto {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radio-xl);
+  background: var(--verde-fondo);
+  box-shadow: var(--sombra-sm);
+}
+.info-atributos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.info-atributo {
+  background: var(--fondo-sutil);
+  border: 1px solid #edf0ed;
+  border-radius: var(--radio-md);
+  padding: 12px;
+}
+.info-atributo-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--texto-tenue);
+  margin-bottom: 4px;
+}
+.info-atributo-valor { font-size: 0.875rem; font-weight: 600; color: var(--texto-principal); }
+.info-descripcion h3 { font-family: var(--font-principal); font-size: 0.875rem; font-weight: 700; color: var(--verde-oscuro); margin-bottom: 8px; }
+.info-descripcion p { font-size: 0.875rem; line-height: 1.75; color: var(--texto-secundario); margin: 0; }
+
+/* ---------- Mis mascotas: encabezado ---------- */
+.encabezado-pagina h1 {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  margin-bottom: 6px;
+}
+.encabezado-pagina p { font-size: 0.875rem; color: var(--texto-secundario); margin: 0; }
+
+@media (max-width: 575.98px) {
+  .barra-busqueda { flex-wrap: wrap; padding: 10px; }
+  .barra-busqueda .btn { width: 100%; }
+}
+
+.filtro-opcion-icono { display: inline-flex; width: 18px; justify-content: center; color: var(--texto-tenue); }
+.filtro-opcion.activo .filtro-opcion-icono,
+.filtro-opcion:hover .filtro-opcion-icono { color: var(--verde-principal); }
+.mascota-meta-chip .bi,
+.mascota-meta-chip svg { color: var(--verde-principal); }
