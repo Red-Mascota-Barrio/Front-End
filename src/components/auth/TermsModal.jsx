@@ -5,7 +5,7 @@ export const TermsModal = ({ show, handleClose }) => {
   return (
     <Modal show={show} onHide={handleClose} centered size="lg">
       <Modal.Header closeButton className="border-bottom-0 pb-0">
-        <Modal.Title className="d-flex align-items-center gap-2">
+        <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-brand-green">
           <FaFileContract /> Términos y Condiciones de Uso
         </Modal.Title>
       </Modal.Header>
@@ -40,7 +40,7 @@ export const TermsModal = ({ show, handleClose }) => {
       </Modal.Body>
 
       <Modal.Footer className="border-top-0 pt-0">
-        <Button variant="primary" onClick={handleClose}>
+        <Button variant="secondary" onClick={handleClose} className="rounded-pill px-4">
           Cerrar
         </Button>
       </Modal.Footer>

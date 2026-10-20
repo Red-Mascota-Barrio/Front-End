@@ -1,30 +1,26 @@
-import { Container, Row, Col } from 'react-bootstrap';
-import consejo1 from '../../assets/images/inicio/consejo-1.jpeg';
-import consejo2 from '../../assets/images/inicio/consejo-2.jpg';
-import consejo3 from '../../assets/images/inicio/consejo-3.jpg';
+import { Container, Carousel } from 'react-bootstrap';
+import consejo1 from '../../assets/inicio/consejo-1.jpeg';
+import consejo2 from '../../assets/inicio/consejo-2.jpg';
+import consejo3 from '../../assets/inicio/consejo-3.jpg';
+import '../../assets/home.css';
 
-const CONSEJOS = [
-  { src: consejo1, texto: 'Alimentación saludable para gatos' },
-  { src: consejo2, texto: 'Cómo socializar a tu gatito nuevo' },
-  { src: consejo3, texto: 'Vacunas esenciales en el primer año' },
+const SLIDES = [
+  { src: consejo1, alt: 'Consejo para mascotas 1' },
+  { src: consejo2, alt: 'Consejo para mascotas 2' },
+  { src: consejo3, alt: 'Consejo para mascotas 3' },
 ];
 
-// Galería de consejos (antes era un carrusel; el mockup la muestra en cuadrícula)
 export const ConsejosCarousel = () => (
-  <section className="seccion-consejos">
+  <section className="inicio-seccion">
     <Container>
-      <p className="seccion-subtitulo">Para los dueños</p>
-      <h2 className="seccion-titulo mb-4 mb-lg-5">Consejos y tips para tus mascotas</h2>
-      <Row className="g-3">
-        {CONSEJOS.map(({ src, texto }) => (
-          <Col sm={6} lg={4} key={texto}>
-            <div className="consejo-card">
-              <img src={src} alt={texto} loading="lazy" />
-              <div className="consejo-card-overlay">{texto}</div>
-            </div>
-          </Col>
+      <h2 className="inicio-titulo">Consejos para mascotas</h2>
+      <Carousel className="inicio-carousel">
+        {SLIDES.map(({ src, alt }) => (
+          <Carousel.Item key={alt}>
+            <img src={src} alt={alt} className="d-block w-100" />
+          </Carousel.Item>
         ))}
-      </Row>
+      </Carousel>
     </Container>
   </section>
 );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 import { foroService } from "../../services/foroService";
 import { categoriasDesdeHilos } from "../../utils/foro";
