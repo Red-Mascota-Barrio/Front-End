@@ -3,7 +3,7 @@
    Traslada el sistema de diseño del mockup (base.css) a las
    variables de Bootstrap, para que las clases nativas
    (btn-primary, form-control, card, modal, nav-tabs…) tomen
-   la paleta verde, las fuentes y los radios del mockup.
+   la paleta verde, las fuentes y los radios.
    Se importa en main.jsx DESPUÉS de bootstrap.min.css.
    ============================================================ */
 

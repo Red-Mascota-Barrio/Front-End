@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Icono } from '../common/Icono';
+import { TermsModal } from '../auth/TermsModal';
 import logo from '../../assets/images/inicio/logo.png';
 
 export const Footer = () => {
   const { token, user } = useAuth();
+  const [showTerms, setShowTerms] = useState(false);
   const haySesion = Boolean(token && user);
+  
 
   return (
     <footer className="app-footer">
@@ -52,7 +56,12 @@ export const Footer = () => {
 
           <Col md={4} lg={3} className="footer-col">
             <h4>Legal</h4>
-            <a href="#terminos">Términos y condiciones</a>
+            <a href="#terminos" onClick={(e) => {
+              e.preventDefault();
+              setShowTerms(true);
+            }}>
+              Términos y condiciones
+            </a>
             <a href="#privacidad">Política de privacidad</a>
             <a href="#bienestar">Bienestar animal</a>
           </Col>
@@ -63,6 +72,9 @@ export const Footer = () => {
           <span>Hecho con <Icono nombre="heart-fill" /> para los animales de Colombia</span>
         </div>
       </Container>
+
+      <TermsModal show={showTerms} handleClose={() => setShowTerms(false)} />
+
     </footer>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 import { foroService } from "../../services/foroService";
 import { categoriasDesdeHilos } from "../../utils/foro";
@@ -6,7 +6,12 @@ import { Icono } from "../common/Icono";
 
 
 function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
-  const opciones = categorias.length ? categorias : categoriasDesdeHilos();
+  const [categoriasCargadas, setCategoriasCargadas] = useState([]);
+  const opciones = categorias.length
+    ? categorias
+    : categoriasCargadas.length
+      ? categoriasCargadas
+      : categoriasDesdeHilos();
 
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
@@ -70,16 +75,14 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         
         // Protección vital: Solo guardamos si es un arreglo válido
         if (Array.isArray(arrayCategorias)) {
-          setCategoriasList(arrayCategorias);
+          setCategoriasCargadas(arrayCategorias);
         } else {
-          setCategoriasList([]);
+          setCategoriasCargadas([]);
         }
-        setLoading(false);
       })
       .catch((error) => {
         console.error('Error en fetch de categorías:', error);
-        setCategoriasList([]); // Evita que el .map() rompa la página
-        setLoading(false);
+        setCategoriasCargadas([]); // Evita que el .map() rompa la página
       });
   }, []);
 
