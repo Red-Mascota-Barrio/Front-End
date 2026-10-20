@@ -13,19 +13,17 @@ export default function MisMascotas() {
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [errorPublicacion, setErrorPublicacion] = useState('');
   const [mostrarModalRegistro, setMostrarModalRegistro] = useState(
     () => searchParams.get('registrar') === '1'
   );
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
-  // OJO: el back no tiene una ruta para listar solo las mascotas del usuario
-  // (la relación está en usuario_mascotas). Mientras tanto se usa GET /mascotas,
-  // que trae todas. Cuando exista GET /mis-mascotas, basta con cambiar esta llamada.
   const cargar = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      setMascotas(await mascotasService.listar());
+      setMascotas(await mascotasService.listarMisMascotas());
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
       setError('No se pudieron cargar las mascotas desde el servidor.');
@@ -42,14 +40,40 @@ export default function MisMascotas() {
   const abrirRegistro = () => setMostrarModalRegistro(true);
   const cerrarRegistro = () => {
     setMostrarModalRegistro(false);
-    // Quita ?registrar=1 para que el modal no se reabra al recargar
     if (searchParams.has('registrar')) setSearchParams({}, { replace: true });
   };
 
   const handleGuardarMascota = async (datosNuevos) => {
-    await mascotasService.crear(datosNuevos); // si falla, el modal muestra el error
+    await mascotasService.crear(datosNuevos);
     cerrarRegistro();
     await cargar();
+  };
+
+  //  FUNCIÓN PARA ELIMINAR MASCOTA AÑADIDA AQUÍ
+  const handleEliminarMascota = async (id) => {
+    try {
+      await mascotasService.eliminar(id);
+      setMascotaSeleccionada(null); // Cierra el modal de perfil
+      await cargar(); // Recarga la lista
+    } catch (err) {
+      console.error('Error al eliminar la mascota:', err);
+      setError('No se pudo eliminar la mascota.');
+    }
+  };
+
+  const handlePublicarAdopcion = async (id) => {
+    setErrorPublicacion('');
+    try {
+      const respuesta = await mascotasService.publicarParaAdopcion(id);
+      setMascotaSeleccionada((actual) => ({
+        ...actual,
+        adopciones: [...(actual.adopciones ?? []), respuesta.datos],
+      }));
+      await cargar();
+    } catch (err) {
+      console.error('Error al publicar mascota para adopción:', err);
+      setErrorPublicacion(err.response?.data?.mensaje || 'No se pudo publicar la mascota para adopción.');
+    }
   };
 
   return (
@@ -63,14 +87,6 @@ export default function MisMascotas() {
           <i className="bi bi-plus-lg" aria-hidden="true" /> Registrar mascota
         </Button>
       </div>
-
-      <Alert variant="warning" className="d-flex gap-2">
-        <Icono nombre="info-circle" />
-        <span>
-          Por ahora se muestran <strong>todas</strong> las mascotas de la red: la API todavía no tiene una
-          ruta para listar solo las tuyas.
-        </span>
-      </Alert>
 
       {cargando ? (
         <div className="text-center py-5">
@@ -105,8 +121,16 @@ export default function MisMascotas() {
         <RegistrarMascotaModal onClose={cerrarRegistro} onGuardar={handleGuardarMascota} />
       )}
 
+      {/* 👇 AQUÍ SE LE PASA LA PROP onEliminar AL MODAL */}
       {mascotaSeleccionada && (
-        <PerfilMascotaModal mascota={mascotaSeleccionada} onClose={() => setMascotaSeleccionada(null)} />
+        <PerfilMascotaModal
+          mascota={mascotaSeleccionada}
+          onClose={() => setMascotaSeleccionada(null)}
+          onEliminar={handleEliminarMascota}
+          mostrarSolicitudes
+          onPublicar={handlePublicarAdopcion}
+          errorPublicacion={errorPublicacion}
+        />
       )}
     </Container>
   );

@@ -65,6 +65,9 @@ export const Mascotas = () => {
 
   const [paginaActual, setPaginaActual] = useState(1);
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+  const [solicitudEnviada, setSolicitudEnviada] = useState(false);
+  const [mensajeSolicitud, setMensajeSolicitud] = useState('');
 
   // Buscador con debounce
   useEffect(() => {
@@ -79,7 +82,7 @@ export const Mascotas = () => {
     setCargando(true);
     setError(null);
     try {
-      setMascotas(await mascotasService.listar());
+      setMascotas(await mascotasService.listarAdopciones());
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
       // Sin "response" = no hubo conexión con el servidor; con "response" = el servidor respondió con error
@@ -98,14 +101,29 @@ export const Mascotas = () => {
     return () => clearTimeout(id);
   }, [cargar]);
 
-   const handleEliminarMascota = async (id) => {
+  const seleccionarMascota = (mascota) => {
+    setMascotaSeleccionada(mascota);
+    setSolicitudEnviada(false);
+    setMensajeSolicitud('');
+  };
+
+  const handleSolicitarAdopcion = async (adopcionId) => {
+    setEnviandoSolicitud(true);
+    setMensajeSolicitud('');
     try {
-      await mascotasService.eliminar(id);
-      setMascotaSeleccionada(null);
-      await cargar();
-    } catch (err) {
-      console.error('Error al eliminar la mascota:', err);
-      setError('No se pudo eliminar la mascota.');
+      const respuesta = await mascotasService.solicitarAdopcion(adopcionId);
+      setSolicitudEnviada(true);
+      setMensajeSolicitud(respuesta.mensaje || 'Tu solicitud de adopción fue enviada.');
+    } catch (error) {
+      console.error('Error al enviar la solicitud de adopción:', error);
+      if (error.response?.status === 409) setSolicitudEnviada(true);
+      setMensajeSolicitud(
+        error.response?.status === 401
+          ? 'Inicia sesión para enviar una solicitud de adopción.'
+          : error.response?.data?.mensaje || 'No se pudo enviar tu solicitud. Intenta de nuevo.',
+      );
+    } finally {
+      setEnviandoSolicitud(false);
     }
   };
 
@@ -265,7 +283,7 @@ export const Mascotas = () => {
                 <Row xs={1} sm={2} xl={3} className="g-3">
                   {mascotasPaginadas.map((m) => (
                     <Col key={m.id_mascotas ?? m.id_mascota ?? m.id}>
-                      <MascotaCard mascota={m} onVerPerfil={setMascotaSeleccionada} />
+                      <MascotaCard mascota={m} onVerPerfil={seleccionarMascota} />
                     </Col>
                   ))}
                 </Row>
@@ -288,7 +306,15 @@ export const Mascotas = () => {
       </Container>
 
       {mascotaSeleccionada && (
-        <PerfilMascotaModal mascota={mascotaSeleccionada} onClose={() => setMascotaSeleccionada(null)} />
+        <PerfilMascotaModal
+          mascota={mascotaSeleccionada}
+          onClose={() => setMascotaSeleccionada(null)}
+          modoAdopcion
+          onSolicitar={handleSolicitarAdopcion}
+          solicitando={enviandoSolicitud}
+          solicitudEnviada={solicitudEnviada}
+          mensajeSolicitud={mensajeSolicitud}
+        />
       )}
     </>
   );

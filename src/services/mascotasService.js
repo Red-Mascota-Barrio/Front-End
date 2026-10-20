@@ -9,7 +9,6 @@ const lista = (data, clave) => {
   if (Array.isArray(contenido?.[clave])) return contenido[clave];
   return Array.isArray(data?.[clave]) ? data[clave] : [];
 };
-
 const ORIGEN_API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
 
 // Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
@@ -44,9 +43,35 @@ const aFormData = (d) => {
 };
 
 export const mascotasService = {
+  // Catálogo público usado en la sección de adopción
   listar: async () => {
     const response = await api.get('/mascotas');
     return lista(response.data, 'mascotas');
+  },
+  listarAdopciones: async () => {
+    const response = await api.get('/adopciones');
+    return lista(response.data, 'adopciones').map((adopcion) => ({
+      ...adopcion.mascota,
+      id_adopcion: adopcion.id_adopcion,
+      adopciones: [adopcion],
+    }));
+  },
+  // Mascotas vinculadas al usuario autenticado
+  listarMisMascotas: async () => {
+    const response = await api.get('/mis-mascotas');
+    return lista(response.data, 'mascotas');
+  },
+  solicitarAdopcion: async (adopcionId) => {
+    const { data } = await api.post('/solicitudes', { adopcion_id: adopcionId });
+    return data;
+  },
+  publicarParaAdopcion: async (mascotaId) => {
+    const { data } = await api.post('/adopciones', { mascota_id: mascotaId });
+    return data;
+  },
+  listarSolicitudesDeMascota: async (mascotaId) => {
+    const response = await api.get(`/mascotas/${mascotaId}/solicitudes`);
+    return lista(response.data, 'solicitudes');
   },
   // GET /mascotas/:id (Obtener perfil de una mascota por ID)
   obtener: async (id) => {
@@ -62,7 +87,7 @@ export const mascotasService = {
     return res.data;
   },
 
-  eliminar:async (id) => {
+eliminar: async (id) => {
     const { data } = await api.delete(`/mascotas/${id}`);
     return data;
   },
@@ -76,11 +101,8 @@ export const mascotasService = {
   },
 
   // GET /razas/especie/:idEspecie (Obtener razas de una especie específica)
-  // O GET /razas?id_especie=... si tu backend lo maneja por query param
   obtenerRazasPorEspecie: async (idEspecie) => {
     const res = await api.get(`/razas/especie/${idEspecie}`);
     return lista(res.data, 'razas');
-  }
+  },
 };
-
-
