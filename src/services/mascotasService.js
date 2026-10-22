@@ -25,9 +25,14 @@ export const urlFoto = (foto) => {
 export const fotoDeMascota = (m) => m?.foto ?? m?.imagenes?.[0]?.url_imagen ?? null;
 
 // Arma el FormData con los nombres de campo que valida MascotasController
-const aFormData = (d) => {
+const aFormData = (d, incluirVacios = false) => {
   const fd = new FormData();
-  const poner = (k, v) => v !== undefined && v !== null && v !== '' && fd.append(k, v);
+  const poner = (k, v) => (
+    v !== undefined
+    && v !== null
+    && (incluirVacios || v !== '')
+    && fd.append(k, v)
+  );
   poner('nombre', d.nombre);
   poner('genero', d.genero ? String(d.genero).toLowerCase() : undefined);
   poner('raza_id', d.raza_id ?? d.id_raza);
@@ -38,7 +43,7 @@ const aFormData = (d) => {
   poner('notas_adicionales', d.notas_adicionales ?? d.descripcion);
   fd.append('esterilizado', d.esterilizado ? 1 : 0);
   fd.append('vacunas_al_dia', d.vacunas_al_dia ? 1 : 0);
-  if (d.foto instanceof File) fd.append('foto', d.foto);
+  if (d.foto) fd.append('foto', d.foto);
   return fd;
 };
 
@@ -73,6 +78,13 @@ export const mascotasService = {
     const response = await api.get(`/mascotas/${mascotaId}/solicitudes`);
     return lista(response.data, 'solicitudes');
   },
+  responderSolicitud: async (solicitudId, faseActual) => {
+    const { data } = await api.put('/solicitudes/responder', {
+      solicitud_id: solicitudId,
+      fase_actual: faseActual,
+    });
+    return data;
+  },
   // GET /mascotas/:id (Obtener perfil de una mascota por ID)
   obtener: async (id) => {
     const response = await api.get(`/mascotas/${id}`);
@@ -86,8 +98,16 @@ export const mascotasService = {
     });
     return res.data;
   },
+  actualizar: async (mascotaId, datosMascota) => {
+    const formData = aFormData(datosMascota, true);
+    formData.append('_method', 'PUT');
+    const { data } = await api.post(`/mascotas/${mascotaId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
 
-eliminar: async (id) => {
+  eliminar: async (id) => {
     const { data } = await api.delete(`/mascotas/${id}`);
     return data;
   },

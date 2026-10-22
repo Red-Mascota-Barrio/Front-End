@@ -18,6 +18,7 @@ export default function MisMascotas() {
     () => searchParams.get('registrar') === '1'
   );
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
+  const [mascotaEditando, setMascotaEditando] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -49,16 +50,24 @@ export default function MisMascotas() {
     await cargar();
   };
 
-  //  FUNCIÓN PARA ELIMINAR MASCOTA AÑADIDA AQUÍ
+  const handleEditarMascota = async (datosActualizados) => {
+    await mascotasService.actualizar(
+      mascotaEditando.id_mascotas ?? mascotaEditando.id,
+      datosActualizados
+    );
+    setMascotaEditando(null);
+    await cargar();
+  };
+
   const handleEliminarMascota = async (id) => {
-    try {
-      await mascotasService.eliminar(id);
-      setMascotaSeleccionada(null); // Cierra el modal de perfil
-      await cargar(); // Recarga la lista
-    } catch (err) {
-      console.error('Error al eliminar la mascota:', err);
-      setError('No se pudo eliminar la mascota.');
-    }
+    await mascotasService.eliminar(id);
+    setMascotaSeleccionada(null);
+    await cargar();
+  };
+
+  const handleSolicitudAprobada = async () => {
+    setMascotaSeleccionada(null);
+    await cargar();
   };
 
   const handlePublicarAdopcion = async (id) => {
@@ -121,12 +130,24 @@ export default function MisMascotas() {
         <RegistrarMascotaModal onClose={cerrarRegistro} onGuardar={handleGuardarMascota} />
       )}
 
-      {/* 👇 AQUÍ SE LE PASA LA PROP onEliminar AL MODAL */}
+      {mascotaEditando && (
+        <RegistrarMascotaModal
+          mascota={mascotaEditando}
+          onClose={() => setMascotaEditando(null)}
+          onGuardar={handleEditarMascota}
+        />
+      )}
+
       {mascotaSeleccionada && (
         <PerfilMascotaModal
           mascota={mascotaSeleccionada}
           onClose={() => setMascotaSeleccionada(null)}
+          onEditar={(mascota) => {
+            setMascotaSeleccionada(null);
+            setMascotaEditando(mascota);
+          }}
           onEliminar={handleEliminarMascota}
+          onSolicitudAprobada={handleSolicitudAprobada}
           mostrarSolicitudes
           onPublicar={handlePublicarAdopcion}
           errorPublicacion={errorPublicacion}

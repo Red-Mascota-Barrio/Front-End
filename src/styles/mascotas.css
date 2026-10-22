@@ -219,6 +219,39 @@ img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
 .info-descripcion h3 { font-family: var(--font-principal); font-size: 0.875rem; font-weight: 700; color: var(--verde-oscuro); margin-bottom: 8px; }
 .info-descripcion p { font-size: 0.875rem; line-height: 1.75; color: var(--texto-secundario); margin: 0; }
 
+.adopcion-respuesta-icono {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 8px auto 18px;
+  border-radius: 50%;
+  font-size: 1.75rem;
+}
+.adopcion-respuesta-icono.aprobacion,
+.adopcion-respuesta-icono.exito {
+  color: var(--verde-oscuro);
+  background: var(--verde-fondo);
+}
+.adopcion-respuesta-icono.rechazo {
+  color: #9f1239;
+  background: #fef2f2;
+}
+.adopcion-respuesta-persona {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-md);
+  background: var(--fondo-sutil);
+  color: var(--texto-principal);
+}
+.adopcion-respuesta-persona span {
+  color: var(--texto-secundario);
+  font-size: 0.8125rem;
+}
+
 /* ---------- Mis mascotas: encabezado ---------- */
 .encabezado-pagina h1 {
   font-size: clamp(1.5rem, 3vw, 1.75rem);
