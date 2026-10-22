@@ -10,7 +10,7 @@ function ForoHeader({ onCrearHilo }) {
           <p>Comparte experiencias, haz preguntas y ayuda a otros dueños de mascotas</p>
         </div>
         <Button className="btn-blanco" onClick={onCrearHilo}>
-          <Icono nombre="pencil-square" /> Nuevo hilo
+          <Icono nombre="pencil-square" /> Nuevo foro
         </Button>
       </Container>
     </section>
