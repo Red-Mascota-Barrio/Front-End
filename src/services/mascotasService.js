@@ -93,17 +93,13 @@ export const mascotasService = {
   // POST /mascotas (Registrar nueva mascota)
   crear: async (datosMascota) => {
     // multipart/form-data para que Laravel reciba la foto con $request->file('foto')
-    const res = await api.post('/mascotas', aFormData(datosMascota), {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post('/mascotas', aFormData(datosMascota));
     return res.data;
   },
   actualizar: async (mascotaId, datosMascota) => {
     const formData = aFormData(datosMascota, true);
     formData.append('_method', 'PUT');
-    const { data } = await api.post(`/mascotas/${mascotaId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post(`/mascotas/${mascotaId}`, formData);
     return data;
   },
 

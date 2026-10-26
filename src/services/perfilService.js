@@ -9,6 +9,7 @@ const RUTAS = {
   yo: '/user',                                   // GET  datos del usuario autenticado (con rol)
   estadisticas: '/estadisticas/usuario',         // GET  mascotas, publicaciones, eventos, adopciones
   usuario: (id) => `/usuarios/${id}`,            // PUT  editar perfil propio
+  foto: '/perfil/foto',                          // POST foto_perfil del usuario autenticado
   misEventos: '/mis-eventos',                    // GET  eventos con inscripción activa
   foros: '/foros',                               // GET  se filtra por usuario_id para la actividad
   preferencias: '/notificaciones/preferencias',  // GET / PUT
@@ -16,7 +17,7 @@ const RUTAS = {
 
 // Funciones que el back todavía no expone. La UI las muestra deshabilitadas.
 export const PERFIL_SOPORTA = {
-  foto: false,        // falta POST para subir foto_perfil
+  foto: true,
   contrasena: false,  // falta PUT para cambiar contraseña con la actual (existe /recuperar)
   eliminarCuenta: false, // DELETE /usuarios/{id} es solo para admin
   misMascotas: false, // falta GET de las mascotas del usuario (usuario_mascotas)
@@ -55,7 +56,11 @@ export const perfilService = {
   obtenerPreferencias: async () => (await api.get(RUTAS.preferencias)).data,
   guardarPreferencias: async (prefs) => (await api.put(RUTAS.preferencias, prefs)).data,
 
-  subirFoto: () => sinRuta('subir la foto de perfil'),
+  subirFoto: async (archivo) => {
+    const formData = new FormData();
+    formData.append('foto_perfil', archivo);
+    return datos(await api.post(RUTAS.foto, formData));
+  },
   cambiarContrasena: () => sinRuta('cambiar la contraseña'),
   eliminarCuenta: () => sinRuta('eliminar la cuenta'),
 };

@@ -12,6 +12,10 @@ const api = axios.create({
 
 // Interceptor para inyectar el token en cada petición buscando múltiples llaves comunes
 api.interceptors.request.use((config) => {
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    config.headers.delete('Content-Type');
+  }
+
   const token = 
     localStorage.getItem('token') || 
     localStorage.getItem('access_token') || 
