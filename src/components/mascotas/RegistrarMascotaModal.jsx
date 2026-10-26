@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Icono } from '../common/Icono';
-import { mascotasService } from '../../services/mascotasService';
+import {
+  mascotasService,
+  fotoDeMascota,
+  urlFoto,
+  SIN_FOTO,
+} from '../../services/mascotasService';
 
-export default function RegistrarMascotaModal({ onClose, onGuardar }) {
+export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = null }) {
+  const editando = Boolean(mascota);
   const [formData, setFormData] = useState({
-    nombre: '',
-    id_especie: '',
-    id_raza: '',
-    edad: '',
-    genero: 'Hembra',
+    nombre: mascota?.nombre ?? '',
+    id_especie: mascota?.raza?.especie?.id_especie ?? mascota?.raza?.especie_id ?? '',
+    id_raza: mascota?.raza_id ?? mascota?.raza?.id_raza ?? '',
+    edad: mascota?.edad_estimada && Number.isFinite(Number(mascota.edad_estimada))
+      ? Number(mascota.edad_estimada)
+      : '',
+    genero: mascota?.genero
+      ? String(mascota.genero).charAt(0).toUpperCase() + String(mascota.genero).slice(1).toLowerCase()
+      : 'Hembra',
     foto: null,
-    descripcion: '',
-    esterilizado: false,
-    vacunas_al_dia: false
+    descripcion: mascota?.notas_adicionales ?? '',
+    esterilizado: Boolean(Number(mascota?.esterilizado)),
+    vacunas_al_dia: Boolean(Number(mascota?.vacunas_al_dia))
   });
 
   const [especies, setEspecies] = useState([]);
@@ -21,12 +31,16 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
   const [errorEspecies, setErrorEspecies] = useState('');
   const [razas, setRazas] = useState([]);
   const [cargandoRazas, setCargandoRazas] = useState(false);
-  const [previa, setPrevia] = useState(null);
+  const [previa, setPrevia] = useState(() => (
+    mascota ? urlFoto(fotoDeMascota(mascota)) : null
+  ));
   const [guardando, setGuardando] = useState(false);
   const [errorGuardar, setErrorGuardar] = useState('');
 
   // Libera la URL temporal de la vista previa
-  useEffect(() => () => previa && URL.revokeObjectURL(previa), [previa]);
+  useEffect(() => () => {
+    if (previa?.startsWith('blob:')) URL.revokeObjectURL(previa);
+  }, [previa]);
 
   // Cargar la lista de especies cuando se monta el modal.
   useEffect(() => {
@@ -110,7 +124,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
         erroresValidacion
         || respuesta?.mensaje
         || respuesta?.message
-        || 'No se pudo registrar la mascota. Comprueba los datos y vuelve a intentar.'
+        || `No se pudo ${editando ? 'actualizar' : 'registrar'} la mascota. Comprueba los datos y vuelve a intentar.`
       );
     } finally {
       setGuardando(false);
@@ -121,7 +135,9 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
     <Modal show onHide={guardando ? undefined : onClose} centered size="lg" backdrop={guardando ? 'static' : true} scrollable>
           <Modal.Header closeButton={!guardando}>
             <div>
-              <Modal.Title as="h2" className="h4 mb-1">Registrar mascota</Modal.Title>
+              <Modal.Title as="h2" className="h4 mb-1">
+                {editando ? `Editar perfil de ${mascota.nombre}` : 'Registrar mascota'}
+              </Modal.Title>
               <p className="text-muted small mb-0">Completa los datos de tu mascota. Los campos con * son obligatorios.</p>
             </div>
           </Modal.Header>
@@ -230,13 +246,21 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                     accept="image/png, image/jpeg, image/webp"
                     onChange={handleChange}
                   />
-                  <div className="form-text">JPG, PNG o WEBP · máximo 4 MB.</div>
+                  <div className="form-text">
+                    {editando && mascota.foto
+                      ? 'Selecciona una foto nueva para reemplazar la actual.'
+                      : 'JPG, PNG o WEBP · máximo 4 MB.'}
+                  </div>
                   {previa && (
                     <img
                       src={previa}
                       alt="Vista previa"
                       className="img-thumbnail mt-2"
                       style={{ maxHeight: 160, objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = SIN_FOTO;
+                      }}
                     />
                   )}
                 </div>
@@ -301,7 +325,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar }) {
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={guardando}>
-                {guardando ? 'Guardando...' : 'Guardar Mascota'}
+                {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar Mascota'}
               </button>
             </div>
           </form>
