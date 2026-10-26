@@ -65,24 +65,31 @@ export const AuthProvider = ({ children }) => {
         // 1. Cargamos SIEMPRE las estadísticas generales (Landing Page)
         const generales = await statsService.obtenerGenerales();
         setStatsGenerales(generales);
+      } catch (error) {
+        console.error("Error al cargar estadísticas generales:", error);
+      }
 
         // 2. Cargamos las del usuario SOLO si inició sesión (Perfil)
-        if (token) {
+      if (token) {
+        try {
           const deUsuario = await statsService.obtenerUsuario(token);
           setStatsUsuario(deUsuario);
-        } else {
-          // Si cierra sesión o entra sin token, limpiamos sus datos privados
-          setStatsUsuario(null);
+        } catch (error) {
+          console.error("Error cargando estadísticas privadas en AuthContext:", error);
+          
+          // CORRECCIÓN CLAVE: Si el backend responde 401 (token expirado/inválido), deslogueamos automáticamente
+          if (error.response?.status === 401) {
+            console.warn("El token ha expirado o es inválido. Cerrando sesión...");
+            logout(); 
+          } else {
+            setStatsUsuario(null);
+          }
         }
-      } catch (error) {
-        console.error("Error cargando estadísticas en AuthContext:", error);
-        
-        
+      } else {
         setStatsUsuario(null);
-
-      } finally {
-        setCargandoStats(false);
       }
+
+      setCargandoStats(false);
     };
 
     cargarEstadisticas();
