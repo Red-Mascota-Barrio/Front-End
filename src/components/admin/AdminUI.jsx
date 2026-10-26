@@ -118,11 +118,12 @@ export const TablaFooter = ({ mostrando, total, nombre, pagina, totalPaginas, on
 );
 
 // `icono`: nombre de Bootstrap Icons (search, people, calendar-event…)
+// Mismo estilo de estado vacío que el sitio público (.estado-vacio en layout.css)
 export const EstadoVacio = ({ icono = 'search', titulo, sub }) => (
-  <div className="text-center py-5 px-3 text-secondary">
-    <div className="display-6 mb-2 text-success-emphasis"><AdminIcon nombre={icono} /></div>
-    <div className="fs-5 fw-bold text-body">{titulo}</div>
-    {sub && <div className="small">{sub}</div>}
+  <div className="estado-vacio py-5">
+    <div className="estado-vacio-icono"><AdminIcon nombre={icono} /></div>
+    <h3 className="fw-bold">{titulo}</h3>
+    {sub && <p className="mb-0">{sub}</p>}
   </div>
 );
 

@@ -12,7 +12,10 @@ import {
 } from '../../utils/admin';
 import { urlFoto } from '../../services/mascotasService';
 
-const FORM_VACIO = { nombre: '', apellido: '', telefono: '', barrio: '', ciudad: '', rol_id: 2, estado: 1 };
+// Habeas Data (Ley 1581 de 2012): los datos personales (nombre, teléfono, barrio…)
+// solo los puede modificar su titular desde "Editar perfil". El administrador
+// únicamente gestiona el acceso a la plataforma: rol y estado de la cuenta.
+const FORM_VACIO = { rol_id: 2, estado: 1 };
 
 export const AdminUsuarios = () => {
   const { user } = useAuth();
@@ -74,11 +77,6 @@ export const AdminUsuarios = () => {
   const abrirEdicion = (u) => {
     setEditando(u);
     setForm({
-      nombre: u.nombre ?? '',
-      apellido: u.apellido ?? '',
-      telefono: u.telefono ?? '',
-      barrio: u.barrio ?? '',
-      ciudad: u.ciudad ?? '',
       rol_id: rolDeUsuario(u).id,
       estado: usuarioActivo(u) ? 1 : 0,
     });
@@ -86,18 +84,16 @@ export const AdminUsuarios = () => {
 
   const guardar = async (e) => {
     e.preventDefault();
-    if (!form.nombre.trim()) return;
     setGuardando(true);
     try {
-      const payload = { ...form, nombre: form.nombre.trim(), rol_id: Number(form.rol_id), estado: Number(form.estado) };
-      // "apellido" es obligatorio en la BD: si viene vacío no lo enviamos
-      if (!form.apellido.trim()) delete payload.apellido;
+      // Solo se envían rol y estado: el backend rechaza cualquier dato personal
+      const payload = { rol_id: Number(form.rol_id), estado: Number(form.estado) };
       const actualizado = await adminService.actualizarUsuario(editando.id_usuario, payload);
       setUsuarios((lista) =>
         lista.map((u) => (u.id_usuario === editando.id_usuario ? { ...u, ...payload, ...(actualizado ?? {}) } : u)),
       );
       setEditando(null);
-      notificarExito('Usuario actualizado');
+      notificarExito('Acceso del usuario actualizado');
     } catch (err) {
       notificarError('No se pudo guardar', mensajeError(err));
     } finally {
@@ -239,7 +235,7 @@ export const AdminUsuarios = () => {
                       </td>
                       <td>
                         <div className="d-flex justify-content-end gap-1">
-                          <BotonAccion icono="editar" titulo="Editar" onClick={() => abrirEdicion(u)} />
+                          <BotonAccion icono="escudo" titulo="Gestionar rol y estado" onClick={() => abrirEdicion(u)} disabled={esYo(u)} />
                           <BotonAccion
                             icono={activo ? 'pausa' : 'play'}
                             titulo={activo ? 'Desactivar' : 'Reactivar'}
@@ -266,30 +262,23 @@ export const AdminUsuarios = () => {
         )}
       </TablaCard>
 
-      <AdminModal abierto={Boolean(editando)} titulo="Editar usuario" onCerrar={() => setEditando(null)}>
+      <AdminModal abierto={Boolean(editando)} titulo="Gestionar acceso" onCerrar={() => setEditando(null)}>
         <Form onSubmit={guardar} noValidate>
+          <Aviso>
+            Por protección de datos personales (Habeas Data), el nombre, teléfono, barrio y demás datos
+            solo los puede modificar el propio usuario desde su perfil. Aquí solo puedes cambiar su rol
+            y el estado de la cuenta.
+          </Aviso>
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <div className={`adm-avatar rounded-circle text-white fw-bold ${claseAvatar(editando?.id_usuario)}`}>
+              {editando?.foto_perfil ? <img src={urlFoto(editando.foto_perfil)} alt="" /> : iniciales(editando?.nombre, editando?.apellido)}
+            </div>
+            <div>
+              <div className="fw-semibold">{editando?.nombre} {editando?.apellido}</div>
+              <div className="text-secondary" style={{ fontSize: '.75rem' }}>{editando?.correo}</div>
+            </div>
+          </div>
           <Row className="g-3">
-            <Form.Group as={Col} sm={6} controlId="uNombre">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control value={form.nombre} onChange={campo('nombre')} isInvalid={!form.nombre.trim()} required />
-              <Form.Control.Feedback type="invalid">El nombre es obligatorio.</Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group as={Col} sm={6} controlId="uApellido">
-              <Form.Label>Apellido</Form.Label>
-              <Form.Control value={form.apellido} onChange={campo('apellido')} />
-            </Form.Group>
-            <Form.Group as={Col} xs={12} controlId="uCorreo">
-              <Form.Label>Correo electrónico</Form.Label>
-              <Form.Control value={editando?.correo ?? ''} disabled />
-            </Form.Group>
-            <Form.Group as={Col} sm={6} controlId="uTelefono">
-              <Form.Label>Teléfono</Form.Label>
-              <Form.Control value={form.telefono} onChange={campo('telefono')} />
-            </Form.Group>
-            <Form.Group as={Col} sm={6} controlId="uBarrio">
-              <Form.Label>Barrio</Form.Label>
-              <Form.Control value={form.barrio} onChange={campo('barrio')} />
-            </Form.Group>
             <Form.Group as={Col} sm={6} controlId="uRol">
               <Form.Label>Rol</Form.Label>
               <Form.Select value={form.rol_id} onChange={campo('rol_id')} disabled={editando && esYo(editando)}>
@@ -306,7 +295,7 @@ export const AdminUsuarios = () => {
           </Row>
           <ModalAcciones>
             <Button variant="outline-secondary" onClick={() => setEditando(null)}>Cancelar</Button>
-            <Button type="submit" variant="success" disabled={guardando || !form.nombre.trim()}>
+            <Button type="submit" variant="success" disabled={guardando}>
               {guardando ? 'Guardando…' : 'Guardar cambios'}
             </Button>
           </ModalAcciones>

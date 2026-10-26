@@ -5,10 +5,10 @@ import { mensajeError } from '../../utils/perfil';
 
 // Columnas de preferencias_notificacion (PreferenciaNotificacionController@update)
 const TIPOS = [
-  { campo: 'notificar_adopcion', titulo: 'Adopciones', detalle: 'Cuando alguien solicita adoptar una de tus mascotas.' },
-  { campo: 'notificar_foro', titulo: 'Foro', detalle: 'Cuando comentan tus publicaciones en el foro.' },
-  { campo: 'notificar_evento', titulo: 'Eventos', detalle: 'Cambios en los eventos a los que estás inscrito.' },
-  { campo: 'notificar_reporte', titulo: 'Reportes', detalle: 'Novedades sobre reportes que hiciste o recibiste.' },
+  { campo: 'notificar_adopcion', titulo: 'Adopciones', detalle: 'Cuando alguien quiere adoptar tu mascota o responden tu solicitud.' },
+  { campo: 'notificar_foro', titulo: 'Foro', detalle: 'Cuando comentan tus publicaciones o responden tus comentarios.' },
+  { campo: 'notificar_evento', titulo: 'Eventos', detalle: 'Nuevos inscritos en tus eventos y cambios en los eventos a los que vas.' },
+  { campo: 'notificar_reporte', titulo: 'Reportes', detalle: 'Cuando un administrador revisa un reporte que hiciste.' },
 ];
 
 const FRECUENCIAS = [

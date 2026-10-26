@@ -2,6 +2,7 @@ import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
+import { NotificacionesCampana } from './NotificacionesCampana';
 import { urlFoto, iniciales } from '../../utils/perfil';
 import logo from '../../assets/images/inicio/logo.png';
 
@@ -57,6 +58,7 @@ export const AppNavbar = () => {
                     <i className="bi bi-speedometer2" aria-hidden="true" /> Panel admin
                   </Button>
                 )}
+                <NotificacionesCampana />
                 <Link
                   to="/perfil"
                   className="d-flex align-items-center gap-2 text-decoration-none px-lg-1"

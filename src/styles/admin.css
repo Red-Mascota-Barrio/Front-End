@@ -16,7 +16,15 @@
   background: var(--fondo-pagina);
 }
 
-.adm-app .card { border: 1px solid var(--borde-suave) !important; }
+/* Tarjetas blancas sobre el fondo verde claro, igual que en el sitio público
+   (.tarjeta-lateral, .barra-herramientas…). Sin esto Bootstrap usa --bs-body-bg
+   y las tarjetas quedaban del mismo verde que el fondo. */
+.adm-app .card {
+  --bs-card-bg: var(--fondo-superficie);
+  border: 1px solid var(--borde-suave) !important;
+  box-shadow: var(--sombra-xs) !important;
+}
+.adm-app .card-header { background-color: var(--fondo-superficie); }
 
 .adm-titulo,
 .adm-marca { color: var(--adm-verde-oscuro); }

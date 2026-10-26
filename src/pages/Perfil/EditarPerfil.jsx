@@ -1,5 +1,5 @@
 import { Container, Row, Col, Nav, Tab } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AppNavbar } from '../../components/layout/AppNavbar';
 import { Footer } from '../../components/layout/Footer';
 import { FormDatos } from '../../components/perfil/FormDatos';
@@ -16,7 +16,12 @@ const SECCIONES = [
 ];
 
 // Editar perfil con navegación lateral (Editar_perfil.html del mockup)
-export const EditarPerfil = () => (
+export const EditarPerfil = () => {
+  // Permite abrir directo una sección: /perfil/editar?tab=notificaciones
+  const [params] = useSearchParams();
+  const seccion = SECCIONES.some((s) => s.clave === params.get('tab')) ? params.get('tab') : 'datos';
+
+  return (
   <div className="d-flex flex-column min-vh-100">
     <AppNavbar />
     <main className="flex-grow-1">
@@ -24,7 +29,7 @@ export const EditarPerfil = () => (
         <Link to="/perfil" className="perfil-volver"><Icono nombre="arrow-left" /> Volver a mi perfil</Link>
         <h1 className="h3 fw-bold text-verde-oscuro mt-3 mb-4">Configuración de la cuenta</h1>
 
-        <Tab.Container defaultActiveKey="datos" mountOnEnter>
+        <Tab.Container key={seccion} defaultActiveKey={seccion} mountOnEnter>
           <Row className="g-4">
             <Col lg={3}>
               <Nav variant="pills" className="perfil-nav flex-column gap-1">
@@ -55,4 +60,5 @@ export const EditarPerfil = () => (
     </main>
     <Footer />
   </div>
-);
+  );
+};
