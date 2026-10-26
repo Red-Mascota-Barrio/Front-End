@@ -36,9 +36,12 @@ export default function PerfilMascotaModal({
   const [errorEliminacion, setErrorEliminacion] = useState('');
   const [confirmarEliminacion, setConfirmarEliminacion] = useState(false);
   const mascotaId = mascota?.id_mascotas ?? mascota?.id;
+  const estaPublicada = mascota?.adopciones?.some(
+    (adopcion) => adopcion.estado_adopcion === 'Disponible'
+  ) ?? false;
 
   useEffect(() => {
-    if (!mostrarSolicitudes || !mascotaId) return undefined;
+    if (!mostrarSolicitudes || !estaPublicada || !mascotaId) return undefined;
 
     let vigente = true;
     mascotasService.listarSolicitudesDeMascota(mascotaId)
@@ -59,13 +62,13 @@ export default function PerfilMascotaModal({
     return () => {
       vigente = false;
     };
-  }, [mostrarSolicitudes, mascotaId]);
+  }, [mostrarSolicitudes, estaPublicada, mascotaId]);
 
   if (!mascota) return null;
 
   const resultadoActual = resultadoSolicitudes?.mascotaId === mascotaId ? resultadoSolicitudes : null;
   const solicitudes = resultadoActual?.datos ?? [];
-  const cargandoSolicitudes = mostrarSolicitudes && !resultadoActual;
+  const cargandoSolicitudes = mostrarSolicitudes && estaPublicada && !resultadoActual;
   const errorSolicitudes = resultadoActual?.error ?? '';
   const haySolicitudAprobada = solicitudes.some(
     (solicitud) => String(solicitud.fase_actual).toLowerCase() === 'aprobada'
@@ -73,7 +76,6 @@ export default function PerfilMascotaModal({
   const especie = especieDeMascota(mascota);
   const fotoUrl = urlFoto(fotoDeMascota(mascota));
   const idAdopcion = adopcionId ?? mascota.id_adopcion ?? mascota.adopciones?.[0]?.id_adopcion;
-  const estaPublicada = mascota.adopciones?.some((adopcion) => adopcion.estado_adopcion === 'Disponible') ?? false;
 
   const atributos = [
     ['Especie', especie ? <><IconoEspecie especie={especie} /> {especie}</> : '–'],
@@ -189,7 +191,7 @@ export default function PerfilMascotaModal({
           </Col>
         </Row>
 
-        {(mascota.notas_adicionales || mascota.descripcion) && (
+        {estaPublicada && (mascota.notas_adicionales || mascota.descripcion) && (
           <div className="mt-4 pt-3 border-top">
             <h5 className="text-primary mb-2">Sobre {mascota.nombre}</h5>
             <p className="text-secondary mb-0" style={{ whiteSpace: 'pre-line' }}>
@@ -198,7 +200,7 @@ export default function PerfilMascotaModal({
           </div>
         )}
 
-        {mostrarSolicitudes && (
+        {mostrarSolicitudes && estaPublicada && (
           <section className="mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Solicitudes de adopción</h5>
             {cargandoSolicitudes ? (
@@ -311,7 +313,7 @@ export default function PerfilMascotaModal({
                 onClick={() => onEditar(mascota)}
                 disabled={eliminandoMascota}
               >
-                <i className="bi bi-pencil-square" aria-hidden="true" /> Editar perfil
+                <i className="bi bi-pencil-square" aria-hidden="true" /> Editar mascota
               </Button>
             )}
             {onPublicar && (
@@ -329,7 +331,7 @@ export default function PerfilMascotaModal({
                 onClick={handleEliminarClick}
                 disabled={eliminandoMascota}
               >
-                {eliminandoMascota ? 'Eliminando…' : 'Eliminar perfil'}
+                {eliminandoMascota ? 'Eliminando…' : 'Eliminar mascota'}
               </Button>
             )}
           </div>
