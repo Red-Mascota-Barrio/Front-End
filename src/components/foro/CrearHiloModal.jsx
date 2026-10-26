@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
 import { foroService } from "../../services/foroService";
 import { categoriasDesdeHilos } from "../../utils/foro";
@@ -6,19 +6,21 @@ import { Icono } from "../common/Icono";
 
 
 function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
-  const [categoriasCargadas, setCategoriasCargadas] = useState([]);
-  const opciones = categorias.length
-    ? categorias
-    : categoriasCargadas.length
-      ? categoriasCargadas
-      : categoriasDesdeHilos();
+  const [listaCategorias, setListaCategorias] = useState(categorias);
+  
+  // Si no hay categorías pasadas por props ni cargadas, usamos el fallback
+  const opciones = listaCategorias.length ? listaCategorias : categoriasDesdeHilos();
 
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  // Antes arrancaba en '' pero el select mostraba "Perro": al publicar sin tocarlo no pasaba nada
+  
+  // CORRECCIÓN 1: Se separa el estado de la 'categoria' seleccionada del actualizador correcto
   const [categoria, setCategoria] = useState(String(opciones[0]?.id_categoria ?? ""));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  
+  // CORRECCIÓN 2: Creamos el estado 'loading' que te faltaba para la carga inicial de la API
+  const [loading, setLoading] = useState(true);
 
   // Manejar el envío del formulario
   const manejarPublicacion = async (e) => {
@@ -31,7 +33,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
     const nuevoHilo = {
       titulo: titulo.trim(),
       contenido: contenido.trim(),
-      categoria_foro_id: Number(categoria), // ForoController valida categoria_foro_id
+      categoria_foro_id: Number(categoria),
     };
 
     try {
@@ -43,13 +45,12 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         onCrearHilo(respuesta.datos);
         onCerrar();
       } else {
-        setError(respuesta.mensaje || "No se pudo publicar el hilo.");
+        setError(respuesta.mensaje || "No se pudo publicar el foro.");
       }
     } catch (err) {
       console.error("Error al publicar el hilo:", err.response?.data ?? err);
       const data = err.response?.data;
       const validacion = data?.errors ?? data?.errores;
-      // 429: solo un hilo cada 30 min · 409: título repetido (mensajes de ForoController)
       if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un hilo.");
       else if ([409, 429].includes(err.response?.status)) setError(data?.mensaje);
       else if (validacion) setError(Object.values(validacion).flat().join(" "));
@@ -70,26 +71,30 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         return response.json();
       })
       .then((data) => {
-        // Aseguramos obtener el arreglo ya sea de data.datos o directo
         const arrayCategorias = data.datos ? data.datos : data;
         
-        // Protección vital: Solo guardamos si es un arreglo válido
         if (Array.isArray(arrayCategorias)) {
-          setCategoriasCargadas(arrayCategorias);
+          setListaCategorias(arrayCategorias);
+          // Auto-seleccionar la primera categoría si llega desde la API
+          if (arrayCategorias.length > 0) {
+            setCategoria(String(arrayCategorias[0].id_categoria));
+          }
         } else {
-          setCategoriasCargadas([]);
+          setListaCategorias([]);
         }
+        setLoading(false); // Ahora sí funcionará porque el estado existe arriba
       })
       .catch((error) => {
         console.error('Error en fetch de categorías:', error);
-        setCategoriasCargadas([]); // Evita que el .map() rompa la página
+        setListaCategorias([]); 
+        setLoading(false);
       });
   }, []);
 
   return (
     <Modal show onHide={enviando ? undefined : onCerrar} centered>
       <Modal.Header closeButton={!enviando}>
-        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo hilo</Modal.Title>
+        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo foro</Modal.Title>
       </Modal.Header>
 
       <Form onSubmit={manejarPublicacion} noValidate>
@@ -109,7 +114,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="categoria">
-            <Form.Label>Categoría</Form.Label>
+            <Form.Label>Categoría {loading && "(Cargando...)"}</Form.Label>
             <Form.Select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
               {opciones.map((cat) => (
                 <option key={cat.id_categoria} value={cat.id_categoria}>
@@ -124,7 +129,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
             <Form.Control
               as="textarea"
               rows={6}
-              placeholder="Cuenta tu experiencia o tu pregunta con detalle…"
+              placeholder="Cuenta tu experiencia o tu pregunta con detalle"
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
               required
@@ -136,8 +141,8 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
           <Button variant="light" onClick={onCerrar} disabled={enviando}>
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" disabled={enviando}>
-            {enviando ? "Publicando…" : "Publicar hilo"}
+          <Button type="submit" variant="primary" disabled={enviando || loading}>
+            {enviando ? "Publicando" : "Publicar foro"}
           </Button>
         </Modal.Footer>
       </Form>

@@ -9,7 +9,6 @@ const lista = (data, clave) => {
   if (Array.isArray(contenido?.[clave])) return contenido[clave];
   return Array.isArray(data?.[clave]) ? data[clave] : [];
 };
-
 const ORIGEN_API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
 
 // Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
@@ -26,9 +25,14 @@ export const urlFoto = (foto) => {
 export const fotoDeMascota = (m) => m?.foto ?? m?.imagenes?.[0]?.url_imagen ?? null;
 
 // Arma el FormData con los nombres de campo que valida MascotasController
-const aFormData = (d) => {
+const aFormData = (d, incluirVacios = false) => {
   const fd = new FormData();
-  const poner = (k, v) => v !== undefined && v !== null && v !== '' && fd.append(k, v);
+  const poner = (k, v) => (
+    v !== undefined
+    && v !== null
+    && (incluirVacios || v !== '')
+    && fd.append(k, v)
+  );
   poner('nombre', d.nombre);
   poner('genero', d.genero ? String(d.genero).toLowerCase() : undefined);
   poner('raza_id', d.raza_id ?? d.id_raza);
@@ -39,14 +43,47 @@ const aFormData = (d) => {
   poner('notas_adicionales', d.notas_adicionales ?? d.descripcion);
   fd.append('esterilizado', d.esterilizado ? 1 : 0);
   fd.append('vacunas_al_dia', d.vacunas_al_dia ? 1 : 0);
-  if (d.foto instanceof File) fd.append('foto', d.foto);
+  if (d.foto) fd.append('foto', d.foto);
   return fd;
 };
 
 export const mascotasService = {
+  // Catálogo público usado en la sección de adopción
   listar: async () => {
     const response = await api.get('/mascotas');
     return lista(response.data, 'mascotas');
+  },
+  listarAdopciones: async () => {
+    const response = await api.get('/adopciones');
+    return lista(response.data, 'adopciones').map((adopcion) => ({
+      ...adopcion.mascota,
+      id_adopcion: adopcion.id_adopcion,
+      adopciones: [adopcion],
+    }));
+  },
+  // Mascotas vinculadas al usuario autenticado
+  listarMisMascotas: async () => {
+    const response = await api.get('/mis-mascotas');
+    return lista(response.data, 'mascotas');
+  },
+  solicitarAdopcion: async (adopcionId) => {
+    const { data } = await api.post('/solicitudes', { adopcion_id: adopcionId });
+    return data;
+  },
+  publicarParaAdopcion: async (mascotaId) => {
+    const { data } = await api.post('/adopciones', { mascota_id: mascotaId });
+    return data;
+  },
+  listarSolicitudesDeMascota: async (mascotaId) => {
+    const response = await api.get(`/mascotas/${mascotaId}/solicitudes`);
+    return lista(response.data, 'solicitudes');
+  },
+  responderSolicitud: async (solicitudId, faseActual) => {
+    const { data } = await api.put('/solicitudes/responder', {
+      solicitud_id: solicitudId,
+      fase_actual: faseActual,
+    });
+    return data;
   },
   // GET /mascotas/:id (Obtener perfil de una mascota por ID)
   obtener: async (id) => {
@@ -61,6 +98,19 @@ export const mascotasService = {
     });
     return res.data;
   },
+  actualizar: async (mascotaId, datosMascota) => {
+    const formData = aFormData(datosMascota, true);
+    formData.append('_method', 'PUT');
+    const { data } = await api.post(`/mascotas/${mascotaId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
+  eliminar: async (id) => {
+    const { data } = await api.delete(`/mascotas/${id}`);
+    return data;
+  },
 
   // --- NUEVOS MÉTODOS PARA ESPECIES Y RAZAS DESDE LA BD ---
 
@@ -71,11 +121,8 @@ export const mascotasService = {
   },
 
   // GET /razas/especie/:idEspecie (Obtener razas de una especie específica)
-  // O GET /razas?id_especie=... si tu backend lo maneja por query param
   obtenerRazasPorEspecie: async (idEspecie) => {
     const res = await api.get(`/razas/especie/${idEspecie}`);
     return lista(res.data, 'razas');
-  }
+  },
 };
-
-
