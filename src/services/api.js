@@ -43,7 +43,7 @@ api.interceptors.response.use(
             // Limpiamos los datos de sesión
             localStorage.removeItem('token');
            
-            window.location.href = `${import.meta.env.BASE_URL}login`;
+            window.location.hash = '#/login';
         }
         
         return Promise.reject(error);
