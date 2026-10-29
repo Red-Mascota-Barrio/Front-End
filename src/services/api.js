@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Llama a la variable de entorno, con un fallback por seguridad
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -43,7 +43,7 @@ api.interceptors.response.use(
             // Limpiamos los datos de sesión
             localStorage.removeItem('token');
            
-            window.location.href = '/login';
+            window.location.href = `${import.meta.env.BASE_URL}login`;
         }
         
         return Promise.reject(error);
