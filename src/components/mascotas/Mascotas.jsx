@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Container, Row, Col, Form, Button, Pagination, Spinner, Alert } from 'react-bootstrap';
+import { useAuth } from '../../context/AuthContext';
 import { mascotasService } from '../../services/mascotasService';
 import { especieDeMascota, razaDeMascota, normalizar } from '../../utils/admin';
 import { Icono, IconoEspecie } from '../common/Icono';
@@ -52,6 +53,7 @@ const GrupoFiltro = ({ titulo, opciones, valor, onCambiar }) => (
 );
 
 export const Mascotas = () => {
+  const { user } = useAuth();
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -82,8 +84,8 @@ export const Mascotas = () => {
     setCargando(true);
     setError(null);
     try {
-// Solo las mascotas con publicación de adopción 'Disponible'
-      setMascotas(await mascotasService.listar({ estado_adopcion: 'Disponible' }));
+      // Solo las mascotas con publicación de adopción 'Disponible' y con su id_adopcion
+      setMascotas(await mascotasService.listarAdopciones());
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
       // Sin "response" = no hubo conexión con el servidor; con "response" = el servidor respondió con error
@@ -109,6 +111,10 @@ export const Mascotas = () => {
   };
 
   const handleSolicitarAdopcion = async (adopcionId) => {
+    if (!user) {
+      setMensajeSolicitud('Debes iniciar sesión para solicitar la adopción de una mascota.');
+      return;
+    }
     setEnviandoSolicitud(true);
     setMensajeSolicitud('');
     try {
@@ -311,6 +317,7 @@ export const Mascotas = () => {
           mascota={mascotaSeleccionada}
           onClose={() => setMascotaSeleccionada(null)}
           modoAdopcion
+          adopcionId={mascotaSeleccionada?.id_adopcion ?? mascotaSeleccionada?.adopcion_activa_id}
           onSolicitar={handleSolicitarAdopcion}
           solicitando={enviandoSolicitud}
           solicitudEnviada={solicitudEnviada}

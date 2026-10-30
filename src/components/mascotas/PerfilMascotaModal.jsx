@@ -14,6 +14,26 @@ import { capitalizar as cap, textoEdad, textoTamano, esMiMascota, yaSolicitoAdop
 const capitalizar = (t) => cap(t) || '–';
 const siNo = (v) => (v === null || v === undefined ? '–' : Number(v) || v === true ? 'Sí' : 'No');
 
+const tituloSobreMascota = (m) => {
+  if (!m) return 'Más detalles';
+  const nombre = m.nombre ? String(m.nombre).trim() : 'la mascota';
+  const esp = String(especieDeMascota(m) || '').toLowerCase();
+  const gen = String(m?.genero || '').toLowerCase();
+  const esHembra = gen.includes('hemb');
+
+  let tipo = 'mascota';
+  if (esp.includes('gat') || esp.includes('felin')) {
+    tipo = esHembra ? 'gatita' : 'gatito';
+  } else if (esp.includes('perr') || esp.includes('can')) {
+    tipo = esHembra ? 'perrita' : 'perrito';
+  } else if (esp) {
+    tipo = esp;
+  }
+
+  const articulo = esHembra ? 'esta' : 'este';
+  return `Conoce más a ${nombre} (${articulo} ${tipo})`;
+};
+
 export default function PerfilMascotaModal({
   mascota,
   onClose,
@@ -43,11 +63,12 @@ export default function PerfilMascotaModal({
     mascota?.id_adopcion ||
     (Array.isArray(mascota?.adopciones) && mascota.adopciones.some(
       (adopcion) => adopcion.estado_adopcion === 'Disponible' || adopcion.estado === 'Disponible'
-    ))
+    )) ||
+    mascota?.estado_adopcion === 'Disponible'
   );
 
   useEffect(() => {
-    if (!mostrarSolicitudes || !mascotaId) return undefined;
+    if (!mostrarSolicitudes || !estaPublicada || !mascotaId) return undefined;
 
     let vigente = true;
     mascotasService.listarSolicitudesDeMascota(mascotaId)
@@ -68,7 +89,7 @@ export default function PerfilMascotaModal({
     return () => {
       vigente = false;
     };
-  }, [mostrarSolicitudes, mascotaId]);
+  }, [mostrarSolicitudes, estaPublicada, mascotaId]);
 
   if (!mascota) return null;
 
@@ -180,7 +201,10 @@ export default function PerfilMascotaModal({
                 alt={mascota.nombre}
                 className="img-fluid rounded-3 object-fit-cover shadow-sm"
                 style={{ maxHeight: '280px', width: '100%' }}
-                onError={(e) => { e.target.src = SIN_FOTO; }}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = SIN_FOTO;
+                }}
               />
             </div>
           </Col>
@@ -197,16 +221,16 @@ export default function PerfilMascotaModal({
           </Col>
         </Row>
 
-        {estaPublicada && (mascota.notas_adicionales || mascota.descripcion) && (
+        {(mascota.notas_adicionales || mascota.descripcion) && (
           <div className="mt-4 pt-3 border-top">
-            <h5 className="text-primary mb-2">Sobre {mascota.nombre}</h5>
+            <h5 className="text-primary mb-2">{tituloSobreMascota(mascota)}</h5>
             <p className="text-secondary mb-0" style={{ whiteSpace: 'pre-line' }}>
               {mascota.notas_adicionales || mascota.descripcion}
             </p>
           </div>
         )}
 
-        {mostrarSolicitudes && (
+        {mostrarSolicitudes && estaPublicada && (
           <section className="mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Solicitudes de adopción</h5>
             {cargandoSolicitudes ? (
@@ -314,7 +338,7 @@ export default function PerfilMascotaModal({
               onClick={() => onSolicitar?.(idAdopcion)}
               disabled={!idAdopcion || solicitando || solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)}
             >
-              {solicitando ? 'Enviando…' : (solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)) ? 'Solicitud enviada' : 'Adoptar'}
+              {solicitando ? 'Enviando solicitud…' : (solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)) ? 'Solicitud enviada' : 'Solicitar adopción'}
             </Button>
           )
         ) : (

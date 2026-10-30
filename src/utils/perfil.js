@@ -4,19 +4,34 @@ export const urlFoto = (usuario) => {
   if (!foto) return null;
   const origen = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
   let ruta = String(foto).trim();
+  if (!ruta) return null;
 
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(ruta)) {
-    ruta = ruta.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, origen);
+  if (/^(blob:|data:)/i.test(ruta)) {
+    return ruta;
   }
 
-  if (/^(https?:|blob:|data:)/.test(ruta)) {
+  const matchStorage = ruta.match(/(?:storage|public)\/(.+)$/i);
+  if (matchStorage) {
+    const limpia = matchStorage[1].replace(/^\/+/, '');
+    return `${origen}/api/storage/${limpia}`;
+  }
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|back-end-kks2\.onrender\.com)(:\d+)?/i.test(ruta)) {
+    const limpia = ruta
+      .replace(/^https?:\/\/[^/]+\/?/i, '')
+      .replace(/^(api\/)?(storage\/|public\/)?/, '');
+    return `${origen}/api/storage/${limpia}`;
+  }
+
+  if (/^https?:\/\//i.test(ruta)) {
     if (ruta.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
       ruta = ruta.replace(/^http:\/\//i, 'https://');
     }
     return ruta;
   }
-  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/)/, '');
-  return `${origen}/storage/${limpia}`;
+
+  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/|api\/storage\/)/, '');
+  return `${origen}/api/storage/${limpia}`;
 };
 
 // Indica si la cuenta tiene la insignia de verificado

@@ -13,27 +13,42 @@ const lista = (data, clave) => {
 const ORIGEN_API = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
 
 // Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
-// (https://back-end-kks2.onrender.com/storage/mascotas/abc.jpg).
+// (https://back-end-kks2.onrender.com/api/storage/mascotas/abc.jpg).
 export const urlFoto = (foto) => {
   if (!foto) return SIN_FOTO;
   let ruta = String(foto).trim();
   if (!ruta) return SIN_FOTO;
 
-  // Si fue guardada apuntando a localhost, la redirigimos a la API en producción
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(ruta)) {
-    ruta = ruta.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, ORIGEN_API);
+  // Si es un blob o data URI local
+  if (/^(blob:|data:)/i.test(ruta)) {
+    return ruta;
   }
 
-  // Si ya es una URL completa válida
-  if (/^(https?:|blob:|data:)/i.test(ruta)) {
+  // Si contiene storage/ o public/ (sea de localhost, render o relativo)
+  const matchStorage = ruta.match(/(?:storage|public)\/(.+)$/i);
+  if (matchStorage) {
+    const limpia = matchStorage[1].replace(/^\/+/, '');
+    return `${ORIGEN_API}/api/storage/${limpia}`;
+  }
+
+  // Si apunta a localhost o al backend de render
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|back-end-kks2\.onrender\.com)(:\d+)?/i.test(ruta)) {
+    const limpia = ruta
+      .replace(/^https?:\/\/[^/]+\/?/i, '')
+      .replace(/^(api\/)?(storage\/|public\/)?/, '');
+    return `${ORIGEN_API}/api/storage/${limpia}`;
+  }
+
+  // Si ya es una URL externa válida (ej. Unsplash, Imgur)
+  if (/^https?:\/\//i.test(ruta)) {
     if (ruta.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
       ruta = ruta.replace(/^http:\/\//i, 'https://');
     }
     return ruta;
   }
 
-  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/)/, '');
-  return `${ORIGEN_API}/storage/${limpia}`;
+  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/|api\/storage\/)/, '');
+  return `${ORIGEN_API}/api/storage/${limpia}`;
 };
 
 // Foto principal de una mascota: columna "foto" o, si no hay, la primera imagen de la galería
@@ -74,6 +89,7 @@ export const mascotasService = {
       return lista(response.data, 'adopciones').map((adopcion) => ({
         ...adopcion.mascota,
         id_adopcion: adopcion.id_adopcion,
+        adopcion_activa_id: adopcion.id_adopcion,
         adopciones: [adopcion],
       }));
     } catch {
