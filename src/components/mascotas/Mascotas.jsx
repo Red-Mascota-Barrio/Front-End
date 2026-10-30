@@ -82,7 +82,8 @@ export const Mascotas = () => {
     setCargando(true);
     setError(null);
     try {
-      setMascotas(await mascotasService.listarAdopciones());
+// Solo las mascotas con publicación de adopción 'Disponible'
+      setMascotas(await mascotasService.listar({ estado_adopcion: 'Disponible' }));
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
       // Sin "response" = no hubo conexión con el servidor; con "response" = el servidor respondió con error

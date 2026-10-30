@@ -75,7 +75,7 @@ export default function PerfilMascotaModal({
   );
   const especie = especieDeMascota(mascota);
   const fotoUrl = urlFoto(fotoDeMascota(mascota));
-  const idAdopcion = adopcionId ?? mascota.id_adopcion ?? mascota.adopciones?.[0]?.id_adopcion;
+  const idAdopcion = adopcionId ?? mascota.adopcion_activa_id ?? mascota.id_adopcion ?? mascota.adopciones?.[0]?.id_adopcion;
 
   const atributos = [
     ['Especie', especie ? <><IconoEspecie especie={especie} /> {especie}</> : '–'],

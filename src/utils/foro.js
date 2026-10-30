@@ -63,21 +63,57 @@ export const colorAvatar = (obj) => {
   return COLORES[id % COLORES.length];
 };
 
-// Envía un reporte (de un comentario o de un hilo) y muestra el resultado
-export const enviarReporte = async ({ tipoReporteId, comentarioId, foroId }) => {
+// Reportes ya enviados por este usuario (se guardan en el navegador para no ofrecer el botón otra vez;
+// la validación real debe hacerla también el back).
+const claveReportes = (idUsuario) => `reportes_enviados_${idUsuario}`;
+const leerReportes = (idUsuario) => {
+  try { return JSON.parse(localStorage.getItem(claveReportes(idUsuario)) ?? '[]'); } catch { return []; }
+};
+const llaveReporte = ({ comentarioId, foroId }) => (comentarioId ? `c${comentarioId}` : `f${foroId}`);
+
+export const yaReporto = (idUsuario, objetivo) =>
+  idUsuario !== undefined && idUsuario !== null && leerReportes(idUsuario).includes(llaveReporte(objetivo));
+
+const guardarReporte = (idUsuario, objetivo) => {
+  if (idUsuario === undefined || idUsuario === null) return;
+  const lista = new Set(leerReportes(idUsuario));
+  lista.add(llaveReporte(objetivo));
+  localStorage.setItem(claveReportes(idUsuario), JSON.stringify([...lista]));
+};
+
+// Envía un reporte (de un comentario o de un hilo) y muestra el resultado.
+// Devuelve true si el contenido quedó reportado (también cuando el back dice que ya lo estaba).
+export const enviarReporte = async ({ tipoReporteId, comentarioId, foroId, idUsuario }) => {
+  const objetivo = { comentarioId, foroId };
+  if (yaReporto(idUsuario, objetivo)) {
+    notificarError('Ya lo reportaste', 'Este contenido ya fue reportado por ti. Un moderador lo revisará.');
+    return true;
+  }
   try {
     const respuesta = await foroService.crearReporte({
       tipo_reporte_id: Number(tipoReporteId),
       ...(comentarioId ? { comentario_id: Number(comentarioId) } : { foro_id: Number(foroId) }),
       descripcion: 'Reportado desde la interfaz de la comunidad',
     });
-    if (respuesta.resultado === 'ok') notificarExito('Reporte enviado. Gracias por avisarnos.');
-    else notificarError('No se pudo enviar el reporte', respuesta.mensaje);
+    if (respuesta.resultado === 'ok') {
+      guardarReporte(idUsuario, objetivo);
+      notificarExito('Reporte enviado. Gracias por avisarnos.');
+      return true;
+    }
+    notificarError('No se pudo enviar el reporte', respuesta.mensaje);
+    return false;
   } catch (error) {
     // Mensajes de ReporteController (p. ej. "No puedes reportarte a ti mismo.")
+    const status = error.response?.status;
     const mensaje = error.response?.data?.mensaje || error.response?.data?.message;
+    if (status === 409 || /ya (lo )?report/i.test(mensaje ?? '')) {
+      guardarReporte(idUsuario, objetivo);
+      notificarError('Ya lo reportaste', mensaje || 'Este contenido ya fue reportado por ti.');
+      return true;
+    }
     if (mensaje) notificarError('No se pudo enviar el reporte', mensaje);
-    else if (error.response?.status === 401) notificarError('Inicia sesión', 'Debes iniciar sesión para reportar.');
+    else if (status === 401) notificarError('Inicia sesión', 'Debes iniciar sesión para reportar.');
     else notificarError('Error', 'Hubo un error al procesar el reporte.');
+    return false;
   }
 };

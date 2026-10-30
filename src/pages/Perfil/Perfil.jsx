@@ -52,7 +52,7 @@ export const Perfil = () => {
 
               <Tabs defaultActiveKey="mascotas" className="perfil-tabs" id="pestanas-perfil">
                 <Tab eventKey="mascotas" title={<Titulo icono="heart">Mis mascotas</Titulo>}>
-                  <TabMisMascotas cantidad={statsUsuario?.mascotas} />
+                  <TabMisMascotas />
                 </Tab>
                 <Tab eventKey="foro" title={<Titulo icono="chat-left-text">Mis publicaciones</Titulo>} mountOnEnter>
                   <TabActividadForo idUsuario={user?.id_usuario} />

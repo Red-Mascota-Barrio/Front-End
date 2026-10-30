@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Container, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
+import { useAuth } from '../../context/AuthContext';
 import { mascotasService } from '../../services/mascotasService';
 import MascotaCard from './MascotaCard';
 import { Icono } from '../common/Icono';
@@ -9,7 +10,9 @@ import PerfilMascotaModal from './PerfilMascotaModal';
 import '../../styles/mascotas.css';
 
 export default function MisMascotas() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [listaFiable, setListaFiable] = useState(true);
   const [mascotas, setMascotas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -24,14 +27,16 @@ export default function MisMascotas() {
     setCargando(true);
     setError(null);
     try {
-      setMascotas(await mascotasService.listarMisMascotas());
+const { mascotas: propias, fiable } = await mascotasService.misMascotas(user);
+      setMascotas(propias);
+      setListaFiable(fiable);
     } catch (err) {
       console.error('Error al obtener mascotas:', err);
       setError('No se pudieron cargar las mascotas desde el servidor.');
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const id = window.setTimeout(() => void cargar(), 0);
@@ -97,6 +102,12 @@ export default function MisMascotas() {
         </Button>
       </div>
 
+      {!listaFiable && (
+        <Alert variant="warning" className="d-flex gap-2">
+          <Icono nombre="info-circle" />
+          <span>La API no indica de quién es cada mascota, así que no se puede mostrar solo tu lista.</span>
+        </Alert>
+      )}
       {cargando ? (
         <div className="text-center py-5">
           <Spinner animation="border" role="status" />

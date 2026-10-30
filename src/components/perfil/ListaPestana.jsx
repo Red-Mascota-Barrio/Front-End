@@ -40,7 +40,11 @@ export const ListaPestana = ({ cargar, vacio, children }) => {
         <p className="perfil-tab-vacio-titulo">{v.titulo}</p>
         {v.sub && <p className="perfil-tab-vacio-sub">{v.sub}</p>}
         {v.accion && (
-          <Button as={Link} to={v.accion.to} variant="primary">{v.accion.texto}</Button>
+          v.accion.onClick ? (
+            <Button variant="primary" onClick={v.accion.onClick}>{v.accion.texto}</Button>
+          ) : (
+            <Button as={Link} to={v.accion.to} variant="primary">{v.accion.texto}</Button>
+          )
         )}
       </div>
     );

@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
+import { api } from "../../services/api";
 import { foroService } from "../../services/foroService";
 import { categoriasDesdeHilos } from "../../utils/foro";
 import { Icono } from "../common/Icono";
 
-
 function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
-  const [listaCategorias, setListaCategorias] = useState(categorias);
-  
-  // Si no hay categorías pasadas por props ni cargadas, usamos el fallback
-  const opciones = listaCategorias.length ? listaCategorias : categoriasDesdeHilos();
+  const opcionesLocales = categorias.length ? categorias : categoriasDesdeHilos();
 
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  
-  // CORRECCIÓN 1: Se separa el estado de la 'categoria' seleccionada del actualizador correcto
-  const [categoria, setCategoria] = useState(String(opciones[0]?.id_categoria ?? ""));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
-  
-  // CORRECCIÓN 2: Creamos el estado 'loading' que te faltaba para la carga inicial de la API
+
+  // Categorías cargadas desde el backend
+  const [categoriasList, setCategoriasList] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Decidimos qué opciones usar (las de la API o las locales)
+  const opciones = categoriasList.length > 0 ? categoriasList : opcionesLocales;
+
+  const [categoria, setCategoria] = useState(String(opcionesLocales[0]?.id_categoria ?? ""));
 
   // Manejar el envío del formulario
   const manejarPublicacion = async (e) => {
@@ -45,12 +45,13 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         onCrearHilo(respuesta.datos);
         onCerrar();
       } else {
-        setError(respuesta.mensaje || "No se pudo publicar el foro.");
+        setError(respuesta.mensaje || "No se pudo publicar el hilo.");
       }
     } catch (err) {
       console.error("Error al publicar el hilo:", err.response?.data ?? err);
       const data = err.response?.data;
       const validacion = data?.errors ?? data?.errores;
+
       if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un hilo.");
       else if ([409, 429].includes(err.response?.status)) setError(data?.mensaje);
       else if (validacion) setError(Object.values(validacion).flat().join(" "));
@@ -61,32 +62,25 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
     }
   };
 
-  // Traer las categorías desde el backend
+  // Traer las categorías desde el backend de forma segura
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/categorias')
+    api.get("/categorias")
       .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error al cargar categorías');
-        }
-        return response.json();
-      })
-      .then((data) => {
+        const data = response.data;
         const arrayCategorias = data.datos ? data.datos : data;
-        
         if (Array.isArray(arrayCategorias)) {
-          setListaCategorias(arrayCategorias);
-          // Auto-seleccionar la primera categoría si llega desde la API
+          setCategoriasList(arrayCategorias);
           if (arrayCategorias.length > 0) {
             setCategoria(String(arrayCategorias[0].id_categoria));
           }
         } else {
-          setListaCategorias([]);
+          setCategoriasList([]);
         }
-        setLoading(false); // Ahora sí funcionará porque el estado existe arriba
+        setLoading(false);
       })
-      .catch((error) => {
-        console.error('Error en fetch de categorías:', error);
-        setListaCategorias([]); 
+      .catch((err) => {
+        console.error("Error al cargar categorías:", err);
+        setCategoriasList([]);
         setLoading(false);
       });
   }, []);
@@ -94,7 +88,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
   return (
     <Modal show onHide={enviando ? undefined : onCerrar} centered>
       <Modal.Header closeButton={!enviando}>
-        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo foro</Modal.Title>
+        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo hilo</Modal.Title>
       </Modal.Header>
 
       <Form onSubmit={manejarPublicacion} noValidate>
@@ -114,13 +108,21 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="categoria">
-            <Form.Label>Categoría {loading && "(Cargando...)"}</Form.Label>
-            <Form.Select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-              {opciones.map((cat) => (
-                <option key={cat.id_categoria} value={cat.id_categoria}>
-                  {cat.nombre_categoria}
-                </option>
-              ))}
+            <Form.Label>Categoría</Form.Label>
+            <Form.Select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              disabled={loading}
+            >
+              {loading ? (
+                <option>Cargando categorías...</option>
+              ) : (
+                opciones.map((cat) => (
+                  <option key={cat.id_categoria} value={cat.id_categoria}>
+                    {cat.nombre_categoria}
+                  </option>
+                ))
+              )}
             </Form.Select>
           </Form.Group>
 
@@ -129,7 +131,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
             <Form.Control
               as="textarea"
               rows={6}
-              placeholder="Cuenta tu experiencia o tu pregunta con detalle"
+              placeholder="Cuenta tu experiencia o tu pregunta con detalle…"
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
               required
@@ -138,11 +140,11 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="light" onClick={onCerrar} disabled={enviando}>
+          <Button variant="light" onClick={onCerrar} disabled={enviando || loading}>
             Cancelar
           </Button>
           <Button type="submit" variant="primary" disabled={enviando || loading}>
-            {enviando ? "Publicando" : "Publicar foro"}
+            {enviando ? "Publicando…" : "Publicar hilo"}
           </Button>
         </Modal.Footer>
       </Form>
