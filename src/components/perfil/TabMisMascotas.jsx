@@ -11,13 +11,15 @@ import { useAuth } from '../../context/AuthContext';
 import '../../styles/mascotas.css';
 
 // Lista las mascotas del usuario (GET /mis-mascotas o, si no existe, GET /mascotas filtrado por dueño).
-// El formulario de registro se abre aquí mismo (modal), sin cambiar de página.
+// Permite ver perfil, editar, publicar en adopción, eliminar y gestionar solicitudes de adopción.
 export const TabMisMascotas = () => {
   const { user } = useAuth();
   const [seleccionada, setSeleccionada] = useState(null);
+  const [editando, setEditando] = useState(null);
+  const [errorPublicacion, setErrorPublicacion] = useState('');
   const [aviso, setAviso] = useState(false);
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
-  // Al cambiar `version` se vuelve a cargar la lista (después de registrar una mascota)
+  // Al cambiar `version` se vuelve a cargar la lista
   const [version, setVersion] = useState(0);
   const idUsuario = user?.id_usuario;
 
@@ -32,9 +34,45 @@ export const TabMisMascotas = () => {
   const cerrarRegistro = () => setMostrarRegistro(false);
 
   const handleGuardar = async (datosNuevos) => {
-    await mascotasService.crear(datosNuevos); // si falla, el modal muestra el error
+    await mascotasService.crear(datosNuevos);
     cerrarRegistro();
     setVersion((v) => v + 1);
+  };
+
+  const handleEditar = async (datosActualizados) => {
+    await mascotasService.actualizar(
+      editando.id_mascotas ?? editando.id,
+      datosActualizados
+    );
+    setEditando(null);
+    setVersion((v) => v + 1);
+  };
+
+  const handleEliminar = async (id) => {
+    await mascotasService.eliminar(id);
+    setSeleccionada(null);
+    setVersion((v) => v + 1);
+  };
+
+  const handleSolicitudAprobada = async () => {
+    setSeleccionada(null);
+    setVersion((v) => v + 1);
+  };
+
+  const handlePublicar = async (id) => {
+    setErrorPublicacion('');
+    try {
+      const respuesta = await mascotasService.publicarParaAdopcion(id);
+      setSeleccionada((actual) => ({
+        ...actual,
+        adopciones: [...(actual?.adopciones ?? []), respuesta.datos],
+        adopcion_activa_id: respuesta.datos?.id_adopcion,
+      }));
+      setVersion((v) => v + 1);
+    } catch (err) {
+      console.error('Error al publicar mascota para adopción:', err);
+      setErrorPublicacion(err.response?.data?.mensaje || 'No se pudo publicar la mascota para adopción.');
+    }
   };
 
   return (
@@ -70,7 +108,31 @@ export const TabMisMascotas = () => {
           </>
         )}
       </ListaPestana>
-      {seleccionada && <PerfilMascotaModal mascota={seleccionada} onClose={() => setSeleccionada(null)} />}
+
+      {seleccionada && (
+        <PerfilMascotaModal
+          mascota={seleccionada}
+          onClose={() => setSeleccionada(null)}
+          onEditar={(m) => {
+            setSeleccionada(null);
+            setEditando(m);
+          }}
+          onEliminar={handleEliminar}
+          onSolicitudAprobada={handleSolicitudAprobada}
+          mostrarSolicitudes
+          onPublicar={handlePublicar}
+          errorPublicacion={errorPublicacion}
+        />
+      )}
+
+      {editando && (
+        <RegistrarMascotaModal
+          mascota={editando}
+          onClose={() => setEditando(null)}
+          onGuardar={handleEditar}
+        />
+      )}
+
       {mostrarRegistro && <RegistrarMascotaModal onClose={cerrarRegistro} onGuardar={handleGuardar} />}
     </>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Row, Col, Button, Alert, Table, Spinner } from 'react-bootstrap';
+import { useAuth } from '../../context/AuthContext';
 import {
   urlFoto,
   fotoDeMascota,
@@ -8,7 +9,7 @@ import {
 } from '../../services/mascotasService';
 import { especieDeMascota, razaDeMascota } from '../../utils/admin';
 import { IconoEspecie } from '../common/Icono';
-import { capitalizar as cap, textoEdad, textoTamano } from '../../utils/mascotas';
+import { capitalizar as cap, textoEdad, textoTamano, esMiMascota, yaSolicitoAdopcion } from '../../utils/mascotas';
 
 const capitalizar = (t) => cap(t) || '–';
 const siNo = (v) => (v === null || v === undefined ? '–' : Number(v) || v === true ? 'Sí' : 'No');
@@ -35,13 +36,18 @@ export default function PerfilMascotaModal({
   const [eliminandoMascota, setEliminandoMascota] = useState(false);
   const [errorEliminacion, setErrorEliminacion] = useState('');
   const [confirmarEliminacion, setConfirmarEliminacion] = useState(false);
+  const { user } = useAuth();
   const mascotaId = mascota?.id_mascotas ?? mascota?.id;
-  const estaPublicada = mascota?.adopciones?.some(
-    (adopcion) => adopcion.estado_adopcion === 'Disponible'
-  ) ?? false;
+  const estaPublicada = Boolean(
+    mascota?.adopcion_activa_id ||
+    mascota?.id_adopcion ||
+    (Array.isArray(mascota?.adopciones) && mascota.adopciones.some(
+      (adopcion) => adopcion.estado_adopcion === 'Disponible' || adopcion.estado === 'Disponible'
+    ))
+  );
 
   useEffect(() => {
-    if (!mostrarSolicitudes || !estaPublicada || !mascotaId) return undefined;
+    if (!mostrarSolicitudes || !mascotaId) return undefined;
 
     let vigente = true;
     mascotasService.listarSolicitudesDeMascota(mascotaId)
@@ -62,13 +68,13 @@ export default function PerfilMascotaModal({
     return () => {
       vigente = false;
     };
-  }, [mostrarSolicitudes, estaPublicada, mascotaId]);
+  }, [mostrarSolicitudes, mascotaId]);
 
   if (!mascota) return null;
 
   const resultadoActual = resultadoSolicitudes?.mascotaId === mascotaId ? resultadoSolicitudes : null;
   const solicitudes = resultadoActual?.datos ?? [];
-  const cargandoSolicitudes = mostrarSolicitudes && estaPublicada && !resultadoActual;
+  const cargandoSolicitudes = mostrarSolicitudes && !resultadoActual;
   const errorSolicitudes = resultadoActual?.error ?? '';
   const haySolicitudAprobada = solicitudes.some(
     (solicitud) => String(solicitud.fase_actual).toLowerCase() === 'aprobada'
@@ -200,7 +206,7 @@ export default function PerfilMascotaModal({
           </div>
         )}
 
-        {mostrarSolicitudes && estaPublicada && (
+        {mostrarSolicitudes && (
           <section className="mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Solicitudes de adopción</h5>
             {cargandoSolicitudes ? (
@@ -211,7 +217,9 @@ export default function PerfilMascotaModal({
             ) : errorSolicitudes ? (
               <Alert variant="danger" className="mb-0">{errorSolicitudes}</Alert>
             ) : solicitudes.length === 0 ? (
-              <p className="text-muted mb-0">Aún no hay solicitudes para esta mascota.</p>
+              <p className="text-muted mb-0">
+                {estaPublicada ? 'Aún no hay solicitudes para esta mascota.' : 'Publica a tu mascota en adopción para recibir solicitudes.'}
+              </p>
             ) : (
               <>
                 <Table responsive bordered hover size="sm" className="align-middle mb-0">
@@ -298,13 +306,17 @@ export default function PerfilMascotaModal({
 
       <Modal.Footer className="d-flex justify-content-between">
         {modoAdopcion ? (
-          <Button
-            variant="success"
-            onClick={() => onSolicitar?.(idAdopcion)}
-            disabled={!idAdopcion || solicitando || solicitudEnviada}
-          >
-            {solicitando ? 'Enviando…' : solicitudEnviada ? 'Solicitud enviada' : 'Adoptar'}
-          </Button>
+          esMiMascota(mascota, user?.id_usuario) ? (
+            <span className="text-muted small align-self-center">Esta mascota te pertenece</span>
+          ) : (
+            <Button
+              variant="success"
+              onClick={() => onSolicitar?.(idAdopcion)}
+              disabled={!idAdopcion || solicitando || solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)}
+            >
+              {solicitando ? 'Enviando…' : (solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)) ? 'Solicitud enviada' : 'Adoptar'}
+            </Button>
+          )
         ) : (
           <div className="d-flex flex-wrap gap-2">
             {onEditar && (

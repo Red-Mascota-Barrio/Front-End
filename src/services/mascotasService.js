@@ -10,14 +10,28 @@ const lista = (data, clave) => {
   if (Array.isArray(contenido?.[clave])) return contenido[clave];
   return Array.isArray(data?.[clave]) ? data[clave] : [];
 };
-const ORIGEN_API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+const ORIGEN_API = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
 
 // Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
-// (http://localhost:8000/storage/mascotas/abc.jpg). Requiere `php artisan storage:link` en el backend.
+// (https://back-end-kks2.onrender.com/storage/mascotas/abc.jpg).
 export const urlFoto = (foto) => {
   if (!foto) return SIN_FOTO;
-  const ruta = String(foto);
-  if (/^(https?:|blob:|data:)/i.test(ruta)) return ruta;
+  let ruta = String(foto).trim();
+  if (!ruta) return SIN_FOTO;
+
+  // Si fue guardada apuntando a localhost, la redirigimos a la API en producción
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(ruta)) {
+    ruta = ruta.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, ORIGEN_API);
+  }
+
+  // Si ya es una URL completa válida
+  if (/^(https?:|blob:|data:)/i.test(ruta)) {
+    if (ruta.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      ruta = ruta.replace(/^http:\/\//i, 'https://');
+    }
+    return ruta;
+  }
+
   const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/)/, '');
   return `${ORIGEN_API}/storage/${limpia}`;
 };

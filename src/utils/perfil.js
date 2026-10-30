@@ -2,9 +2,21 @@
 export const urlFoto = (usuario) => {
   const foto = usuario?.foto_perfil ?? usuario?.foto ?? null;
   if (!foto) return null;
-  if (/^(https?:|blob:|data:)/.test(foto)) return foto;
-  const origen = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
-  return `${origen}/storage/${String(foto).replace(/^\/+/, '')}`;
+  const origen = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
+  let ruta = String(foto).trim();
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(ruta)) {
+    ruta = ruta.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, origen);
+  }
+
+  if (/^(https?:|blob:|data:)/.test(ruta)) {
+    if (ruta.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      ruta = ruta.replace(/^http:\/\//i, 'https://');
+    }
+    return ruta;
+  }
+  const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/)/, '');
+  return `${origen}/storage/${limpia}`;
 };
 
 // Indica si la cuenta tiene la insignia de verificado
