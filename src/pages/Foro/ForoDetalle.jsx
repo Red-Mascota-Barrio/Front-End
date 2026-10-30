@@ -12,10 +12,10 @@ import ComentarioForm from "../../components/foro/ComentarioForm";
 
 import { foroService } from "../../services/foroService.js";
 import { useAuth } from "../../context/AuthContext";
-import { fechaCorta, notificarError } from "../../utils/admin";
+import { fechaCorta, notificarError, notificarExito, confirmar } from "../../utils/admin";
 import {
   idHilo, categoriaDeHilo, nombreCategoria, especieDeCategoria,
-  nombreAutor, inicialesAutor, colorAvatar, enviarReporte,
+  nombreAutor, inicialesAutor, colorAvatar, enviarReporte, yaReporto,
 } from "../../utils/foro";
 import "../../styles/foro.css";
 
@@ -40,6 +40,7 @@ function ForoDetalle() {
   const [comentarios, setComentarios] = useState([]);
   const [reportando, setReportando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [hiloReportado, setHiloReportado] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -49,6 +50,7 @@ function ForoDetalle() {
         if (!activo) return;
         const datosHilo = respuesta.datos || respuesta.data || respuesta;
         setHilo(datosHilo);
+        setHiloReportado(yaReporto(user?.id_usuario, { foroId: datosHilo.id_foro ?? datosHilo.id ?? id }));
         setComentarios(
           datosHilo.comentarios_principales || datosHilo.comentariosPrincipales || datosHilo.comentarios || [],
         );
@@ -57,6 +59,7 @@ function ForoDetalle() {
       .finally(() => activo && setCargando(false));
 
     return () => { activo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const agregarComentario = async (nuevoComentario) => {
@@ -77,6 +80,26 @@ function ForoDetalle() {
         notificarError("Error", "Hubo un error al guardar tu comentario.");
       }
       return false;
+    }
+  };
+
+  const eliminarComentario = async (comentario) => {
+    const idComentario = comentario.id_participacion ?? comentario.id;
+    const ok = await confirmar({
+      titulo: "¿Eliminar tu comentario?",
+      texto: "Esta acción no se puede deshacer.",
+      boton: "Eliminar",
+      peligro: true,
+    });
+    if (!ok) return;
+    try {
+      await foroService.eliminarComentario(idComentario);
+      setComentarios((prev) => prev.filter((c) => (c.id_participacion ?? c.id) !== idComentario));
+      setHilo((prev) => ({ ...prev, numero_comentarios: Math.max(0, (Number(prev?.numero_comentarios) || comentarios.length) - 1) }));
+      notificarExito("Comentario eliminado");
+    } catch (error) {
+      const data = error.response?.data;
+      notificarError("No se pudo eliminar", data?.mensaje || data?.message || "Intenta de nuevo más tarde.");
     }
   };
 
@@ -130,9 +153,15 @@ function ForoDetalle() {
             <Icono nombre="chat-left-text" /> <strong className="text-verde-oscuro">{respuestas}</strong> {Number(respuestas) === 1 ? 'respuesta' : 'respuestas'}
           </span>
           {token && Number(hilo.usuario_id) !== Number(user?.id_usuario) && (
-            <button type="button" className="btn-reportar" onClick={() => setReportando(true)}>
-              <Icono nombre="flag" /> Reportar publicación
-            </button>
+            hiloReportado ? (
+              <span className="btn-reportar" aria-disabled="true" style={{ opacity: 0.6, cursor: "default" }}>
+                <Icono nombre="flag-fill" /> Publicación reportada
+              </span>
+            ) : (
+              <button type="button" className="btn-reportar" onClick={() => setReportando(true)}>
+                <Icono nombre="flag" /> Reportar publicación
+              </button>
+            )
           )}
         </div>
       </article>
@@ -141,7 +170,10 @@ function ForoDetalle() {
         <ReportarModal
           objeto="hilo"
           onCerrar={() => setReportando(false)}
-          onReportar={(tipo) => enviarReporte({ tipoReporteId: tipo, foroId: idHilo(hilo) })}
+          onReportar={async (tipo) => {
+            const ok = await enviarReporte({ tipoReporteId: tipo, foroId: idHilo(hilo), idUsuario: user?.id_usuario });
+            if (ok) setHiloReportado(true);
+          }}
         />
       )}
 
@@ -150,7 +182,7 @@ function ForoDetalle() {
         <div className="d-flex flex-column gap-3 mb-4">
           {comentarios.length > 0 ? (
             comentarios.map((c, i) => (
-              <ComentarioCard key={c.id_participacion || c.id_comentario || c.id || i} comentario={c} />
+              <ComentarioCard key={c.id_participacion || c.id_comentario || c.id || i} comentario={c} onEliminar={eliminarComentario} />
             ))
           ) : (
             <div className="comentario-item text-center text-muted small py-4">

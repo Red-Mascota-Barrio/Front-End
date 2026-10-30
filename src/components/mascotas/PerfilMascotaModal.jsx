@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Modal, Row, Col, Button } from 'react-bootstrap';
-import { urlFoto, fotoDeMascota, SIN_FOTO } from '../../services/mascotasService';
-import { especieDeMascota, razaDeMascota, estadoMascota } from '../../utils/admin';
+import { useAuth } from '../../context/AuthContext';
+import { urlFoto, fotoDeMascota, SIN_FOTO, mascotasService } from '../../services/mascotasService';
+import { mensajeError } from '../../services/adminService';
+import { especieDeMascota, razaDeMascota, estadoMascota, notificarExito, notificarError } from '../../utils/admin';
 import { IconoEspecie } from '../common/Icono';
-import { capitalizar as cap, textoEdad, textoTamano, claseFoto } from '../../utils/mascotas';
+import {
+  capitalizar as cap, textoEdad, textoTamano, claseFoto, puedeAdoptar, idMascota, marcarSolicitudLocal,
+} from '../../utils/mascotas';
 
 const capitalizar = (t) => cap(t) || '—';
 const siNo = (v) => (v === null || v === undefined ? '—' : Number(v) || v === true ? 'Sí' : 'No');
@@ -10,7 +15,33 @@ const siNo = (v) => (v === null || v === undefined ? '—' : Number(v) || v === 
 // Detalle de una mascota (diseño de info_mascota.html del mockup).
 // Usa los nombres de columna reales: edad_estimada, peso_kg, vacunas_al_dia, notas_adicionales…
 export default function PerfilMascotaModal({ mascota, onClose }) {
+  const { user, token } = useAuth();
+  const [enviando, setEnviando] = useState(false);
+  // Tras solicitar, el botón desaparece al instante (marcarSolicitudLocal lo recuerda para la próxima vez)
+  const [solicitada, setSolicitada] = useState(false);
+
   if (!mascota) return null;
+
+  const mostrarAdoptar = Boolean(token) && !solicitada && puedeAdoptar(mascota, user);
+
+  const adoptar = async () => {
+    setEnviando(true);
+    try {
+      await mascotasService.solicitarAdopcion(mascota.adopcion_activa_id);
+      marcarSolicitudLocal(user.id_usuario, idMascota(mascota));
+      setSolicitada(true);
+      notificarExito('Solicitud de adopción enviada');
+    } catch (err) {
+      // Si la API dice que ya existe una solicitud, también se oculta el botón
+      if (err.response?.status === 409) {
+        marcarSolicitudLocal(user.id_usuario, idMascota(mascota));
+        setSolicitada(true);
+      }
+      notificarError('No se pudo enviar la solicitud', mensajeError(err));
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   const especie = especieDeMascota(mascota);
   const estado = estadoMascota(mascota);
@@ -61,6 +92,11 @@ export default function PerfilMascotaModal({ mascota, onClose }) {
         </Row>
       </Modal.Body>
       <Modal.Footer>
+        {mostrarAdoptar && (
+          <Button variant="primary" onClick={adoptar} disabled={enviando}>
+            {enviando ? 'Enviando…' : 'Adoptar'}
+          </Button>
+        )}
         <Button variant="light" onClick={onClose}>Cerrar</Button>
       </Modal.Footer>
     </Modal>

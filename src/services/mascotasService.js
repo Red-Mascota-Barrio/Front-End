@@ -1,5 +1,6 @@
 import { api } from './api';
 import SIN_FOTO from '../assets/images/common/pata.png';
+import { esMiMascota, tieneInfoDueno } from '../utils/mascotas';
 
 export { SIN_FOTO };
 
@@ -44,9 +45,30 @@ const aFormData = (d) => {
 };
 
 export const mascotasService = {
-  listar: async () => {
-    const response = await api.get('/mascotas');
+  // `params` son filtros opcionales del back (ej. { estado_adopcion: 'Disponible' })
+  listar: async (params = {}) => {
+    const response = await api.get('/mascotas', { params });
     return lista(response.data, 'mascotas');
+  },
+  // Mascotas del usuario: usa GET /mis-mascotas y, si la API no lo tiene (404/405),
+  // filtra GET /mascotas por dueño. `fiable` es false si ninguna mascota trae dato de dueño.
+  misMascotas: async (user) => {
+    try {
+      const res = await api.get('/mis-mascotas');
+      return { mascotas: lista(res.data, 'mascotas'), fiable: true };
+    } catch (err) {
+      if (![404, 405].includes(err.response?.status)) throw err;
+    }
+    const todas = await mascotasService.listar();
+    return {
+      mascotas: todas.filter((m) => esMiMascota(m, user?.id_usuario)),
+      fiable: todas.some(tieneInfoDueno),
+    };
+  },
+  // POST /solicitudes (SolicitudController): se postula a la publicación de adopción 'Disponible' de la mascota
+  solicitarAdopcion: async (idAdopcion) => {
+    const res = await api.post('/solicitudes', { adopcion_id: Number(idAdopcion) });
+    return res.data;
   },
   // GET /mascotas/:id (Obtener perfil de una mascota por ID)
   obtener: async (id) => {
