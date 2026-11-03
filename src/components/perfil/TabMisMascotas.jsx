@@ -67,12 +67,28 @@ export const TabMisMascotas = () => {
         ...actual,
         adopciones: [...(actual?.adopciones ?? []), respuesta.datos],
         adopcion_activa_id: respuesta.datos?.id_adopcion,
+        estado_adopcion: 'Disponible',
       }));
       setVersion((v) => v + 1);
     } catch (err) {
       console.error('Error al publicar mascota para adopción:', err);
       setErrorPublicacion(err.response?.data?.mensaje || 'No se pudo publicar la mascota para adopción.');
     }
+  };
+
+  // El dueño retira la mascota de adopción (PATCH /adopciones/:id/cancelar)
+  const handleCancelarAdopcion = async (idAdopcion) => {
+    const respuesta = await mascotasService.cancelarAdopcion(idAdopcion);
+    setSeleccionada((actual) => actual && ({
+      ...actual,
+      adopcion_activa_id: null,
+      id_adopcion: undefined,
+      estado_adopcion: 'Cancelada',
+      adopciones: (actual.adopciones ?? []).map((a) => (
+        Number(a.id_adopcion) === Number(idAdopcion) ? { ...a, ...respuesta.datos, estado_adopcion: 'Cancelada' } : a
+      )),
+    }));
+    setVersion((v) => v + 1);
   };
 
   return (
@@ -120,6 +136,7 @@ export const TabMisMascotas = () => {
           onEliminar={handleEliminar}
           onSolicitudAprobada={handleSolicitudAprobada}
           mostrarSolicitudes
+          onCancelarAdopcion={handleCancelarAdopcion}
           onPublicar={handlePublicar}
           errorPublicacion={errorPublicacion}
         />

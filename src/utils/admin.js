@@ -105,7 +105,8 @@ export const claseIconoEspecie = (especie) => {
 export const estadoMascota = (m) => {
   const adopciones = Array.isArray(m?.adopciones) ? m.adopciones : [];
   const ultima = adopciones.length ? adopciones[adopciones.length - 1] : null;
-  const estado = normalizar(ultima?.estado_adopcion ?? m?.estado_adopcion ?? '');
+  // estado_adopcion lo calcula el back (publicación vigente o la más reciente)
+  const estado = normalizar(m?.estado_adopcion ?? ultima?.estado_adopcion ?? '');
   if (estado === 'disponible') return { clave: 'disponible', texto: 'En adopción', clase: 'success' };
   if (estado === 'adoptado') return { clave: 'adoptado', texto: 'Adoptado', clase: 'secondary' };
   if (estado === 'cancelada') return { clave: 'cancelada', texto: 'Cancelada', clase: 'danger' };

@@ -17,6 +17,8 @@ import { AdminUsuarios } from '../pages/Admin/AdminUsuarios';
 import { AdminMascotas } from '../pages/Admin/AdminMascotas';
 import { AdminEventos } from '../pages/Admin/AdminEventos';
 import { AdminReportes } from '../pages/Admin/AdminReportes';
+import { AdminAdopciones } from '../pages/Admin/AdminAdopciones';
+import { AdminForos } from '../pages/Admin/AdminForos';
 
 // Roles (RoleSeeder): 1 = Administrador, 2 = Usuario
 const ADMIN = 1;
@@ -48,6 +50,8 @@ export const AppRouter = () => (
         <Route index element={<AdminDashboard />} />
         <Route path="usuarios" element={<AdminUsuarios />} />
         <Route path="mascotas" element={<AdminMascotas />} />
+        <Route path="adopciones" element={<AdminAdopciones />} />
+        <Route path="foros" element={<AdminForos />} />
         <Route path="eventos" element={<AdminEventos />} />
         <Route path="reportes" element={<AdminReportes />} />
       </Route>

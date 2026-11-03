@@ -9,7 +9,9 @@ import {
 } from '../../services/mascotasService';
 import { especieDeMascota, razaDeMascota } from '../../utils/admin';
 import { IconoEspecie } from '../common/Icono';
-import { capitalizar as cap, textoEdad, textoTamano, esMiMascota, yaSolicitoAdopcion } from '../../utils/mascotas';
+import {
+  capitalizar as cap, textoEdad, textoTamano, textoFecha, textoPeso, esMiMascota, yaSolicitoAdopcion,
+} from '../../utils/mascotas';
 
 const capitalizar = (t) => cap(t) || '–';
 const siNo = (v) => (v === null || v === undefined ? '–' : Number(v) || v === true ? 'Sí' : 'No');
@@ -42,6 +44,7 @@ export default function PerfilMascotaModal({
   modoAdopcion = false,
   mostrarSolicitudes = false,
   onPublicar,
+  onCancelarAdopcion,
   onSolicitudAprobada,
   errorPublicacion = '',
   adopcionId,
@@ -56,16 +59,21 @@ export default function PerfilMascotaModal({
   const [eliminandoMascota, setEliminandoMascota] = useState(false);
   const [errorEliminacion, setErrorEliminacion] = useState('');
   const [confirmarEliminacion, setConfirmarEliminacion] = useState(false);
+  const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
+  const [cancelandoAdopcion, setCancelandoAdopcion] = useState(false);
+  const [errorCancelacion, setErrorCancelacion] = useState('');
   const { user } = useAuth();
   const mascotaId = mascota?.id_mascotas ?? mascota?.id;
-  const estaPublicada = Boolean(
-    mascota?.adopcion_activa_id ||
-    mascota?.id_adopcion ||
-    (Array.isArray(mascota?.adopciones) && mascota.adopciones.some(
-      (adopcion) => adopcion.estado_adopcion === 'Disponible' || adopcion.estado === 'Disponible'
-    )) ||
-    mascota?.estado_adopcion === 'Disponible'
-  );
+  // adopcion_activa_id lo calcula el back (publicación 'Disponible'); si no viene, se deduce de las adopciones
+  const estaPublicada = mascota && 'adopcion_activa_id' in mascota
+    ? Boolean(mascota.adopcion_activa_id)
+    : Boolean(
+      mascota?.id_adopcion ||
+      (Array.isArray(mascota?.adopciones) && mascota.adopciones.some(
+        (adopcion) => adopcion.estado_adopcion === 'Disponible' || adopcion.estado === 'Disponible'
+      )) ||
+      mascota?.estado_adopcion === 'Disponible'
+    );
 
   useEffect(() => {
     if (!mostrarSolicitudes || !estaPublicada || !mascotaId) return undefined;
@@ -102,15 +110,20 @@ export default function PerfilMascotaModal({
   );
   const especie = especieDeMascota(mascota);
   const fotoUrl = urlFoto(fotoDeMascota(mascota));
-  const idAdopcion = adopcionId ?? mascota.adopcion_activa_id ?? mascota.id_adopcion ?? mascota.adopciones?.[0]?.id_adopcion;
+  const idAdopcion = adopcionId
+    ?? mascota.adopcion_activa_id
+    ?? mascota.id_adopcion
+    ?? mascota.adopciones?.find((a) => a.estado_adopcion === 'Disponible')?.id_adopcion;
+  const yaSolicitada = solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario);
 
   const atributos = [
     ['Especie', especie ? <><IconoEspecie especie={especie} /> {especie}</> : '–'],
     ['Raza', razaDeMascota(mascota) || mascota.raza?.nombre || '–'],
     ['Género', capitalizar(mascota.genero)],
     ['Edad', textoEdad(mascota) ?? '–'],
+    ['Fecha de nacimiento', textoFecha(mascota.fecha_nacimiento) || '–'],
     ['Tamaño', textoTamano(mascota.tamano) || '–'],
-    ['Peso', mascota.peso_kg ? `${mascota.peso_kg} kg` : '–'],
+    ['Peso', textoPeso(mascota.peso_kg) || '–'],
     ['Esterilizado', siNo(mascota.esterilizado)],
     ['Vacunas al día', siNo(mascota.vacunas_al_dia ?? mascota.vacunasAlDia)],
   ];
@@ -138,6 +151,26 @@ export default function PerfilMascotaModal({
       );
     } finally {
       setEliminandoMascota(false);
+    }
+  };
+
+  const confirmarCancelarAdopcion = async () => {
+    if (!onCancelarAdopcion || !idAdopcion) return;
+    setCancelandoAdopcion(true);
+    setErrorCancelacion('');
+    try {
+      await onCancelarAdopcion(idAdopcion, mascotaId);
+      setConfirmarCancelacion(false);
+    } catch (error) {
+      console.error('Error al cancelar la adopción:', error);
+      const mensaje = error.response?.data?.mensaje;
+      setErrorCancelacion(
+        typeof mensaje === 'string' && !/localhost|127\.0\.0\.1/i.test(mensaje)
+          ? mensaje
+          : 'No se pudo cancelar la adopción. Intenta de nuevo.'
+      );
+    } finally {
+      setCancelandoAdopcion(false);
     }
   };
 
@@ -332,13 +365,18 @@ export default function PerfilMascotaModal({
         {modoAdopcion ? (
           esMiMascota(mascota, user?.id_usuario) ? (
             <span className="text-muted small align-self-center">Esta mascota te pertenece</span>
+          ) : yaSolicitada ? (
+            // Ya se postuló: no se vuelve a mostrar el botón de solicitud
+            <span className="text-success fw-semibold small align-self-center d-inline-flex align-items-center gap-1">
+              <i className="bi bi-check-circle-fill" aria-hidden="true" /> Ya enviaste una solicitud para adoptar a {mascota.nombre}
+            </span>
           ) : (
             <Button
               variant="success"
               onClick={() => onSolicitar?.(idAdopcion)}
-              disabled={!idAdopcion || solicitando || solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)}
+              disabled={!idAdopcion || solicitando}
             >
-              {solicitando ? 'Enviando solicitud…' : (solicitudEnviada || yaSolicitoAdopcion(mascota, user?.id_usuario)) ? 'Solicitud enviada' : 'Solicitar adopción'}
+              {solicitando ? 'Enviando solicitud…' : 'Solicitar adopción'}
             </Button>
           )
         ) : (
@@ -359,6 +397,15 @@ export default function PerfilMascotaModal({
                 disabled={estaPublicada || eliminandoMascota}
               >
                 {estaPublicada ? 'Publicada para adopción' : 'Publicar en adopción'}
+              </Button>
+            )}
+            {onCancelarAdopcion && estaPublicada && !haySolicitudAprobada && (
+              <Button
+                variant="outline-warning"
+                onClick={() => { setErrorCancelacion(''); setConfirmarCancelacion(true); }}
+                disabled={eliminandoMascota || cancelandoAdopcion}
+              >
+                <i className="bi bi-x-circle" aria-hidden="true" /> Cancelar adopción
               </Button>
             )}
             {onEliminar && (
@@ -468,6 +515,58 @@ export default function PerfilMascotaModal({
             </Modal.Footer>
           </>
         )}
+      </Modal>
+
+      <Modal
+        show={confirmarCancelacion}
+        onHide={() => {
+          if (!cancelandoAdopcion) setConfirmarCancelacion(false);
+        }}
+        centered
+        backdrop={cancelandoAdopcion ? 'static' : true}
+        keyboard={!cancelandoAdopcion}
+        aria-labelledby="confirmar-cancelacion-titulo"
+      >
+        <Modal.Header closeButton={!cancelandoAdopcion} className="border-0 pb-0">
+          <Modal.Title id="confirmar-cancelacion-titulo" className="h4">
+            Cancelar adopción
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center px-4">
+          <div className="adopcion-respuesta-icono rechazo">
+            <i className="bi bi-house-x" aria-hidden="true" />
+          </div>
+          <p className="text-secondary mb-3">
+            {mascota.nombre} dejará de aparecer en el listado de adopción
+            {solicitudes.length > 0 ? ' y las solicitudes pendientes se cerrarán (se avisará a cada persona)' : ''}.
+            Podrás volver a publicarla cuando quieras.
+          </p>
+          {errorCancelacion && (
+            <Alert variant="danger" className="mb-0">
+              {errorCancelacion}
+            </Alert>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0 pt-0">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setConfirmarCancelacion(false)}
+            disabled={cancelandoAdopcion}
+          >
+            Volver
+          </Button>
+          <Button
+            variant="warning"
+            onClick={confirmarCancelarAdopcion}
+            disabled={cancelandoAdopcion}
+          >
+            {cancelandoAdopcion ? (
+              <>
+                <Spinner animation="border" size="sm" aria-hidden="true" /> Cancelando…
+              </>
+            ) : 'Sí, retirar de adopción'}
+          </Button>
+        </Modal.Footer>
       </Modal>
 
       <Modal

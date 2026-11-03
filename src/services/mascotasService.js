@@ -4,6 +4,9 @@ import { esMiMascota, tieneInfoDueno } from '../utils/mascotas';
 
 export { SIN_FOTO };
 
+// Valor del <select> de razas cuando la raza no está en la lista
+export const RAZA_OTRA = 'otra';
+
 const lista = (data, clave) => {
   const contenido = data?.datos ?? data?.data ?? data;
   if (Array.isArray(contenido)) return contenido;
@@ -65,7 +68,14 @@ const aFormData = (d, incluirVacios = false) => {
   );
   poner('nombre', d.nombre);
   poner('genero', d.genero ? String(d.genero).toLowerCase() : undefined);
-  poner('raza_id', d.raza_id ?? d.id_raza);
+  const raza = d.raza_id ?? d.id_raza;
+  if (raza === RAZA_OTRA) {
+    // La raza no está en la lista: el back la busca o la crea dentro de la especie
+    poner('raza_otra', String(d.raza_otra ?? '').trim());
+    poner('especie_id', d.especie_id ?? d.id_especie);
+  } else {
+    poner('raza_id', raza);
+  }
   poner('edad_estimada', d.edad_estimada ?? d.edad);
   poner('fecha_nacimiento', d.fecha_nacimiento);
   poner('peso_kg', d.peso_kg);
@@ -86,10 +96,13 @@ export const mascotasService = {
   listarAdopciones: async () => {
     try {
       const response = await api.get('/adopciones');
-      return lista(response.data, 'adopciones').map((adopcion) => ({
-        ...adopcion.mascota,
+      return lista(response.data, 'adopciones').map(({ mascota, ...adopcion }) => ({
+        ...mascota,
         id_adopcion: adopcion.id_adopcion,
         adopcion_activa_id: adopcion.id_adopcion,
+        dueno_id: mascota?.dueno_id ?? adopcion.usuario_id,
+        ya_solicitada: Boolean(mascota?.ya_solicitada || adopcion.ya_solicitada),
+        estado_adopcion: adopcion.estado_adopcion,
         adopciones: [adopcion],
       }));
     } catch {
@@ -120,6 +133,11 @@ export const mascotasService = {
   solicitarAdopcion: async (idAdopcion) => {
     const res = await api.post('/solicitudes', { adopcion_id: Number(idAdopcion) });
     return res.data;
+  },
+  // PATCH /adopciones/:id/cancelar: el dueño retira la mascota de adopción
+  cancelarAdopcion: async (idAdopcion) => {
+    const { data } = await api.patch(`/adopciones/${idAdopcion}/cancelar`);
+    return data;
   },
   publicarParaAdopcion: async (mascotaId) => {
     const { data } = await api.post('/adopciones', { mascota_id: mascotaId });

@@ -45,14 +45,14 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         onCrearHilo(respuesta.datos);
         onCerrar();
       } else {
-        setError(respuesta.mensaje || "No se pudo publicar el hilo.");
+        setError(respuesta.mensaje || "No se pudo publicar el foro.");
       }
     } catch (err) {
       console.error("Error al publicar el hilo:", err.response?.data ?? err);
       const data = err.response?.data;
       const validacion = data?.errors ?? data?.errores;
 
-      if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un hilo.");
+      if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un foro.");
       else if ([409, 429].includes(err.response?.status)) setError(data?.mensaje);
       else if (validacion) setError(Object.values(validacion).flat().join(" "));
       else if (err.response) setError(data?.mensaje || data?.message || `Error del servidor (${err.response.status}).`);
@@ -88,7 +88,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
   return (
     <Modal show onHide={enviando ? undefined : onCerrar} centered>
       <Modal.Header closeButton={!enviando}>
-        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo hilo</Modal.Title>
+        <Modal.Title as="h2" className="h5 mb-0">Crear nuevo foro</Modal.Title>
       </Modal.Header>
 
       <Form onSubmit={manejarPublicacion} noValidate>
@@ -144,7 +144,7 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
             Cancelar
           </Button>
           <Button type="submit" variant="primary" disabled={enviando || loading}>
-            {enviando ? "Publicando…" : "Publicar hilo"}
+            {enviando ? "Publicando…" : "Publicar foro"}
           </Button>
         </Modal.Footer>
       </Form>

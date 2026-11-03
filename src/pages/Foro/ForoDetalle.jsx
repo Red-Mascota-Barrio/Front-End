@@ -108,7 +108,7 @@ function ForoDetalle() {
       <Pagina>
         <div className="text-center py-5">
           <Spinner animation="border" role="status" />
-          <p className="mt-3 text-muted">Cargando hilo…</p>
+          <p className="mt-3 text-muted">Cargando foro…</p>
         </div>
       </Pagina>
     );
@@ -119,9 +119,9 @@ function ForoDetalle() {
       <Pagina>
         <div className="estado-vacio publicacion-principal">
           <div className="estado-vacio-icono"><Icono nombre="search" /></div>
-          <h3>Hilo no encontrado</h3>
+          <h3>Foro no encontrado</h3>
           <p>Puede que haya sido eliminado o que el enlace sea incorrecto.</p>
-          <Link to="/foro" className="btn btn-primary">Ver todos los hilos</Link>
+          <Link to="/foro" className="btn btn-primary">Ver todos los foros</Link>
         </div>
       </Pagina>
     );
@@ -168,7 +168,7 @@ function ForoDetalle() {
 
       {reportando && (
         <ReportarModal
-          objeto="hilo"
+          objeto="foro"
           onCerrar={() => setReportando(false)}
           onReportar={async (tipo) => {
             const ok = await enviarReporte({ tipoReporteId: tipo, foroId: idHilo(hilo), idUsuario: user?.id_usuario });

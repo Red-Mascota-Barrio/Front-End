@@ -10,6 +10,8 @@ const RUTAS = {
   reportes: '/reportes',
   foros: '/foros',
   comentarios: '/comentarios',
+  adopciones: '/admin/adopciones',
+  cancelarAdopcion: (id) => `/adopciones/${id}/cancelar`,
 };
 
 // Laravel responde { resultado, mensaje, datos }; devolvemos directamente "datos"
@@ -70,6 +72,16 @@ export const adminService = {
   actualizarEvento: async (id, payload) => datos(await api.put(`${RUTAS.eventos}/${id}`, payload)),
   eliminarEvento: async (id) => (await api.delete(`${RUTAS.eventos}/${id}`)).data,
 
+  // ---------- Adopciones ----------
+  listarAdopciones: async () => lista(await api.get(RUTAS.adopciones)),
+  cancelarAdopcion: async (id) => datos(await api.patch(RUTAS.cancelarAdopcion(id))),
+
+  // ---------- Foros ----------
+  listarForos: async () => lista(await api.get(RUTAS.foros)),
+  obtenerForo: async (id) => datos(await api.get(`${RUTAS.foros}/${id}`)),
+  eliminarForo: async (id) => (await api.delete(`${RUTAS.foros}/${id}`)).data,
+  eliminarComentario: async (id) => (await api.delete(`${RUTAS.comentarios}/${id}`)).data,
+
   // ---------- Reportes ----------
   listarReportes: async () => lista(await api.get(RUTAS.reportes)),
   cambiarEstadoReporte: async (id, estadoId) =>
@@ -86,4 +98,4 @@ export const adminService = {
     }
     throw new Error('El reporte no tiene contenido asociado.');
   },
-};
+};

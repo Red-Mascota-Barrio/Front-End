@@ -3,6 +3,9 @@ import { Container, Row, Col, Form, Button, Pagination, Spinner, Alert } from 'r
 import { useAuth } from '../../context/AuthContext';
 import { mascotasService } from '../../services/mascotasService';
 import { especieDeMascota, razaDeMascota, normalizar } from '../../utils/admin';
+import {
+  ETAPAS_EDAD, etapaEdad, edadEnAnios, textoEdad, textoTamano, marcarSolicitudLocal, idMascota,
+} from '../../utils/mascotas';
 import { Icono, IconoEspecie } from '../common/Icono';
 import MascotaCard from './MascotaCard';
 import PerfilMascotaModal from './PerfilMascotaModal';
@@ -21,6 +24,55 @@ const GENEROS = [
   { valor: 'macho', texto: 'Macho', icono: <Icono nombre="gender-male" /> },
   { valor: 'hembra', texto: 'Hembra', icono: <Icono nombre="gender-female" /> },
 ];
+const EDADES = [
+  { valor: '', texto: 'Todas las edades' },
+  ...ETAPAS_EDAD.map(({ valor, texto }) => ({ valor, texto })),
+];
+
+// Palabras que la gente escribe en el buscador y a qué valor corresponden
+const SINONIMOS = {
+  hembras: 'hembra', machos: 'macho',
+  pequeno: 'pequeno', pequenos: 'pequeno', pequena: 'pequeno', pequenas: 'pequeno',
+  medianos: 'mediano', mediana: 'mediano', grandes: 'grande',
+  cachorros: 'cachorro', cachorra: 'cachorro', bebe: 'cachorro', jovenes: 'joven', adultos: 'adulto', adulta: 'adulto',
+  viejo: 'senior', vieja: 'senior', mayor: 'senior', anciano: 'senior',
+};
+
+// Texto donde busca la barra: nombre, raza, especie, género, tamaño y edad ("3 años", "cachorro")
+const textoBuscable = (m) => {
+  const anios = edadEnAnios(m);
+  return normalizar([
+    m.nombre,
+    razaDeMascota(m),
+    especieDeMascota(m),
+    m.genero,
+    textoTamano(m.tamano),
+    m.tamano,
+    textoEdad(m),
+    anios !== null ? `${Math.floor(anios)} anos` : '',
+    etapaEdad(m),
+  ].filter(Boolean).join(' '));
+};
+
+// Cada palabra de la búsqueda debe aparecer (en cualquier campo). "macho grande 3" filtra por las tres.
+// Un número solo coincide con la edad exacta en años ("3" no coincide con "13").
+const coincideBusqueda = (m, q) => {
+  if (!q) return true;
+  const texto = textoBuscable(m);
+  const palabras = texto.split(/\s+/);
+  return q.split(/\s+/).filter(Boolean).every((p) => {
+    if (['ano', 'anos', 'de', 'y', 'mes', 'meses'].includes(p)) return true;
+    if (/^\d+$/.test(p)) {
+      const anios = edadEnAnios(m);
+      return anios !== null && Math.floor(anios) === Number(p);
+    }
+    const palabra = SINONIMOS[p] ?? p;
+    // "macho"/"hembra" se comparan con la palabra completa para que "macho" no coincida con otros textos
+    if (['macho', 'hembra'].includes(palabra)) return palabras.includes(palabra);
+    return texto.includes(palabra);
+  });
+};
+
 const ORDENES = [
   { valor: 'nombre_asc', texto: 'Nombre A–Z' },
   { valor: 'nombre_desc', texto: 'Nombre Z–A' },
@@ -63,6 +115,7 @@ export const Mascotas = () => {
   const [filtroEspecie, setFiltroEspecie] = useState('');
   const [filtroTamano, setFiltroTamano] = useState('');
   const [filtroGenero, setFiltroGenero] = useState('');
+  const [filtroEdad, setFiltroEdad] = useState('');
   const [orden, setOrden] = useState('nombre_asc');
 
   const [paginaActual, setPaginaActual] = useState(1);
@@ -110,6 +163,16 @@ export const Mascotas = () => {
     setMensajeSolicitud('');
   };
 
+  // Tras postularse, la mascota queda marcada para que el botón no vuelva a aparecer
+  const marcarComoSolicitada = (adopcionId) => {
+    marcarSolicitudLocal(user?.id_usuario, adopcionId);
+    const marcar = (m) => (
+      Number(m.adopcion_activa_id ?? m.id_adopcion) === Number(adopcionId) ? { ...m, ya_solicitada: true } : m
+    );
+    setMascotas((lista) => lista.map(marcar));
+    setMascotaSeleccionada((actual) => (actual ? marcar(actual) : actual));
+  };
+
   const handleSolicitarAdopcion = async (adopcionId) => {
     if (!user) {
       setMensajeSolicitud('Debes iniciar sesión para solicitar la adopción de una mascota.');
@@ -120,10 +183,14 @@ export const Mascotas = () => {
     try {
       const respuesta = await mascotasService.solicitarAdopcion(adopcionId);
       setSolicitudEnviada(true);
+      marcarComoSolicitada(adopcionId);
       setMensajeSolicitud(respuesta.mensaje || 'Tu solicitud de adopción fue enviada.');
     } catch (error) {
       console.error('Error al enviar la solicitud de adopción:', error);
-      if (error.response?.status === 409) setSolicitudEnviada(true);
+      if (error.response?.status === 409) {
+        setSolicitudEnviada(true);
+        marcarComoSolicitada(adopcionId);
+      }
       setMensajeSolicitud(
         error.response?.status === 401
           ? 'Inicia sesión para enviar una solicitud de adopción.'
@@ -153,31 +220,30 @@ export const Mascotas = () => {
     setFiltroEspecie('');
     setFiltroTamano('');
     setFiltroGenero('');
+    setFiltroEdad('');
     setPaginaActual(1);
   };
 
   const mascotasFiltradas = useMemo(() => {
     const q = normalizar(busquedaDebounced.trim());
     return mascotas
-      .filter((m) => {
-        const texto = normalizar(`${m.nombre ?? ''} ${razaDeMascota(m)} ${especieDeMascota(m)}`);
-        return (
-          texto.includes(q) &&
-          (!filtroEspecie || igual(especieDeMascota(m), filtroEspecie)) &&
-          (!filtroTamano || igual(m.tamano, filtroTamano)) &&
-          (!filtroGenero || igual(m.genero, filtroGenero))
-        );
-      })
+      .filter((m) => (
+        coincideBusqueda(m, q) &&
+        (!filtroEspecie || igual(especieDeMascota(m), filtroEspecie)) &&
+        (!filtroTamano || igual(m.tamano, filtroTamano)) &&
+        (!filtroGenero || igual(m.genero, filtroGenero)) &&
+        (!filtroEdad || etapaEdad(m) === filtroEdad)
+      ))
       .sort((a, b) => {
         const nA = a.nombre ?? '';
         const nB = b.nombre ?? '';
         if (orden === 'nombre_asc') return nA.localeCompare(nB);
         if (orden === 'nombre_desc') return nB.localeCompare(nA);
-        if (orden === 'edad_asc') return (a.edad_estimada || 0) - (b.edad_estimada || 0);
-        if (orden === 'edad_desc') return (b.edad_estimada || 0) - (a.edad_estimada || 0);
+        if (orden === 'edad_asc') return (edadEnAnios(a) ?? 0) - (edadEnAnios(b) ?? 0);
+        if (orden === 'edad_desc') return (edadEnAnios(b) ?? 0) - (edadEnAnios(a) ?? 0);
         return 0;
       });
-  }, [mascotas, busquedaDebounced, filtroEspecie, filtroTamano, filtroGenero, orden]);
+  }, [mascotas, busquedaDebounced, filtroEspecie, filtroTamano, filtroGenero, filtroEdad, orden]);
 
   const totalPaginas = Math.max(1, Math.ceil(mascotasFiltradas.length / POR_PAGINA));
   const pagina = Math.min(paginaActual, totalPaginas);
@@ -193,6 +259,7 @@ export const Mascotas = () => {
     filtroEspecie && { texto: filtroEspecie, quitar: () => cambiar(setFiltroEspecie)('') },
     filtroTamano && { texto: TAMANOS.find((t) => t.valor === filtroTamano)?.texto, quitar: () => cambiar(setFiltroTamano)('') },
     filtroGenero && { texto: GENEROS.find((g) => g.valor === filtroGenero)?.texto, quitar: () => cambiar(setFiltroGenero)('') },
+    filtroEdad && { texto: EDADES.find((e) => e.valor === filtroEdad)?.texto, quitar: () => cambiar(setFiltroEdad)('') },
   ].filter(Boolean);
 
   return (
@@ -212,7 +279,7 @@ export const Mascotas = () => {
               type="search"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre, raza o especie…"
+              placeholder="Buscar por nombre, raza, especie, género, edad o tamaño…"
               aria-label="Buscar mascotas"
             />
             <Button type="submit" variant="primary">Buscar</Button>
@@ -231,6 +298,8 @@ export const Mascotas = () => {
               <GrupoFiltro titulo="Tamaño" opciones={TAMANOS} valor={filtroTamano} onCambiar={cambiar(setFiltroTamano)} />
               <div className="filtro-divider" />
               <GrupoFiltro titulo="Género" opciones={GENEROS} valor={filtroGenero} onCambiar={cambiar(setFiltroGenero)} />
+              <div className="filtro-divider" />
+              <GrupoFiltro titulo="Edad" opciones={EDADES} valor={filtroEdad} onCambiar={cambiar(setFiltroEdad)} />
             </aside>
           </Col>
 
@@ -289,7 +358,7 @@ export const Mascotas = () => {
               <>
                 <Row xs={1} sm={2} xl={3} className="g-3">
                   {mascotasPaginadas.map((m) => (
-                    <Col key={m.id_mascotas ?? m.id_mascota ?? m.id}>
+                    <Col key={idMascota(m)}>
                       <MascotaCard mascota={m} onVerPerfil={seleccionarMascota} />
                     </Col>
                   ))}

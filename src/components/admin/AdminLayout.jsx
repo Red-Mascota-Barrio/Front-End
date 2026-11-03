@@ -13,6 +13,8 @@ const TITULOS = {
   '/admin': 'Dashboard',
   '/admin/usuarios': 'Usuarios',
   '/admin/mascotas': 'Mascotas',
+  '/admin/adopciones': 'Adopciones',
+  '/admin/foros': 'Foros',
   '/admin/eventos': 'Eventos',
   '/admin/reportes': 'Reportes',
 };
@@ -97,8 +99,9 @@ export const AdminLayout = () => {
             <Seccion>Gestión</Seccion>
             <ItemMenu to="/admin/usuarios" icono="usuarios">Usuarios</ItemMenu>
             <ItemMenu to="/admin/mascotas" icono="corazon">Mascotas</ItemMenu>
+            <ItemMenu to="/admin/adopciones" icono="house-heart">Adopciones</ItemMenu>
             <ItemMenu to="/admin/eventos" icono="calendario">Eventos</ItemMenu>
-            <ItemMenu to="/foro" icono="foro">Foros</ItemMenu>
+            <ItemMenu to="/admin/foros" icono="foro">Foros</ItemMenu>
 
             <hr className="my-2" />
             <Seccion>Moderación</Seccion>

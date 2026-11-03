@@ -6,7 +6,15 @@ import {
   fotoDeMascota,
   urlFoto,
   SIN_FOTO,
+  RAZA_OTRA,
 } from '../../services/mascotasService';
+import { TAMANOS_MASCOTA, hoyISO, mesesDesde, textoEdad } from '../../utils/mascotas';
+
+// "Pequeño" / "pequeño" -> "pequeno" (valor que guarda la BD)
+const valorTamano = (t) => {
+  const k = String(t ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return TAMANOS_MASCOTA.some((o) => o.valor === k) ? k : '';
+};
 
 export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = null }) {
   const editando = Boolean(mascota);
@@ -14,9 +22,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
     nombre: mascota?.nombre ?? '',
     id_especie: mascota?.raza?.especie?.id_especie ?? mascota?.raza?.especie_id ?? '',
     id_raza: mascota?.raza_id ?? mascota?.raza?.id_raza ?? '',
+    raza_otra: '',
     edad: mascota?.edad_estimada && Number.isFinite(Number(mascota.edad_estimada))
       ? Number(mascota.edad_estimada)
       : '',
+    fecha_nacimiento: String(mascota?.fecha_nacimiento ?? '').slice(0, 10),
+    tamano: valorTamano(mascota?.tamano),
+    peso_kg: mascota?.peso_kg ? Number(mascota.peso_kg) : '',
     genero: mascota?.genero
       ? String(mascota.genero).charAt(0).toUpperCase() + String(mascota.genero).slice(1).toLowerCase()
       : 'Hembra',
@@ -100,7 +112,16 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
       setFormData(prev => ({
         ...prev,
         id_especie: value,
-        id_raza: ''
+        id_raza: '',
+        raza_otra: ''
+      }));
+    } else if (name === 'fecha_nacimiento') {
+      // Con fecha de nacimiento la edad se calcula sola (en años cumplidos)
+      const meses = mesesDesde(value);
+      setFormData(prev => ({
+        ...prev,
+        fecha_nacimiento: value,
+        edad: meses !== null ? Math.floor(meses / 12) : prev.edad
       }));
     } else {
       setFormData(prev => ({
@@ -112,6 +133,14 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.id_raza === RAZA_OTRA && formData.raza_otra.trim().length < 2) {
+      setErrorGuardar('Escribe el nombre de la raza.');
+      return;
+    }
+    if (formData.fecha_nacimiento && formData.fecha_nacimiento > hoyISO()) {
+      setErrorGuardar('La fecha de nacimiento no puede ser futura.');
+      return;
+    }
     setGuardando(true);
     setErrorGuardar('');
     try {
@@ -204,28 +233,37 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
                         {item.nombre_raza ?? item.nombre ?? item.raza}
                       </option>
                     ))}
+                    {formData.id_especie && !cargandoRazas && (
+                      <option value={RAZA_OTRA}>Otra raza (escribirla)…</option>
+                    )}
                   </select>
                 </div>
 
-                {/* Edad */}
-                <div className="col-md-3">
-                  <label className="form-label">Edad (años)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="40"
-                    className="form-control"
-                    name="edad"
-                    placeholder="Ej. 3"
-                    value={formData.edad}
-                    onChange={handleChange}
-                  />
-                </div>
+                {/* Otra raza: texto libre cuando no aparece en la lista */}
+                {formData.id_raza === RAZA_OTRA && (
+                  <div className="col-md-6">
+                    <label className="form-label" htmlFor="raza_otra">¿Cuál raza? *</label>
+                    <input
+                      id="raza_otra"
+                      type="text"
+                      className="form-control"
+                      name="raza_otra"
+                      placeholder="Ej. Criollo, Schnauzer, Mestizo…"
+                      maxLength={100}
+                      value={formData.raza_otra}
+                      onChange={handleChange}
+                      required
+                      autoFocus
+                    />
+                    <div className="form-text">Se agregará a la lista para que otros también puedan elegirla.</div>
+                  </div>
+                )}
 
                 {/* Género */}
-                <div className="col-md-3">
-                  <label className="form-label">Género</label>
+                <div className="col-md-4">
+                  <label className="form-label" htmlFor="genero">Género</label>
                   <select
+                    id="genero"
                     className="form-select"
                     name="genero"
                     value={formData.genero}
@@ -234,6 +272,77 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
                     <option value="Hembra">Hembra</option>
                     <option value="Macho">Macho</option>
                   </select>
+                </div>
+
+                {/* Tamaño */}
+                <div className="col-md-4">
+                  <label className="form-label" htmlFor="tamano">Tamaño</label>
+                  <select
+                    id="tamano"
+                    className="form-select"
+                    name="tamano"
+                    value={formData.tamano}
+                    onChange={handleChange}
+                  >
+                    <option value="">-- Seleccionar --</option>
+                    {TAMANOS_MASCOTA.map((t) => (
+                      <option key={t.valor} value={t.valor}>{t.texto}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Peso */}
+                <div className="col-md-4">
+                  <label className="form-label" htmlFor="peso_kg">Peso (kg)</label>
+                  <input
+                    id="peso_kg"
+                    type="number"
+                    min="0"
+                    max="999"
+                    step="0.1"
+                    className="form-control"
+                    name="peso_kg"
+                    placeholder="Ej. 8.5"
+                    value={formData.peso_kg}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Fecha de nacimiento */}
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="fecha_nacimiento">Fecha de nacimiento</label>
+                  <input
+                    id="fecha_nacimiento"
+                    type="date"
+                    className="form-control"
+                    name="fecha_nacimiento"
+                    max={hoyISO()}
+                    value={formData.fecha_nacimiento}
+                    onChange={handleChange}
+                  />
+                  <div className="form-text">Si no la sabes exacta, deja este campo vacío e indica la edad aproximada.</div>
+                </div>
+
+                {/* Edad */}
+                <div className="col-md-6">
+                  <label className="form-label" htmlFor="edad">Edad aproximada (años)</label>
+                  <input
+                    id="edad"
+                    type="number"
+                    min="0"
+                    max="40"
+                    className="form-control"
+                    name="edad"
+                    placeholder="Ej. 3"
+                    value={formData.edad}
+                    onChange={handleChange}
+                    disabled={Boolean(formData.fecha_nacimiento)}
+                  />
+                  {formData.fecha_nacimiento && (
+                    <div className="form-text">
+                      Calculada con la fecha de nacimiento: {textoEdad({ fecha_nacimiento: formData.fecha_nacimiento }) ?? '—'}.
+                    </div>
+                  )}
                 </div>
 
                 {/* Foto (se sube como archivo: el backend espera el campo "foto") */}

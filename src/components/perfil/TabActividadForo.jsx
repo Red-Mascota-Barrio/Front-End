@@ -32,7 +32,7 @@ export const TabActividadForo = ({ idUsuario }) => {
                 </p>
               </div>
               <Button as={Link} to={`/foro/${h.id_foro}`} variant="light" size="sm" className="flex-shrink-0">
-                Ver hilo
+                Ver foro
               </Button>
             </div>
           ))}

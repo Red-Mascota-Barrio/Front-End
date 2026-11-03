@@ -108,7 +108,7 @@ export const AdminReportes = () => {
   const eliminarContenido = async (r) => {
     const esComentario = Boolean(r.comentario_id);
     const ok = await confirmar({
-      titulo: esComentario ? '¿Eliminar el comentario reportado?' : '¿Eliminar el hilo reportado?',
+      titulo: esComentario ? '¿Eliminar el comentario reportado?' : '¿Eliminar el foro reportado?',
       texto: 'El contenido se borrará del foro y el reporte quedará resuelto. Esta acción no se puede deshacer.',
       boton: 'Eliminar contenido',
       peligro: true,
@@ -159,13 +159,13 @@ export const AdminReportes = () => {
       <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
         <Col><StatCard icono="alerta" numero={stats.pendientes} label="Pendientes" alerta cargando={cargando} /></Col>
         <Col><StatCard icono="check" numero={stats.resueltosMes} label="Resueltos este mes" cargando={cargando} /></Col>
-        <Col><StatCard icono="foro" numero={stats.deHilos} label="De hilos del foro" cargando={cargando} /></Col>
+        <Col><StatCard icono="foro" numero={stats.deHilos} label="De foros" cargando={cargando} /></Col>
         <Col><StatCard icono="usuarios" numero={stats.deComentarios} label="De comentarios" cargando={cargando} /></Col>
       </Row>
 
       {error && <Aviso tipo="error">{error}</Aviso>}
 
-      <Toolbar busqueda={busqueda} onBusqueda={setBusqueda} placeholder="Buscar por descripción, hilo o usuario…">
+      <Toolbar busqueda={busqueda} onBusqueda={setBusqueda} placeholder="Buscar por descripción, foro o usuario…">
         <SelectFiltro
           label="Filtrar por estado"
           value={filtroEstado}
@@ -219,7 +219,7 @@ export const AdminReportes = () => {
                           <span><i className="bi bi-person me-1" />Usuario reportado: <strong>{reportado.nombre} {reportado.apellido}</strong></span>
                         )}
                         <span><i className="bi bi-calendar3 me-1" />{haceCuanto(r.fecha_reporte)}</span>
-                        <span><i className="bi bi-geo-alt me-1" />{r.comentario_id ? 'Comentario' : 'Hilo'}{r.foro?.titulo ? `: "${r.foro.titulo}"` : ''}</span>
+                        <span><i className="bi bi-geo-alt me-1" />{r.comentario_id ? 'Comentario' : 'Foro'}{r.foro?.titulo ? `: "${r.foro.titulo}"` : ''}</span>
                       </div>
                     </div>
                     <div className="d-flex flex-wrap gap-1">
@@ -239,12 +239,12 @@ export const AdminReportes = () => {
                   <div className="d-flex flex-wrap gap-2">
                     {r.foro_id && (
                       <Button as={Link} to={`/foro/${r.foro_id}`} variant="outline-secondary" size="sm">
-                        <i className="bi bi-eye me-1" /> Ver hilo
+                        <i className="bi bi-eye me-1" /> Ver foro
                       </Button>
                     )}
                     {!r.contenidoEliminado && (r.foro_id || r.comentario_id) && (
                       <Button variant="outline-danger" size="sm" disabled={ocupado} onClick={() => eliminarContenido(r)}>
-                        <i className="bi bi-trash me-1" /> {r.comentario_id ? 'Eliminar comentario' : 'Eliminar hilo'}
+                        <i className="bi bi-trash me-1" /> {r.comentario_id ? 'Eliminar comentario' : 'Eliminar foro'}
                       </Button>
                     )}
                     {estId === ESTADOS_REPORTE.PENDIENTE && (

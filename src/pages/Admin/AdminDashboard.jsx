@@ -59,7 +59,7 @@ export const AdminDashboard = () => {
         color: estadoReporteId(r) === ESTADOS_REPORTE.RESUELTO ? 'success' : 'danger',
         texto: (
           <>
-            Reporte {foro ? <>en el hilo <strong>“{foro}”</strong></> : 'en el foro'}
+            Reporte {foro ? <>en el foro <strong>“{foro}”</strong></> : 'en el foro'}
             {reportado && <> contra <strong>{reportado.nombre}</strong></>}
           </>
         ),

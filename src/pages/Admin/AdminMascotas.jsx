@@ -12,6 +12,7 @@ import {
   confirmar, notificarExito, notificarError, usePaginacion,
 } from '../../utils/admin';
 import { IconoEspecie } from '../../components/common/Icono';
+import { textoEdad, textoFecha, textoPeso, textoTamano } from '../../utils/mascotas';
 
 const capitalizar = (t) => (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '');
 const siNo = (v) => (v === null || v === undefined || v === '' ? '—' : Number(v) ? 'Sí' : 'No');
@@ -59,7 +60,7 @@ export const AdminMascotas = () => {
       if (filtroEspecie && especieDeMascota(m) !== filtroEspecie) return false;
       if (filtroEstado && estadoMascota(m).clave !== filtroEstado) return false;
       if (!q) return true;
-      return normalizar(`${m.nombre} ${razaDeMascota(m)} ${especieDeMascota(m)} ${m.tamano}`).includes(q);
+      return normalizar(`${m.nombre} ${razaDeMascota(m)} ${especieDeMascota(m)} ${textoTamano(m.tamano)} ${m.genero}`).includes(q);
     });
   }, [mascotas, busqueda, filtroEspecie, filtroEstado]);
 
@@ -70,7 +71,7 @@ export const AdminMascotas = () => {
     return {
       total: mascotas.length,
       disponibles: cuenta('disponible'),
-      noDisponibles: cuenta('no-disponible') + cuenta('sin-publicar'),
+      noDisponibles: cuenta('no-disponible') + cuenta('sin-publicar') + cuenta('cancelada'),
       adoptadas: cuenta('adoptado'),
     };
   }, [mascotas]);
@@ -134,6 +135,7 @@ export const AdminMascotas = () => {
             { value: 'disponible', label: 'En adopción' },
             { value: 'no-disponible', label: 'No disponible' },
             { value: 'adoptado', label: 'Adoptado' },
+            { value: 'cancelada', label: 'Adopción cancelada' },
             { value: 'sin-publicar', label: 'Sin publicar' },
           ]}
         />
@@ -178,13 +180,13 @@ export const AdminMascotas = () => {
                           <div>
                             <div className="fw-semibold">{m.nombre}</div>
                             <div className="text-secondary" style={{ fontSize: '.75rem' }}>
-                              {[capitalizar(m.genero), m.edad_estimada].filter(Boolean).join(' · ') || '—'}
+                              {[capitalizar(m.genero), textoEdad(m)].filter(Boolean).join(' · ') || '—'}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="text-secondary">{[especie, razaDeMascota(m)].filter(Boolean).join(' · ') || '—'}</td>
-                      <td className="text-secondary">{m.tamano || '—'}</td>
+                      <td className="text-secondary">{textoTamano(m.tamano) || '—'}</td>
                       <td><Badge variante={est.clase}>{est.texto}</Badge></td>
                       <td className="text-body-tertiary">{siNo(m.vacunas_al_dia)}</td>
                       <td className="text-body-tertiary">{siNo(m.esterilizado)}</td>
@@ -233,9 +235,10 @@ export const AdminMascotas = () => {
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Especie</dt><dd className="col-7 col-sm-8">{especieDeMascota(detalle) || '—'}</dd>
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Raza</dt><dd className="col-7 col-sm-8">{razaDeMascota(detalle) || '—'}</dd>
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Género</dt><dd className="col-7 col-sm-8">{capitalizar(detalle.genero) || '—'}</dd>
-              <dt className="col-5 col-sm-4 text-secondary fw-medium">Edad</dt><dd className="col-7 col-sm-8">{detalle.edad_estimada || '—'}</dd>
-              <dt className="col-5 col-sm-4 text-secondary fw-medium">Peso</dt><dd className="col-7 col-sm-8">{detalle.peso_kg ? `${detalle.peso_kg} kg` : '—'}</dd>
-              <dt className="col-5 col-sm-4 text-secondary fw-medium">Tamaño</dt><dd className="col-7 col-sm-8">{detalle.tamano || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Edad</dt><dd className="col-7 col-sm-8">{textoEdad(detalle) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Peso</dt><dd className="col-7 col-sm-8">{textoPeso(detalle.peso_kg) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Nacimiento</dt><dd className="col-7 col-sm-8">{textoFecha(detalle.fecha_nacimiento) || '—'}</dd>
+              <dt className="col-5 col-sm-4 text-secondary fw-medium">Tamaño</dt><dd className="col-7 col-sm-8">{textoTamano(detalle.tamano) || '—'}</dd>
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Vacunas al día</dt><dd className="col-7 col-sm-8">{siNo(detalle.vacunas_al_dia)}</dd>
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Esterilizado</dt><dd className="col-7 col-sm-8">{siNo(detalle.esterilizado)}</dd>
               <dt className="col-5 col-sm-4 text-secondary fw-medium">Notas</dt><dd className="col-7 col-sm-8">{detalle.notas_adicionales || '—'}</dd>

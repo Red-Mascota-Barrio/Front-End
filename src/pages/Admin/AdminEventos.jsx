@@ -16,14 +16,33 @@ const FORM_VACIO = { nombre: '', tipo_evento_id: '', fecha_evento: '', hora_even
 const tipoDe = (e) => rel(e, 'tipo_evento', 'tipoEvento');
 const organizadorDe = (e) => rel(e, 'usuario_organizador', 'usuarioOrganizador');
 
-// Valida el formulario con las mismas reglas que EventoController
-const validar = (f) => {
+// "2026-11-03" de hoy en la hora local del navegador (para el min del input y la validación)
+const hoyISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const ahoraHHMM = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+
+// Valida el formulario con las mismas reglas que EventoController.
+// `original` es el evento que se edita: si no se cambia su fecha/hora, se permite guardar
+// aunque ya haya pasado (p. ej. corregir la descripción de un evento realizado).
+const validar = (f, original = null) => {
   const err = {};
   if (!f.nombre.trim()) err.nombre = 'El nombre es obligatorio.';
   else if (f.nombre.length > 150) err.nombre = 'Máximo 150 caracteres.';
   if (!f.tipo_evento_id) err.tipo_evento_id = 'Selecciona un tipo.';
   if (!f.fecha_evento) err.fecha_evento = 'Indica la fecha.';
   if (!/^\d{2}:\d{2}$/.test(f.hora_evento)) err.hora_evento = 'Indica la hora.';
+  const reprograma = !original
+    || f.fecha_evento !== String(original.fecha_evento ?? '').slice(0, 10)
+    || f.hora_evento !== String(original.hora_evento ?? '').slice(0, 5);
+  if (reprograma && f.fecha_evento && !err.hora_evento) {
+    if (f.fecha_evento < hoyISO()) err.fecha_evento = 'La fecha no puede ser anterior a hoy.';
+    else if (f.fecha_evento === hoyISO() && f.hora_evento < ahoraHHMM()) err.hora_evento = 'Esa hora ya pasó.';
+  }
   if (!f.ubicacion.trim()) err.ubicacion = 'El lugar es obligatorio.';
   if (!f.descripcion.trim()) err.descripcion = 'La descripción es obligatoria.';
   else if (f.descripcion.length > 255) err.descripcion = 'Máximo 255 caracteres.';
@@ -128,13 +147,13 @@ export const AdminEventos = () => {
   const campo = (k) => (ev) => {
     const nuevo = { ...form, [k]: ev.target.value };
     setForm(nuevo);
-    if (intentado) setErrores(validar(nuevo));
+    if (intentado) setErrores(validar(nuevo, modal === 'nuevo' ? null : modal));
   };
 
   const guardar = async (ev) => {
     ev.preventDefault();
     setIntentado(true);
-    const err = validar(form);
+    const err = validar(form, modal === 'nuevo' ? null : modal);
     setErrores(err);
     if (Object.keys(err).length) return;
 
@@ -345,7 +364,11 @@ export const AdminEventos = () => {
             </Form.Group>
             <Form.Group as={Col} sm={6} controlId="evFecha">
               <Form.Label>Fecha</Form.Label>
-              <Form.Control type="date" {...props('fecha_evento')} />
+              <Form.Control
+                type="date"
+                {...props('fecha_evento')}
+                min={modal !== 'nuevo' && form.fecha_evento && form.fecha_evento < hoyISO() ? undefined : hoyISO()}
+              />
               {errorDe('fecha_evento')}
             </Form.Group>
             <Form.Group as={Col} sm={6} controlId="evHora">

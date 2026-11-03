@@ -82,12 +82,29 @@ const { mascotas: propias, fiable } = await mascotasService.misMascotas(user);
       setMascotaSeleccionada((actual) => ({
         ...actual,
         adopciones: [...(actual.adopciones ?? []), respuesta.datos],
+        adopcion_activa_id: respuesta.datos?.id_adopcion,
+        estado_adopcion: 'Disponible',
       }));
       await cargar();
     } catch (err) {
       console.error('Error al publicar mascota para adopción:', err);
       setErrorPublicacion(err.response?.data?.mensaje || 'No se pudo publicar la mascota para adopción.');
     }
+  };
+
+  // El dueño retira la mascota de adopción (PATCH /adopciones/:id/cancelar)
+  const handleCancelarAdopcion = async (idAdopcion) => {
+    const respuesta = await mascotasService.cancelarAdopcion(idAdopcion);
+    setMascotaSeleccionada((actual) => actual && ({
+      ...actual,
+      adopcion_activa_id: null,
+      id_adopcion: undefined,
+      estado_adopcion: 'Cancelada',
+      adopciones: (actual.adopciones ?? []).map((a) => (
+        Number(a.id_adopcion) === Number(idAdopcion) ? { ...a, ...respuesta.datos, estado_adopcion: 'Cancelada' } : a
+      )),
+    }));
+    await cargar();
   };
 
   return (
@@ -160,6 +177,7 @@ const { mascotas: propias, fiable } = await mascotasService.misMascotas(user);
           onEliminar={handleEliminarMascota}
           onSolicitudAprobada={handleSolicitudAprobada}
           mostrarSolicitudes
+          onCancelarAdopcion={handleCancelarAdopcion}
           onPublicar={handlePublicarAdopcion}
           errorPublicacion={errorPublicacion}
         />

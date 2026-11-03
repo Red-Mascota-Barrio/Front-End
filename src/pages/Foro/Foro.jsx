@@ -42,7 +42,7 @@ function Foro() {
       .then((r) => activo && setHilos(r.datos || r.data || []))
       .catch((err) => {
         console.error("Error al cargar los hilos:", err);
-        if (activo) setError("No se pudieron cargar los hilos del foro.");
+        if (activo) setError("No se pudieron cargar los foros.");
       })
       .finally(() => activo && setCargando(false));
 
@@ -114,14 +114,14 @@ function Foro() {
                 {cargando ? (
                   <div className="text-center py-5">
                     <Spinner animation="border" role="status" />
-                    <p className="mt-3 text-muted">Cargando hilos…</p>
+                    <p className="mt-3 text-muted">Cargando foros…</p>
                   </div>
                 ) : hilosFiltrados.length > 0 ? (
                   hilosFiltrados.map((hilo) => <HiloCard key={idHilo(hilo)} hilo={hilo} categorias={categorias} />)
                 ) : error ? null : (
                   <div className="estado-vacio">
                     <div className="estado-vacio-icono"><Icono nombre="chat-square-text" /></div>
-                    <h3>No se encontraron hilos</h3>
+                    <h3>No se encontraron foros</h3>
                     <p>Intenta cambiar la búsqueda o la categoría, o abre un tema nuevo.</p>
                   </div>
                 )}
@@ -136,7 +136,7 @@ function Foro() {
                   <div className="mini-stats">
                     <div className="mini-stat">
                       <div className="mini-stat-num">{hilos.length}</div>
-                      <div className="mini-stat-lbl">Hilos</div>
+                      <div className="mini-stat-lbl">Foros</div>
                     </div>
                     <div className="mini-stat">
                       <div className="mini-stat-num">{totalRespuestas}</div>
@@ -147,7 +147,7 @@ function Foro() {
 
                 {masActivos.length > 0 && (
                   <div className="tarjeta-lateral">
-                    <div className="tarjeta-lateral-titulo"><Icono nombre="fire" /> Hilos más activos</div>
+                    <div className="tarjeta-lateral-titulo"><Icono nombre="fire" /> Foros más activos</div>
                     {masActivos.map((h) => {
                       const cat = categorias.find((c) => Number(c.id_categoria) === idCategoriaHilo(h));
                       return (
