@@ -73,8 +73,9 @@ export const AdminReportes = () => {
         if (filtroEstado !== 'abiertos' && filtroEstado !== '' && String(est) !== filtroEstado) return false;
         if (!q) return true;
         const reportado = rel(r, 'usuario_reportado', 'usuarioReportado');
+            const reportante = rel(r, 'usuario', 'reportante');
         const tipo = rel(r, 'tipo_reporte', 'tipoReporte');
-        return normalizar(`${r.descripcion} ${r.foro?.titulo} ${reportado?.nombre} ${reportado?.apellido} ${tipo?.nombre_tipo}`).includes(q);
+        return normalizar(`${r.descripcion} ${r.foro?.titulo} ${reportado?.nombre} ${reportado?.apellido} ${reportante?.nombre} ${reportante?.apellido} ${tipo?.nombre_tipo}`).includes(q);
       })
       .sort((a, b) => {
         const g = ORDEN_GRAVEDAD[gravedadReporte(a).clave] - ORDEN_GRAVEDAD[gravedadReporte(b).clave];
@@ -117,11 +118,9 @@ export const AdminReportes = () => {
     setProcesando(r.id_reporte);
     try {
       await adminService.eliminarContenidoReportado(r);
-      actualizarLocal(r.id_reporte, { contenidoEliminado: true });
-      await adminService.cambiarEstadoReporte(r.id_reporte, ESTADOS_REPORTE.RESUELTO).catch(() => null);
-      actualizarLocal(r.id_reporte, { estado_reporte_id: ESTADOS_REPORTE.RESUELTO, estado_reporte: undefined, estadoReporte: undefined });
+      setReportes((lista) => lista.filter((x) => x.id_reporte !== r.id_reporte));
       refrescarReportes?.();
-      notificarExito('Contenido eliminado');
+      notificarExito('Contenido eliminado y reporte resuelto');
     } catch (err) {
       notificarError('No se pudo eliminar el contenido', mensajeError(err));
     } finally {
@@ -199,6 +198,7 @@ export const AdminReportes = () => {
             const est = ETIQUETA_ESTADO[estId] ?? ETIQUETA_ESTADO[1];
             const tipo = rel(r, 'tipo_reporte', 'tipoReporte');
             const reportado = rel(r, 'usuario_reportado', 'usuarioReportado');
+            const reportante = rel(r, 'usuario', 'reportante');
             const comentario = r.participacion;
             const ocupado = procesando === r.id_reporte;
             const textoComentario = comentario?.comentario ?? comentario?.contenido;
@@ -215,8 +215,11 @@ export const AdminReportes = () => {
                         {tipo?.nombre_tipo ?? 'Reporte'}{r.foro?.titulo ? ` en “${r.foro.titulo}”` : ''}
                       </h2>
                       <div className="d-flex flex-wrap gap-3 small text-secondary">
+                        {reportante && (
+                          <span><i className="bi bi-flag me-1 text-danger" />Reportado por: <strong>{reportante.nombre} {reportante.apellido}</strong></span>
+                        )}
                         {reportado && (
-                          <span><i className="bi bi-person me-1" />Usuario reportado: <strong>{reportado.nombre} {reportado.apellido}</strong></span>
+                          <span><i className="bi bi-person me-1 text-primary" />Usuario reportado: <strong>{reportado.nombre} {reportado.apellido}</strong></span>
                         )}
                         <span><i className="bi bi-calendar3 me-1" />{haceCuanto(r.fecha_reporte)}</span>
                         <span><i className="bi bi-geo-alt me-1" />{r.comentario_id ? 'Comentario' : 'Foro'}{r.foro?.titulo ? `: "${r.foro.titulo}"` : ''}</span>

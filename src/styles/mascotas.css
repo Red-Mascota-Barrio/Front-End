@@ -271,3 +271,118 @@ img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
 .filtro-opcion:hover .filtro-opcion-icono { color: var(--verde-principal); }
 .mascota-meta-chip .bi,
 .mascota-meta-chip svg { color: var(--verde-principal); }
+
+
+/* ---------- Botones estilizados para el modal de mascota ---------- */
+.btn-modal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 0.835rem;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  outline: none;
+}
+.btn-modal-pill:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-modal-editar {
+  background: var(--verde-fondo);
+  color: var(--verde-oscuro);
+  border-color: var(--borde-fuerte);
+}
+.btn-modal-editar:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: var(--verde-principal);
+  color: var(--verde-oscuro);
+  transform: translateY(-1px);
+}
+
+.btn-modal-publicar {
+  background: var(--verde-principal);
+  color: #fff;
+  border-color: var(--verde-principal);
+  box-shadow: 0 2px 8px rgba(13, 110, 83, 0.22);
+}
+.btn-modal-publicar:hover:not(:disabled) {
+  background: var(--verde-oscuro);
+  border-color: var(--verde-oscuro);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-modal-publicada {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+  cursor: default;
+}
+
+.btn-modal-cancelar {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+.btn-modal-cancelar:hover:not(:disabled) {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+  transform: translateY(-1px);
+}
+
+.btn-modal-eliminar {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+.btn-modal-eliminar:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.btn-modal-cerrar {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+.btn-modal-cerrar:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-modal-solicitar {
+  background: var(--verde-principal) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(13, 110, 83, 0.28) !important;
+  transition: all 0.2s ease !important;
+}
+.btn-modal-solicitar:hover:not(:disabled) {
+  background: var(--verde-oscuro) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(13, 110, 83, 0.36) !important;
+}
+
+/* Badges y detalles de tarjeta de mascota */
+.badge-vacunas {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: #047857;
+  background: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1fae5;
+}

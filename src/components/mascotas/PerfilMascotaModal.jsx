@@ -361,7 +361,7 @@ export default function PerfilMascotaModal({
         )}
       </Modal.Body>
 
-      <Modal.Footer className="d-flex justify-content-between">
+      <Modal.Footer className="d-flex flex-wrap justify-content-between gap-2 border-top pt-3">
         {modoAdopcion ? (
           esMiMascota(mascota, user?.id_usuario) ? (
             <span className="text-muted small align-self-center">Esta mascota te pertenece</span>
@@ -373,55 +373,63 @@ export default function PerfilMascotaModal({
           ) : (
             <Button
               variant="success"
+              className="btn-modal-solicitar rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center gap-2"
               onClick={() => onSolicitar?.(idAdopcion)}
               disabled={!idAdopcion || solicitando}
             >
+              <i className="bi bi-heart-fill" aria-hidden="true" />
               {solicitando ? 'Enviando solicitud…' : 'Solicitar adopción'}
             </Button>
           )
         ) : (
-          <div className="d-flex flex-wrap gap-2">
+          <div className="d-flex flex-wrap gap-2 align-items-center">
             {onEditar && (
-              <Button
-                variant="outline-primary"
+              <button
+                type="button"
+                className="btn-modal-pill btn-modal-editar"
                 onClick={() => onEditar(mascota)}
                 disabled={eliminandoMascota}
               >
                 <i className="bi bi-pencil-square" aria-hidden="true" /> Editar mascota
-              </Button>
+              </button>
             )}
             {onPublicar && (
-              <Button
-                variant={estaPublicada ? 'outline-success' : 'success'}
+              <button
+                type="button"
+                className={`btn-modal-pill ${estaPublicada ? 'btn-modal-publicada' : 'btn-modal-publicar'}`}
                 onClick={() => onPublicar(mascota.id_mascotas ?? mascota.id)}
                 disabled={estaPublicada || eliminandoMascota}
               >
+                <i className={`bi ${estaPublicada ? 'bi-check2-circle' : 'bi-heart-fill'}`} aria-hidden="true" />
                 {estaPublicada ? 'Publicada para adopción' : 'Publicar en adopción'}
-              </Button>
+              </button>
             )}
             {onCancelarAdopcion && estaPublicada && !haySolicitudAprobada && (
-              <Button
-                variant="outline-warning"
+              <button
+                type="button"
+                className="btn-modal-pill btn-modal-cancelar"
                 onClick={() => { setErrorCancelacion(''); setConfirmarCancelacion(true); }}
                 disabled={eliminandoMascota || cancelandoAdopcion}
               >
-                <i className="bi bi-x-circle" aria-hidden="true" /> Cancelar adopción
-              </Button>
+                <i className="bi bi-dash-circle" aria-hidden="true" /> Cancelar adopción
+              </button>
             )}
             {onEliminar && (
-              <Button
-                variant="outline-danger"
+              <button
+                type="button"
+                className="btn-modal-pill btn-modal-eliminar"
                 onClick={handleEliminarClick}
                 disabled={eliminandoMascota}
               >
+                <i className="bi bi-trash3" aria-hidden="true" />
                 {eliminandoMascota ? 'Eliminando…' : 'Eliminar mascota'}
-              </Button>
+              </button>
             )}
           </div>
         )}
-        <Button variant="secondary" onClick={onClose}>
+        <button type="button" className="btn-modal-pill btn-modal-cerrar" onClick={onClose}>
           Cerrar
-        </Button>
+        </button>
       </Modal.Footer>
 
       <Modal

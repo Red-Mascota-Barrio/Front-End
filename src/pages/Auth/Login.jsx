@@ -33,11 +33,18 @@ const GoogleLogo = () => (
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [requiresOtp, setRequiresOtp] = useState(false); // Controla si mostramos el campo OTP
-  const [errorMsg, setErrorMsg] = useState(() =>
-    new URLSearchParams(window.location.search).has('error')
-      ? 'Error al iniciar sesión con Google.'
-      : null,
-  );
+  const [errorMsg, setErrorMsg] = useState(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashSplit = window.location.hash.split('?')[1] || '';
+    const hashParams = new URLSearchParams(hashSplit);
+    const urlError = searchParams.get('error') || hashParams.get('error');
+    if (urlError) {
+      return urlError === 'google_auth_failed'
+        ? 'No se pudo iniciar sesión con Google. Intenta de nuevo o ingresa con tu correo.'
+        : 'Error al iniciar sesión con Google.';
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
 
   const {
@@ -58,12 +65,15 @@ export const Login = () => {
   // ATRAPAR EL TOKEN DE GOOGLE EN LA URL
   // ==========================================
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get('token');
-    const urlError = params.get('error');
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashSplit = window.location.hash.split('?')[1] || '';
+    const hashParams = new URLSearchParams(hashSplit);
+
+    const urlToken = searchParams.get('token') || hashParams.get('token');
+    const urlError = searchParams.get('error') || hashParams.get('error');
 
     if (urlError) {
-      window.history.replaceState({}, document.title, '/login');
+      window.history.replaceState({}, document.title, window.location.pathname + '#/login');
     }
 
     if (urlToken) {
@@ -71,13 +81,13 @@ export const Login = () => {
         try {
           setLoading(true);
           const userData = await authService.getProfileConToken(urlToken);
-          const user = userData.datos || userData; // Depende de cómo devuelva el backend /api/user
+          const user = userData.datos || userData.data || userData;
           entrar(user, urlToken);
         } catch {
           setErrorMsg('No se pudo obtener el perfil de Google.');
         } finally {
           setLoading(false);
-          window.history.replaceState({}, document.title, '/login');
+          window.history.replaceState({}, document.title, window.location.pathname + '#/login');
         }
       };
       iniciarConGoogle();
@@ -225,7 +235,7 @@ export const Login = () => {
             <Button
               variant="light"
               className="w-100 d-inline-flex align-items-center justify-content-center gap-2"
-              onClick={() => (window.location.href = `${import.meta.env.VITE_API_URL}/auth/google/redirect`)}
+              onClick={() => { const apiUrl = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/+$/, ''); const retorno = encodeURIComponent(window.location.href); window.location.href = `${apiUrl}/auth/google/redirect?redirect_to=${retorno}`; }}
               disabled={loading}
             >
               <GoogleLogo /> Continuar con Google

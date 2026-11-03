@@ -108,3 +108,45 @@
 
 .adm-app .table > :not(caption) > * > * { padding: 0.75rem 1rem; }
 /* Encabezados de tabla: ver .table > thead th en theme.css (estilo .tabla-admin del mockup) */
+
+
+/* ---------- Topbar del Admin (interactivo, idéntico al navbar de la app) ---------- */
+.adm-topbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid var(--borde-suave) !important;
+  backdrop-filter: blur(8px);
+  min-height: 64px;
+  box-shadow: var(--sombra-xs);
+}
+
+.adm-user-toggle {
+  transition: all var(--transicion);
+  cursor: pointer;
+  padding: 4px 10px 4px 4px !important;
+}
+.adm-user-toggle:hover {
+  background: var(--verde-fondo) !important;
+}
+.adm-user-toggle::after {
+  display: none !important;
+}
+
+.adm-topbar .avatar-inicial {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--verde-fondo);
+  border: 1.5px solid var(--borde-fuerte);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}
+.adm-topbar .avatar-inicial img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

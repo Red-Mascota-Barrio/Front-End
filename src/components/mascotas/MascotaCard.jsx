@@ -51,8 +51,16 @@ export default function MascotaCard({ mascota, onVerPerfil }) {
       </div>
 
       <div className="mascota-card-pie">
-        <span>{Number(mascota.vacunas_al_dia) ? <><Icono nombre="shield-check" /> Vacunas al día</> : ' '}</span>
-        <span className="mascota-card-ver-mas">Ver más <Icono nombre="arrow-right" /></span>
+        <span>
+          {Number(mascota.vacunas_al_dia) ? (
+            <span className="badge-vacunas">
+              <Icono nombre="shield-check" /> Vacunas al día
+            </span>
+          ) : ' '}
+        </span>
+        <span className="mascota-card-ver-mas">
+          Ver detalles <Icono nombre="arrow-right" />
+        </span>
       </div>
     </button>
   );
