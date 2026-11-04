@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Container, Spinner } from "react-bootstrap";
 
 import { AppNavbar } from "../../components/layout/AppNavbar";
@@ -34,6 +34,8 @@ const Pagina = ({ children }) => (
 
 function ForoDetalle() {
   const { id } = useParams();
+  const [params] = useSearchParams();
+  const comentarioUrl = params.get("comentario"); // viene de una notificación
   const { user, token } = useAuth();
 
   const [hilo, setHilo] = useState(null);
@@ -61,6 +63,17 @@ function ForoDetalle() {
     return () => { activo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Notificación de un comentario: baja hasta él y lo resalta unos segundos
+  useEffect(() => {
+    if (cargando || !comentarioUrl) return undefined;
+    const el = document.getElementById(`comentario-${comentarioUrl}`);
+    if (!el) return undefined;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("resaltado-notificacion");
+    const t = setTimeout(() => el.classList.remove("resaltado-notificacion"), 3500);
+    return () => { clearTimeout(t); el.classList.remove("resaltado-notificacion"); };
+  }, [cargando, comentarioUrl, comentarios]);
 
   const agregarComentario = async (nuevoComentario) => {
     try {

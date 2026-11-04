@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Container, Row, Col, Button, Spinner, Alert, ButtonGroup } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { eventosService } from '../../services/eventosService';
@@ -25,7 +25,7 @@ const hoy = () => {
 const EventoDestacado = ({ evento, onInscribir, onCancelar }) => {
   const { total, quedan } = estadoCupos(evento);
   return (
-    <article className="evento-featured">
+    <article className="evento-featured" id={`evento-${evento.id}`}>
       <div className="evento-featured-img">
         <img
           src={evento.foto || imagenDestacado}
@@ -62,6 +62,8 @@ export default function Eventos() {
   const { token } = useAuth();
   const [inscritos, setInscritos] = useState(() => new Set());
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const eventoUrl = params.get('evento'); // viene de una notificación
 
   const [eventos, setEventos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -127,6 +129,17 @@ export default function Eventos() {
 
   const totalInscritos = proximos.reduce((s, e) => s + (Number(e.cuposOcupados) || 0), 0);
   const lugares = [...new Set(proximos.map((e) => e.lugar).filter(Boolean))].slice(0, 8);
+
+  // Notificación de un evento: baja hasta su tarjeta y la resalta unos segundos
+  useEffect(() => {
+    if (cargando || modoVista !== 'lista' || !eventoUrl) return undefined;
+    const el = document.getElementById(`evento-${eventoUrl}`);
+    if (!el) return undefined;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('resaltado-notificacion');
+    const t = setTimeout(() => el.classList.remove('resaltado-notificacion'), 3500);
+    return () => { clearTimeout(t); el.classList.remove('resaltado-notificacion'); };
+  }, [cargando, modoVista, eventoUrl, eventos]);
 
   // Para inscribirse hay que haber iniciado sesión
   const abrirInscripcion = (evento) => {

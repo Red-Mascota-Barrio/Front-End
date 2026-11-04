@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Tabs, Tab, Spinner, Alert } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import { AppNavbar } from '../../components/layout/AppNavbar';
 import { Footer } from '../../components/layout/Footer';
 import { Icono } from '../../components/common/Icono';
@@ -18,8 +19,20 @@ const Titulo = ({ icono, children }) => (
   </>
 );
 
+const PESTANAS = ['mascotas', 'foro', 'eventos'];
+
 export const Perfil = () => {
   const { user, updateUser, statsUsuario } = useAuth();
+  // /perfil?tab=eventos abre esa pestaña; /perfil?mascota=5 abre "Mis mascotas" con el modal de esa mascota
+  // (así llegan las notificaciones de adopción desde la campana)
+  const [params, setParams] = useSearchParams();
+  const pestanaUrl = params.get('tab');
+  const pestana = params.get('mascota') ? 'mascotas' : PESTANAS.includes(pestanaUrl) ? pestanaUrl : 'mascotas';
+  const cambiarPestana = (clave) => setParams((p) => {
+    const nuevos = new URLSearchParams(p);
+    nuevos.set('tab', clave);
+    return nuevos;
+  }, { replace: true });
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
 
@@ -50,7 +63,7 @@ export const Perfil = () => {
               )}
               <PerfilHeader usuario={user} estadisticas={statsUsuario} />
 
-              <Tabs defaultActiveKey="mascotas" className="perfil-tabs" id="pestanas-perfil">
+              <Tabs activeKey={pestana} onSelect={(k) => k && cambiarPestana(k)} className="perfil-tabs" id="pestanas-perfil">
                 <Tab eventKey="mascotas" title={<Titulo icono="heart">Mis mascotas</Titulo>}>
                   <TabMisMascotas />
                 </Tab>

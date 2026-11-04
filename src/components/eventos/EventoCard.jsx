@@ -36,7 +36,7 @@ export default function EventoCard({ evento, onInscribir, onCancelar }) {
   const { total, lleno, quedan } = estadoCupos(evento);
 
   return (
-    <article className={`evento-card ${evento.inscrito ? 'inscrito' : ''}`}>
+    <article id={`evento-${evento.id}`} className={`evento-card ${evento.inscrito ? 'inscrito' : ''}`}>
       <div className="evento-fecha-barra" aria-label={evento.fecha}>
         <div className="dia">{fecha ? String(fecha.getDate()).padStart(2, '0') : '--'}</div>
         <div className="mes">{fecha ? MESES[fecha.getMonth()] : ''}</div>

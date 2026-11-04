@@ -385,3 +385,12 @@ a:hover > .avatar-inicial,
   color: var(--texto-secundario); font-size: 0.78rem; text-decoration: none;
 }
 .campana-pie:hover { color: var(--verde-oscuro); background: var(--fondo-sutil); }
+
+/* Elemento al que llegó el usuario desde una notificación (comentario, evento…) */
+.resaltado-notificacion {
+  animation: resaltarNotificacion 3.5s ease-out;
+}
+@keyframes resaltarNotificacion {
+  0%, 60% { box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.45); background-color: rgba(25, 135, 84, 0.08); }
+  100%    { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}
