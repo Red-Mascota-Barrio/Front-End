@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Button, Row, Col } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import { Icono } from '../common/Icono';
 import { ListaPestana } from './ListaPestana';
 import MascotaCard from '../mascotas/MascotaCard';
@@ -15,6 +16,8 @@ import '../../styles/mascotas.css';
 export const TabMisMascotas = () => {
   const { user } = useAuth();
   const [seleccionada, setSeleccionada] = useState(null);
+  const [mascotasCargadas, setMascotasCargadas] = useState([]);
+  const [ultimoIdUrl, setUltimoIdUrl] = useState(null);
   const [editando, setEditando] = useState(null);
   const [errorPublicacion, setErrorPublicacion] = useState('');
   const [aviso, setAviso] = useState(false);
@@ -23,12 +26,40 @@ export const TabMisMascotas = () => {
   const [version, setVersion] = useState(0);
   const idUsuario = user?.id_usuario;
 
+  // /perfil?mascota=ID (viene de una notificación de adopción): abre el modal de esa mascota
+  const [params, setParams] = useSearchParams();
+  const idEnUrl = params.get('mascota');
+
   const cargar = useCallback(async () => {
     void version; // dependencia para forzar la recarga
     const { mascotas, fiable } = await mascotasService.misMascotas({ id_usuario: idUsuario });
     setAviso(!fiable);
+    setMascotasCargadas(mascotas);
     return mascotas;
   }, [idUsuario, version]);
+
+  // Se ajusta durante el render (patrón recomendado por React, sin useEffect): en cuanto la lista
+  // está cargada y la URL trae una mascota nueva, se selecciona. Sirve tanto si el perfil ya estaba
+  // abierto como si se llegó desde otra página.
+  if (!idEnUrl && ultimoIdUrl) {
+    setUltimoIdUrl(null);
+  } else if (idEnUrl && idEnUrl !== ultimoIdUrl && mascotasCargadas.length > 0) {
+    setUltimoIdUrl(idEnUrl);
+    const deLaUrl = mascotasCargadas.find((m) => String(idMascota(m)) === String(idEnUrl));
+    if (deLaUrl) setSeleccionada(deLaUrl);
+  }
+
+  // Cierra el modal y limpia ?mascota= para que no se reabra al recargar
+  const cerrarPerfil = () => {
+    setSeleccionada(null);
+    if (idEnUrl) {
+      setParams((p) => {
+        const nuevos = new URLSearchParams(p);
+        nuevos.delete('mascota');
+        return nuevos;
+      }, { replace: true });
+    }
+  };
 
   const abrirRegistro = () => setMostrarRegistro(true);
   const cerrarRegistro = () => setMostrarRegistro(false);
@@ -50,12 +81,12 @@ export const TabMisMascotas = () => {
 
   const handleEliminar = async (id) => {
     await mascotasService.eliminar(id);
-    setSeleccionada(null);
+    cerrarPerfil();
     setVersion((v) => v + 1);
   };
 
   const handleSolicitudAprobada = async () => {
-    setSeleccionada(null);
+    cerrarPerfil();
     setVersion((v) => v + 1);
   };
 
@@ -128,9 +159,9 @@ export const TabMisMascotas = () => {
       {seleccionada && (
         <PerfilMascotaModal
           mascota={seleccionada}
-          onClose={() => setSeleccionada(null)}
+          onClose={cerrarPerfil}
           onEditar={(m) => {
-            setSeleccionada(null);
+            cerrarPerfil();
             setEditando(m);
           }}
           onEliminar={handleEliminar}

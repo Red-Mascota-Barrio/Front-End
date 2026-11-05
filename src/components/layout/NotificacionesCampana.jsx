@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { notificacionesService, haceCuanto } from '../../services/notificacionesService';
+import { rutaDeNotificacion } from '../../utils/notificaciones';
+import { useAuth } from '../../context/AuthContext';
 
 // Cada cuánto se revisa si hay notificaciones nuevas (ms)
 const INTERVALO = 30000;
@@ -10,13 +12,16 @@ const INTERVALO = 30000;
  * Campana de notificaciones del navbar.
  * - Consulta el número de no leídas cada 30 s y al volver a la pestaña.
  * - Al abrirla trae las últimas notificaciones.
- * - Clic en una la marca como leída; "Marcar todas" las deja en 0.
+ * - Clic en una la marca como leída y lleva al lugar al que se refiere
+ *   (mascota en el perfil, hilo del foro, evento…); "Marcar todas" las deja en 0.
  *
  * No usa <Dropdown> de react-bootstrap a propósito: main.jsx carga también el
  * JavaScript de Bootstrap, que escucha las teclas sobre cualquier .dropdown-menu
  * y lanzaba un error al presionar Escape dentro del menú.
  */
 export const NotificacionesCampana = () => {
+  const navigate = useNavigate();
+  const { role } = useAuth();
   const [noLeidas, setNoLeidas] = useState(0);
   const [lista, setLista] = useState([]);
   const [cargando, setCargando] = useState(false);
@@ -111,6 +116,15 @@ export const NotificacionesCampana = () => {
     }
   };
 
+  // Clic en una notificación: se marca como leída, se cierra el menú y se va a su destino
+  const abrirNotificacion = (n) => {
+    marcarLeida(n);
+    const ruta = rutaDeNotificacion(n, { role });
+    if (!ruta) return;
+    alAbrir(false);
+    navigate(ruta);
+  };
+
   const marcarTodas = async () => {
     setLista((l) => l.map((x) => ({ ...x, leido: true })));
     setNoLeidas(0);
@@ -160,7 +174,7 @@ export const NotificacionesCampana = () => {
                 key={n.id_notificacion}
                 type="button"
                 className={`campana-item${n.leido ? '' : ' no-leida'}`}
-                onClick={() => marcarLeida(n)}
+                onClick={() => abrirNotificacion(n)}
               >
                 <span className="campana-texto">
                   {n.titulo && <strong>{n.titulo}</strong>}

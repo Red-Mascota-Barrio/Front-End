@@ -22,7 +22,7 @@ function ComentarioCard({ comentario, onEliminar }) {
 
   return (
     <>
-      <article className="comentario-item">
+      <article className="comentario-item" id={`comentario-${id}`}>
         <div className="d-flex align-items-center gap-3">
           <div className={`avatar-gradiente avatar-sm ${colorAvatar(comentario)}`} aria-hidden="true">
             {inicialesAutor(comentario)}
