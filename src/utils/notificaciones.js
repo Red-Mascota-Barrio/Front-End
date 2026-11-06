@@ -30,7 +30,9 @@ export const rutaDeNotificacion = (n, { role } = {}) => {
   // Eventos: el organizador (admin) va al panel; los inscritos, al evento dentro de la lista
   if (n?.tipo === 'evento') {
     if (!d.evento_id) return '/eventos'; // evento eliminado: queda la lista general
-    if (d.para === 'organizador' && String(role) === ADMIN) return '/admin/eventos';
+    if (d.para === 'organizador' && String(role) === ADMIN) {
+      return `/admin/eventos?evento=${encodeURIComponent(d.evento_id)}&inscritos=1`;
+    }
     return `/eventos?evento=${d.evento_id}`;
   }
 

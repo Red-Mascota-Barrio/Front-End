@@ -103,11 +103,32 @@
   --bs-pagination-active-border-color: var(--adm-verde);
   --bs-pagination-color: var(--adm-verde-oscuro);
   --bs-pagination-hover-color: var(--adm-verde-oscuro);
-  --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(22, 164, 122, 0.2);
+  --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.2);
 }
 
 .adm-app .table > :not(caption) > * > * { padding: 0.75rem 1rem; }
 /* Encabezados de tabla: ver .table > thead th en theme.css (estilo .tabla-admin del mockup) */
+
+.adm-app .evento-admin-fila { cursor: pointer; transition: background-color var(--transicion); }
+.adm-app .evento-admin-fila:hover > td { background-color: var(--verde-fondo); }
+.adm-app .evento-admin-fila:focus-visible { outline: 2px solid var(--verde-principal); outline-offset: -2px; }
+.adm-inscrito { display: flex; align-items: center; gap: 14px; background: #fff; }
+.adm-inscrito-avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--verde-oscuro);
+  background: var(--verde-fondo);
+  border: 1px solid var(--borde);
+  font-weight: 700;
+}
+.adm-inscrito-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.adm-inscrito-datos { min-width: 0; }
 
 
 /* ---------- Topbar del Admin (interactivo, idéntico al navbar de la app) ---------- */

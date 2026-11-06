@@ -10,11 +10,21 @@ import {
   confirmar, notificarExito, notificarError, usePaginacion,
 } from '../../utils/admin';
 import { IconoTipoEvento } from '../../components/common/Icono';
+import { iniciales, urlFoto } from '../../utils/perfil';
+import { useSearchParams } from 'react-router-dom';
 
 const FORM_VACIO = { nombre: '', tipo_evento_id: '', fecha_evento: '', hora_evento: '', ubicacion: '', descripcion: '' };
 
 const tipoDe = (e) => rel(e, 'tipo_evento', 'tipoEvento');
 const organizadorDe = (e) => rel(e, 'usuario_organizador', 'usuarioOrganizador');
+const fechaInscripcion = (persona) => {
+  const valor = persona.pivot?.fecha_inscripcion ?? persona.fecha_inscripcion;
+  if (!valor) return 'Fecha no disponible';
+  const fecha = new Date(String(valor).replace(' ', 'T'));
+  return Number.isNaN(fecha.getTime())
+    ? 'Fecha no disponible'
+    : new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(fecha);
+};
 
 // "2026-11-03" de hoy en la hora local del navegador (para el min del input y la validación)
 const hoyISO = () => {
@@ -50,6 +60,7 @@ const validar = (f, original = null) => {
 };
 
 export const AdminEventos = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [eventos, setEventos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -149,7 +160,7 @@ export const AdminEventos = () => {
     setModal(e);
   };
 
-  const abrirInscritos = async (evento) => {
+  const abrirInscritos = useCallback(async (evento) => {
     const solicitudActual = ++solicitudInscritos.current;
     setEventoInscritos(evento);
     setInscritos([]);
@@ -163,7 +174,22 @@ export const AdminEventos = () => {
     } finally {
       if (solicitudActual === solicitudInscritos.current) setCargandoInscritos(false);
     }
-  };
+  }, []);
+
+  // Las notificaciones de nuevos inscritos enlazan aquí y abren la lista exacta.
+  useEffect(() => {
+    if (cargando || searchParams.get('inscritos') !== '1') return;
+    const eventoId = searchParams.get('evento');
+    const evento = eventos.find((item) => String(item.id_evento) === String(eventoId));
+    const idTimeout = window.setTimeout(() => {
+      if (evento) abrirInscritos(evento);
+      const siguiente = new URLSearchParams(searchParams);
+      siguiente.delete('evento');
+      siguiente.delete('inscritos');
+      setSearchParams(siguiente, { replace: true });
+    }, 0);
+    return () => window.clearTimeout(idTimeout);
+  }, [cargando, eventos, searchParams, abrirInscritos, setSearchParams]);
 
   const campo = (k) => (ev) => {
     const nuevo = { ...form, [k]: ev.target.value };
@@ -316,12 +342,24 @@ export const AdminEventos = () => {
                   const est = estadoEvento(e);
                   const org = organizadorDe(e);
                   return (
-                    <tr key={e.id_evento}>
+                    <tr
+                      key={e.id_evento}
+                      className="evento-admin-fila"
+                      tabIndex={0}
+                      aria-label={`Ver personas inscritas en ${e.nombre}`}
+                      onClick={() => abrirInscritos(e)}
+                      onKeyDown={(event) => {
+                        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                          event.preventDefault();
+                          abrirInscritos(e);
+                        }
+                      }}
+                    >
                       <td style={{ minWidth: 200 }}>
                         <button
                           type="button"
                           className="btn btn-link p-0 text-start fw-semibold text-decoration-none"
-                          onClick={() => abrirInscritos(e)}
+                          onClick={(event) => { event.stopPropagation(); abrirInscritos(e); }}
                           aria-haspopup="dialog"
                         >
                           {e.nombre}
@@ -340,7 +378,7 @@ export const AdminEventos = () => {
                         <Button
                           variant="link"
                           className="p-0 fw-semibold text-decoration-none"
-                          onClick={() => abrirInscritos(e)}
+                          onClick={(event) => { event.stopPropagation(); abrirInscritos(e); }}
                           aria-label={`Ver ${Number(e.total_inscritos ?? 0)} personas inscritas en ${e.nombre}`}
                         >
                           {Number(e.total_inscritos ?? 0)} <span className="visually-hidden">inscritos</span>
@@ -348,7 +386,7 @@ export const AdminEventos = () => {
                       </td>
                       <td><Badge variante={est.clase}>{est.texto}</Badge></td>
                       <td>
-                        <div className="d-flex justify-content-end gap-1">
+                        <div className="d-flex justify-content-end gap-1" onClick={(event) => event.stopPropagation()}>
                           <BotonAccion icono="editar" titulo="Editar" onClick={() => abrirEdicion(e)} />
                           <BotonAccion
                             icono={est.clave === 'cancelado' ? 'play' : 'pausa'}
@@ -453,9 +491,19 @@ export const AdminEventos = () => {
             <p className="small text-secondary mb-3">{inscritos.length} {inscritos.length === 1 ? 'persona inscrita' : 'personas inscritas'}</p>
             <div className="list-group list-group-flush">
               {inscritos.map((persona) => (
-                <div className="list-group-item px-0 py-3" key={persona.id_usuario}>
-                  <div className="fw-semibold">{[persona.nombre, persona.apellido].filter(Boolean).join(' ') || 'Usuario'}</div>
-                  {persona.correo && <a className="small text-secondary" href={`mailto:${persona.correo}`}>{persona.correo}</a>}
+                <div className="list-group-item adm-inscrito px-0 py-3" key={persona.id_usuario}>
+                  <span className="adm-inscrito-avatar" aria-hidden="true">
+                    {urlFoto(persona)
+                      ? <img src={urlFoto(persona)} alt="" />
+                      : iniciales(persona)}
+                  </span>
+                  <div className="adm-inscrito-datos">
+                    <div className="fw-semibold">{[persona.nombre, persona.apellido].filter(Boolean).join(' ') || 'Usuario'}</div>
+                    {persona.correo && <a className="small text-secondary" href={`mailto:${persona.correo}`}>{persona.correo}</a>}
+                    <div className="small text-body-tertiary mt-1">
+                      <i className="bi bi-calendar-check me-1" aria-hidden="true" />Inscrito: {fechaInscripcion(persona)}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

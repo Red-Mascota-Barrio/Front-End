@@ -34,7 +34,7 @@
   border: 1.5px solid var(--borde);
 }
 .app-navbar .navbar-toggler { border: 1px solid var(--borde); padding: 6px 10px; }
-.app-navbar .navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(22, 164, 122, 0.2); }
+.app-navbar .navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.2); }
 
 .app-navbar .nav-principal .nav-link {
   position: relative;
@@ -368,6 +368,8 @@ a:hover > .avatar-inicial,
 }
 .campana-item:last-child { border-bottom: none; }
 .campana-item:hover { background: var(--fondo-sutil); }
+.campana-item { cursor: pointer; transition: background-color var(--transicion); }
+.campana-item:focus-visible { outline: 2px solid var(--verde-principal); outline-offset: -2px; background: var(--verde-fondo); }
 .campana-item.no-leida::before {
   content: '';
   position: absolute; left: 12px; top: 16px;

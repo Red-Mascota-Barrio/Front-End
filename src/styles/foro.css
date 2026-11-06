@@ -164,6 +164,24 @@
   font-weight: 600;
 }
 .btn-responder-comentario:hover { background: #e8f3ec; }
+.comentario-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; }
+.btn-recomendar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  color: var(--verde-oscuro);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radio-sm);
+  font-size: .78rem;
+  font-weight: 600;
+  transition: background-color var(--transicion), color var(--transicion);
+}
+.btn-recomendar:hover,
+.btn-recomendar.recomendado { color: #198754; background: #e6f7f1; }
+.btn-recomendar:disabled { opacity: .65; cursor: wait; }
+.comentario-recomendaciones { color: var(--texto-tenue); font-size: .72rem; }
 .caja-respuesta { margin: 14px 0 2px 52px; padding: 14px; box-shadow: none; background: #fff; }
 .btn-reportar {
   background: transparent;

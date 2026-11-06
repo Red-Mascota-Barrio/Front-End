@@ -6,7 +6,7 @@ import { haceCuanto } from "../../utils/admin";
 import { nombreAutor, inicialesAutor, colorAvatar, enviarReporte, yaReporto } from "../../utils/foro";
 import ComentarioForm from "./ComentarioForm";
 
-function ComentarioCard({ comentario, onEliminar, onAgregarComentario }) {
+function ComentarioCard({ comentario, onEliminar, onRecomendar, onAgregarComentario }) {
   const { user, token } = useAuth();
   const idUsuario = user?.id_usuario;
   const id = comentario.id_participacion ?? comentario.id;
@@ -17,6 +17,7 @@ function ComentarioCard({ comentario, onEliminar, onAgregarComentario }) {
   const [mostrarReporte, setMostrarReporte] = useState(false);
   const [reportado, setReportado] = useState(() => yaReporto(idUsuario, { comentarioId: id }));
   const [respondiendo, setRespondiendo] = useState(false);
+  const [guardandoRecomendacion, setGuardandoRecomendacion] = useState(false);
 
   const reportar = async (tipo) => {
     if (await enviarReporte({ tipoReporteId: tipo, comentarioId: id, idUsuario })) setReportado(true);
@@ -33,27 +34,51 @@ function ComentarioCard({ comentario, onEliminar, onAgregarComentario }) {
             <span className="comentario-autor">{nombreAutor(comentario)}</span>
             {fecha && <span className="comentario-fecha">{haceCuanto(fecha)}</span>}
           </div>
-          {id && esPropio && onEliminar && (
-            <button type="button" className="btn-reportar" onClick={() => onEliminar(comentario)}>
-              <Icono nombre="trash" /> Eliminar
-            </button>
-          )}
-          {token && id && (
-            <button type="button" className="btn-responder-comentario" onClick={() => setRespondiendo((actual) => !actual)}>
-              <Icono nombre="reply" /> {respondiendo ? "Cerrar" : "Responder"}
-            </button>
-          )}
-          {id && !esPropio && (
-            reportado ? (
-              <span className="btn-reportar" aria-disabled="true" style={{ opacity: 0.6, cursor: "default" }}>
-                <Icono nombre="flag-fill" /> Reportado
-              </span>
-            ) : (
-              <button type="button" className="btn-reportar" onClick={() => setMostrarReporte(true)}>
-                <Icono nombre="flag" /> Reportar
+          <div className="comentario-acciones">
+            {id && token && onRecomendar && (
+              <button
+                type="button"
+                className={`btn-recomendar${comentario.recomendado_por_usuario ? " recomendado" : ""}`}
+                aria-pressed={Boolean(comentario.recomendado_por_usuario)}
+                disabled={guardandoRecomendacion}
+                onClick={async () => {
+                  setGuardandoRecomendacion(true);
+                  try {
+                    await onRecomendar(id, Boolean(comentario.recomendado_por_usuario));
+                  } finally {
+                    setGuardandoRecomendacion(false);
+                  }
+                }}
+              >
+                <Icono nombre={comentario.recomendado_por_usuario ? "hand-thumbs-up-fill" : "hand-thumbs-up"} />
+                <span>{comentario.recomendado_por_usuario ? "Recomendado" : "Recomendar"}</span>
+                <span className="comentario-recomendaciones" aria-label={`${Number(comentario.recomendaciones_count) || 0} recomendaciones`}>
+                  {Number(comentario.recomendaciones_count) || 0}
+                </span>
               </button>
-            )
-          )}
+            )}
+            {token && id && (
+              <button type="button" className="btn-responder-comentario" onClick={() => setRespondiendo((actual) => !actual)}>
+                <Icono nombre="reply" /> {respondiendo ? "Cerrar" : "Responder"}
+              </button>
+            )}
+            {id && esPropio && onEliminar && (
+              <button type="button" className="btn-reportar" onClick={() => onEliminar(comentario)}>
+                <Icono nombre="trash" /> Eliminar
+              </button>
+            )}
+            {id && !esPropio && (
+              reportado ? (
+                <span className="btn-reportar" aria-disabled="true" style={{ opacity: 0.6, cursor: "default" }}>
+                  <Icono nombre="flag-fill" /> Reportado
+                </span>
+              ) : (
+                <button type="button" className="btn-reportar" onClick={() => setMostrarReporte(true)}>
+                  <Icono nombre="flag" /> Reportar
+                </button>
+              )
+            )}
+          </div>
         </div>
         <p className="comentario-cuerpo">{comentario.comentario || comentario.contenido || ""}</p>
         {respondiendo && (
@@ -77,6 +102,7 @@ function ComentarioCard({ comentario, onEliminar, onAgregarComentario }) {
               key={respuesta.id_participacion ?? respuesta.id}
               comentario={respuesta}
               onEliminar={onEliminar}
+              onRecomendar={onRecomendar}
               onAgregarComentario={onAgregarComentario}
             />
           ))}

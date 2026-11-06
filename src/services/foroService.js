@@ -34,6 +34,16 @@ export const foroService = {
     return respuesta.data;
   },
 
+  recomendarComentario: async (comentarioId) => {
+    const respuesta = await api.post(`/comentarios/${comentarioId}/recomendar`);
+    return respuesta.data;
+  },
+
+  quitarRecomendacion: async (comentarioId) => {
+    const respuesta = await api.delete(`/comentarios/${comentarioId}/recomendar`);
+    return respuesta.data;
+  },
+
   // ReporteController@store: tipo_reporte_id + (comentario_id | foro_id)
   crearReporte: async (datosReporte) => {
     const respuesta = await api.post("/reportes", datosReporte);

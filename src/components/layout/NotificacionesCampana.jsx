@@ -109,19 +109,21 @@ export const NotificacionesCampana = () => {
   }, [abierta, alAbrir]);
 
   const marcarLeida = async (n) => {
-    if (n.leido) return;
+    if (n.leido) return true;
     setLista((l) => l.map((x) => (x.id_notificacion === n.id_notificacion ? { ...x, leido: true } : x)));
     setNoLeidas((c) => Math.max(0, c - 1));
     try {
       await notificacionesService.marcarLeida(n.id_notificacion);
+      return true;
     } catch {
       actualizarContador();
+      return false;
     }
   };
 
   // Clic en una notificación: se marca como leída, se cierra el menú y se va a su destino
-  const abrirNotificacion = (n) => {
-    marcarLeida(n);
+  const abrirNotificacion = async (n) => {
+    await marcarLeida(n);
     // "Te quieren compartir una mascota": abre el modal para aceptar o rechazar
     if (n.tipo === 'compartido' && n.datos?.accion === 'responder' && n.datos?.compartido_id) {
       alAbrir(false);
