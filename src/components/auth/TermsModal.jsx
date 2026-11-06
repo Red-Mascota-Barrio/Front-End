@@ -3,46 +3,46 @@ import { FaFileContract } from 'react-icons/fa';
 
 export const TermsModal = ({ show, handleClose }) => {
   return (
-    <Modal show={show} onHide={handleClose} centered size="lg">
-      <Modal.Header closeButton className="border-bottom-0 pb-0">
-        <Modal.Title className="d-flex align-items-center gap-2">
-          <FaFileContract /> Términos y Condiciones de Uso
+    <Modal show={show} onHide={handleClose} centered size="lg" scrollable aria-labelledby="terminos-titulo">
+      <Modal.Header closeButton className="documento-modal-header">
+        <Modal.Title id="terminos-titulo" className="d-flex align-items-center gap-2">
+          <span className="documento-modal-icono"><FaFileContract /></span>
+          <span>Términos y condiciones</span>
         </Modal.Title>
       </Modal.Header>
-      
-      <Modal.Body className="px-4 py-3" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-        <p className="text-muted small">Última actualización: Septiembre de 2026</p>
-        
-        <h6 className="fw-bold text-dark mt-3">1. Aceptación de los Términos</h6>
-        <p className="small text-muted">
-          Al registrarte y utilizar la plataforma <strong>Red de Mascotas de Barrio</strong>, aceptas cumplir y quedar obligado por los presentes Términos y Condiciones. Si no estás de acuerdo con alguna de las disposiciones, te sugerimos no hacer uso del servicio.
-        </p>
+      <Modal.Body className="documento-modal-cuerpo">
+        <div className="documento-modal-intro">
+          <span className="badge badge-verde">Red de Mascotas de Barrio</span>
+          <p className="small text-secondary mb-0 mt-2">Última actualización: noviembre de 2026</p>
+        </div>
 
-        <h6 className="fw-bold text-dark mt-3">2. Registro de Usuario y Seguridad</h6>
-        <p className="small text-muted">
-          Te comprometes a proporcionar información verídica, exacta y actualizada durante el proceso de registro en 3 pasos. Eres el único responsable de mantener la confidencialidad de tu contraseña y de todas las actividades que ocurran bajo tu cuenta.
-        </p>
-
-        <h6 className="fw-bold text-dark mt-3">3. Uso Adecuado de la Plataforma</h6>
-        <p className="small text-muted">
-          La plataforma está diseñada para la gestión de adopciones, reporte de mascotas perdidas, eventos y participación en foros comunitarios. Queda estrictamente prohibido publicar contenido ofensivo, fraudulento o que atente contra el bienestar animal y la convivencia vecinal.
-        </p>
-
-        <h6 className="fw-bold text-dark mt-3">4. Privacidad y Protección de Datos</h6>
-        <p className="small text-muted">
-          Tus datos personales recopilados (nombre, correo electrónico) serán tratados con estricta confidencialidad de acuerdo con las normativas vigentes, utilizándose exclusivamente para la gestión interna de tu cuenta dentro de la red comunitaria.
-        </p>
-
-        <h6 className="fw-bold text-dark mt-3">5. Modificaciones</h6>
-        <p className="small text-muted">
-          Nos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación en la plataforma.
-        </p>
+        <section className="documento-seccion">
+          <span className="documento-seccion-numero">01</span>
+          <div><h3>Aceptación y cuenta</h3><p>Al crear una cuenta aceptas estas condiciones. Debes proporcionar información correcta, mantenerla actualizada y cuidar tus credenciales de acceso.</p></div>
+        </section>
+        <section className="documento-seccion">
+          <span className="documento-seccion-numero">02</span>
+          <div><h3>Uso de la comunidad</h3><p>La plataforma facilita la publicación de mascotas, solicitudes de adopción, eventos y conversaciones comunitarias. No garantiza que una adopción o contacto llegue a concretarse; las personas usuarias deben verificar la información y coordinar de forma responsable.</p></div>
+        </section>
+        <section className="documento-seccion">
+          <span className="documento-seccion-numero">03</span>
+          <div><h3>Contenido y convivencia</h3><p>Publica información respetuosa y relacionada con la comunidad. No se permite contenido ilegal, engañoso, acosador ni que ponga en riesgo a personas o animales. El contenido puede reportarse y ser revisado por el equipo administrador.</p></div>
+        </section>
+        <section className="documento-seccion">
+          <span className="documento-seccion-numero">04</span>
+          <div><h3>Privacidad</h3><p>El uso de datos personales se explica en la Política de privacidad, que se acepta por separado durante el registro. Solo comparte información de contacto cuando sea necesario para coordinar una actividad o adopción.</p></div>
+        </section>
+        <section className="documento-seccion">
+          <span className="documento-seccion-numero">05</span>
+          <div><h3>Disponibilidad y cambios</h3><p>Podemos actualizar o limitar funciones para mantener la seguridad y el funcionamiento del servicio. Publicaremos los cambios en esta sección; el uso posterior implica aceptar la versión vigente.</p></div>
+        </section>
+        <div className="documento-modal-nota">
+          Al cerrar esta ventana no aceptas automáticamente: marca la casilla correspondiente en el formulario si estás de acuerdo.
+        </div>
       </Modal.Body>
 
-      <Modal.Footer className="border-top-0 pt-0">
-        <Button variant="primary" onClick={handleClose}>
-          Cerrar
-        </Button>
+      <Modal.Footer className="documento-modal-footer">
+        <Button variant="outline-secondary" onClick={handleClose}>Volver al registro</Button>
       </Modal.Footer>
     </Modal>
   );

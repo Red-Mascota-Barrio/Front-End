@@ -175,7 +175,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
   };
 
   return (
-    <Modal show onHide={guardando ? undefined : onClose} centered size="lg" backdrop={guardando ? 'static' : true} scrollable>
+    <Modal show onHide={guardando ? undefined : onClose} centered size="lg" dialogClassName="modal-registro-mascota" backdrop={guardando ? 'static' : true} scrollable>
           <Modal.Header closeButton={!guardando}>
             <div>
               <Modal.Title as="h2" className="h4 mb-1">

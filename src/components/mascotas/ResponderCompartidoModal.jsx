@@ -115,6 +115,7 @@ export default function ResponderCompartidoModal({ compartidoId, onClose, onAcep
       show
       onHide={cerrar}
       centered
+      dialogClassName="modal-responder-compartido"
       backdrop={enviando ? 'static' : true}
       keyboard={!enviando}
       aria-labelledby="responder-compartido-titulo"

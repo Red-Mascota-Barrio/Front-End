@@ -45,6 +45,7 @@ export default function CompartirMascotaModal({ mascota, onClose, onCompartida }
       show
       onHide={cerrar}
       centered
+      dialogClassName="modal-compartir-mascota"
       backdrop={enviando ? 'static' : true}
       keyboard={!enviando}
       aria-labelledby="compartir-mascota-titulo"

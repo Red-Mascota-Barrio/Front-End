@@ -253,6 +253,72 @@ img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
   font-size: 0.8125rem;
 }
 
+/* Modales de mascotas: superficie blanca, jerarquía y lectura cómoda */
+.modal-mascota-detalle .modal-content,
+.modal-registro-mascota .modal-content,
+.modal-compartir-mascota .modal-content,
+.modal-responder-compartido .modal-content {
+  background: #fff;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-lg);
+}
+.modal-mascota-detalle .modal-header,
+.modal-registro-mascota .modal-header,
+.modal-compartir-mascota .modal-header,
+.modal-responder-compartido .modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--borde-suave);
+  background: linear-gradient(105deg, #fff 55%, #effaf5 100%);
+}
+.modal-mascota-detalle .modal-title,
+.modal-registro-mascota .modal-title,
+.modal-compartir-mascota .modal-title,
+.modal-responder-compartido .modal-title { color: var(--verde-oscuro); }
+.modal-mascota-detalle .modal-body,
+.modal-registro-mascota .modal-body,
+.modal-compartir-mascota .modal-body,
+.modal-responder-compartido .modal-body { padding: 1.5rem; background: #fff; }
+.modal-mascota-detalle .modal-footer,
+.modal-registro-mascota .modal-footer,
+.modal-compartir-mascota .modal-footer,
+.modal-responder-compartido .modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--borde-suave);
+  background: #fbfefc;
+}
+.modal-mascota-detalle .perfil-foto-container {
+  border-color: var(--borde) !important;
+  background: #f6fbf8 !important;
+  box-shadow: var(--sombra-xs);
+}
+.modal-mascota-detalle .mascota-atributo {
+  min-height: 48px;
+  align-items: center;
+  padding: .55rem .15rem;
+  border-color: var(--borde-suave) !important;
+}
+.modal-mascota-detalle .mascota-atributo > span:first-child { color: var(--texto-secundario) !important; }
+.mascota-detalle-seccion { padding-top: 1.15rem !important; border-color: var(--borde-suave) !important; }
+.mascota-detalle-seccion > h5 { font-size: 1rem; font-weight: 750; }
+.modal-mascota-detalle .list-group { overflow: hidden; border-color: var(--borde-suave) !important; }
+.modal-mascota-detalle .list-group-item { border-color: var(--borde-suave); }
+
+@media (max-width: 575.98px) {
+  .modal-mascota-detalle .modal-header,
+  .modal-registro-mascota .modal-header,
+  .modal-compartir-mascota .modal-header,
+  .modal-responder-compartido .modal-header { padding: 1rem; }
+  .modal-mascota-detalle .modal-body,
+  .modal-registro-mascota .modal-body,
+  .modal-compartir-mascota .modal-body,
+  .modal-responder-compartido .modal-body { padding: 1rem; }
+  .modal-mascota-detalle .modal-footer,
+  .modal-registro-mascota .modal-footer,
+  .modal-compartir-mascota .modal-footer,
+  .modal-responder-compartido .modal-footer { padding: .85rem 1rem; }
+}
+
 /* ---------- Mis mascotas: encabezado ---------- */
 .encabezado-pagina h1 {
   font-size: clamp(1.5rem, 3vw, 1.75rem);

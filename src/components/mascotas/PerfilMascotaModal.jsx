@@ -14,6 +14,7 @@ import { compartidosService, mensajeDeError } from '../../services/compartidosSe
 import {
   capitalizar as cap, textoEdad, textoTamano, textoFecha, textoPeso, esMiMascota, yaSolicitoAdopcion,
 } from '../../utils/mascotas';
+import '../../styles/mascotas.css';
 
 const capitalizar = (t) => cap(t) || '–';
 const siNo = (v) => (v === null || v === undefined ? '–' : Number(v) || v === true ? 'Sí' : 'No');
@@ -297,7 +298,7 @@ export default function PerfilMascotaModal({
   };
 
   return (
-    <Modal show={true} onHide={onClose} centered size="lg">
+    <Modal show={true} onHide={onClose} centered size="lg" dialogClassName="modal-mascota-detalle">
       <Modal.Header closeButton>
         <Modal.Title as="h2" className="h4 mb-0 d-flex align-items-center gap-2 flex-wrap">
           {mascota.nombre}
@@ -312,7 +313,7 @@ export default function PerfilMascotaModal({
       <Modal.Body>
         <Row className="g-4 align-items-center">
           <Col md={5} className="text-center">
-            <div className="perfil-foto-container rounded-4 overflow-hidden bg-light border p-2">
+              <div className="perfil-foto-container rounded-4 overflow-hidden border p-2">
               <img
                 src={fotoUrl}
                 alt={mascota.nombre}
@@ -329,7 +330,7 @@ export default function PerfilMascotaModal({
           <Col md={7}>
             <div className="d-flex flex-column gap-3">
               {atributos.map(([label, valor]) => (
-                <div key={label} className="d-flex justify-content-between border-bottom pb-2">
+                <div key={label} className="mascota-atributo d-flex justify-content-between border-bottom">
                   <span className="text-muted fw-medium">{label}</span>
                   <span className="fw-semibold text-end">{valor}</span>
                 </div>
@@ -339,7 +340,7 @@ export default function PerfilMascotaModal({
         </Row>
 
         {(mascota.notas_adicionales || mascota.descripcion) && (
-          <div className="mt-4 pt-3 border-top">
+          <div className="mascota-detalle-seccion mt-4 pt-3 border-top">
             <h5 className="text-primary mb-2">{tituloSobreMascota(mascota)}</h5>
             <p className="text-secondary mb-0" style={{ whiteSpace: 'pre-line' }}>
               {mascota.notas_adicionales || mascota.descripcion}
@@ -348,7 +349,7 @@ export default function PerfilMascotaModal({
         )}
 
         {verSolicitudes && estaPublicada && (
-          <section className="mt-4 pt-3 border-top">
+          <section className="mascota-detalle-seccion mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Solicitudes de adopción</h5>
             {cargandoSolicitudes ? (
               <div className="text-center py-3">
@@ -433,7 +434,7 @@ export default function PerfilMascotaModal({
         )}
 
         {verCompartidos && (
-          <section className="mt-4 pt-3 border-top">
+          <section className="mascota-detalle-seccion mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Compartida con</h5>
             {!compartidosActual ? (
               <div className="text-center py-2">
