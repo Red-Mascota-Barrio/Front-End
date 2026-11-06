@@ -16,11 +16,12 @@ export const foroService = {
     return respuesta.data;
   },
 
-  crearComentario: async (foroId, datosComentario) => {
+  crearComentario: async (foroId, datosComentario, comentarioPadreId = null) => {
     // ParticipacionForoController@store valida foro_id y comentario (máx. 500)
     const payload = {
       foro_id: Number(foroId),
       comentario: datosComentario.contenido.trim(),
+      comentario_padre_id: comentarioPadreId ? Number(comentarioPadreId) : null,
     };
 
     const respuesta = await api.post("/comentarios", payload);

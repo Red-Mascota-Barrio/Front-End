@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Col, Form, Row, Table } from 'react-bootstrap';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Col, Form, Row, Spinner, Table } from 'react-bootstrap';
 import { adminService, mensajeError, TIPOS_EVENTO } from '../../services/adminService';
 import {
   PageHeader, StatCard, Badge, Toolbar, SelectFiltro, TablaCard, TablaFooter,
@@ -61,6 +61,11 @@ export const AdminEventos = () => {
   const [errores, setErrores] = useState({});
   const [intentado, setIntentado] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [eventoInscritos, setEventoInscritos] = useState(null);
+  const [inscritos, setInscritos] = useState([]);
+  const [cargandoInscritos, setCargandoInscritos] = useState(false);
+  const [errorInscritos, setErrorInscritos] = useState('');
+  const solicitudInscritos = useRef(0);
 
   const [recarga, setRecarga] = useState(0);
   const cargar = useCallback(() => {
@@ -142,6 +147,22 @@ export const AdminEventos = () => {
     setErrores({});
     setIntentado(false);
     setModal(e);
+  };
+
+  const abrirInscritos = async (evento) => {
+    const solicitudActual = ++solicitudInscritos.current;
+    setEventoInscritos(evento);
+    setInscritos([]);
+    setErrorInscritos('');
+    setCargandoInscritos(true);
+    try {
+      const resultado = await adminService.listarInscritos(evento.id_evento);
+      if (solicitudActual === solicitudInscritos.current) setInscritos(resultado);
+    } catch (e) {
+      if (solicitudActual === solicitudInscritos.current) setErrorInscritos(mensajeError(e, 'No pudimos cargar las personas inscritas.'));
+    } finally {
+      if (solicitudActual === solicitudInscritos.current) setCargandoInscritos(false);
+    }
   };
 
   const campo = (k) => (ev) => {
@@ -297,7 +318,14 @@ export const AdminEventos = () => {
                   return (
                     <tr key={e.id_evento}>
                       <td style={{ minWidth: 200 }}>
-                        <div className="fw-semibold">{e.nombre}</div>
+                        <button
+                          type="button"
+                          className="btn btn-link p-0 text-start fw-semibold text-decoration-none"
+                          onClick={() => abrirInscritos(e)}
+                          aria-haspopup="dialog"
+                        >
+                          {e.nombre}
+                        </button>
                         <div className="text-secondary text-truncate" style={{ fontSize: '.75rem', maxWidth: 280 }}>
                           {org ? `Organiza: ${org.nombre} ${org.apellido ?? ''}` : e.descripcion}
                         </div>
@@ -308,7 +336,16 @@ export const AdminEventos = () => {
                         <div className="text-body-tertiary" style={{ fontSize: '.75rem' }}>{String(e.hora_evento ?? '').slice(0, 5)}</div>
                       </td>
                       <td className="text-body-tertiary">{e.ubicacion}</td>
-                      <td className="fw-semibold">{Number(e.total_inscritos ?? 0)}</td>
+                      <td>
+                        <Button
+                          variant="link"
+                          className="p-0 fw-semibold text-decoration-none"
+                          onClick={() => abrirInscritos(e)}
+                          aria-label={`Ver ${Number(e.total_inscritos ?? 0)} personas inscritas en ${e.nombre}`}
+                        >
+                          {Number(e.total_inscritos ?? 0)} <span className="visually-hidden">inscritos</span>
+                        </Button>
+                      </td>
                       <td><Badge variante={est.clase}>{est.texto}</Badge></td>
                       <td>
                         <div className="d-flex justify-content-end gap-1">
@@ -394,6 +431,36 @@ export const AdminEventos = () => {
             </Button>
           </ModalAcciones>
         </Form>
+      </AdminModal>
+
+      <AdminModal
+        abierto={Boolean(eventoInscritos)}
+        titulo={eventoInscritos ? `Personas inscritas · ${eventoInscritos.nombre}` : 'Personas inscritas'}
+        onCerrar={() => setEventoInscritos(null)}
+        size="lg"
+      >
+        {cargandoInscritos ? (
+          <div className="text-center py-4" role="status">
+            <Spinner animation="border" variant="success" className="mb-2" />
+            <div className="small text-secondary">Cargando personas inscritas…</div>
+          </div>
+        ) : errorInscritos ? (
+          <Aviso tipo="error">{errorInscritos}</Aviso>
+        ) : inscritos.length === 0 ? (
+          <EstadoVacio icono="usuario" titulo="Aún no hay inscripciones" sub="Cuando alguien se inscriba, aparecerá en esta lista." />
+        ) : (
+          <>
+            <p className="small text-secondary mb-3">{inscritos.length} {inscritos.length === 1 ? 'persona inscrita' : 'personas inscritas'}</p>
+            <div className="list-group list-group-flush">
+              {inscritos.map((persona) => (
+                <div className="list-group-item px-0 py-3" key={persona.id_usuario}>
+                  <div className="fw-semibold">{[persona.nombre, persona.apellido].filter(Boolean).join(' ') || 'Usuario'}</div>
+                  {persona.correo && <a className="small text-secondary" href={`mailto:${persona.correo}`}>{persona.correo}</a>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </AdminModal>
     </>
   );

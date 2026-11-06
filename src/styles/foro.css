@@ -142,6 +142,29 @@
 .comentario-autor { font-weight: 600; font-size: 0.875rem; color: var(--texto-principal); }
 .comentario-fecha { font-size: 0.6875rem; color: var(--texto-tenue); }
 .comentario-cuerpo { font-size: 0.875rem; color: var(--texto-secundario); line-height: 1.6; padding-left: 52px; margin: 6px 0 0; white-space: pre-line; }
+.comentario-respuestas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 0 24px;
+  padding-left: 16px;
+  border-left: 2px solid var(--verde-claro);
+}
+.comentario-respuestas > .comentario-item { background: #fff; }
+.btn-responder-comentario {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  color: var(--verde-oscuro);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radio-sm);
+  font-size: .78rem;
+  font-weight: 600;
+}
+.btn-responder-comentario:hover { background: #e8f3ec; }
+.caja-respuesta { margin: 14px 0 2px 52px; padding: 14px; box-shadow: none; background: #fff; }
 .btn-reportar {
   background: transparent;
   border: none;
@@ -168,4 +191,6 @@
   .foro-hilo-stats { flex-direction: row; gap: 8px; align-items: baseline; width: 100%; padding-left: 58px; }
   .publicacion-principal { padding: 20px; }
   .comentario-cuerpo { padding-left: 0; }
+  .comentario-respuestas { margin-left: 8px; padding-left: 10px; }
+  .caja-respuesta { margin-left: 0; }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Container, Spinner } from "react-bootstrap";
+import { Button, Container, Spinner } from "react-bootstrap";
 
 import { AppNavbar } from "../../components/layout/AppNavbar";
 import { Footer } from "../../components/layout/Footer";
@@ -42,10 +42,36 @@ function ForoDetalle() {
   const [comentarios, setComentarios] = useState([]);
   const [reportando, setReportando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
+  const [recarga, setRecarga] = useState(0);
   const [hiloReportado, setHiloReportado] = useState(false);
+
+  const contarComentarios = (lista) => lista.reduce((total, comentario) => total + 1 + contarComentarios(comentario.respuestas || []), 0);
+
+  const agregarEnHilo = (lista, padreId, nuevo) => lista.map((comentario) => {
+    const comentarioId = comentario.id_participacion ?? comentario.id;
+    if (Number(comentarioId) === Number(padreId)) {
+      return { ...comentario, respuestas: [...(comentario.respuestas || []), nuevo] };
+    }
+    if (comentario.respuestas?.length) {
+      return { ...comentario, respuestas: agregarEnHilo(comentario.respuestas, padreId, nuevo) };
+    }
+    return comentario;
+  });
+
+  const eliminarDelHilo = (lista, comentarioId) => lista
+    .filter((comentario) => Number(comentario.id_participacion ?? comentario.id) !== Number(comentarioId))
+    .map((comentario) => ({
+      ...comentario,
+      respuestas: eliminarDelHilo(comentario.respuestas || [], comentarioId),
+    }));
 
   useEffect(() => {
     let activo = true;
+    setCargando(true);
+    setErrorCarga("");
+    setHilo(null);
+    setComentarios([]);
     foroService
       .obtenerPorId(id)
       .then((respuesta) => {
@@ -57,12 +83,15 @@ function ForoDetalle() {
           datosHilo.comentarios_principales || datosHilo.comentariosPrincipales || datosHilo.comentarios || [],
         );
       })
-      .catch((error) => console.error("Error al cargar el detalle del hilo:", error))
+      .catch((error) => {
+        if (!activo) return;
+        setErrorCarga(error.response?.data?.mensaje || "No pudimos cargar esta publicación. Comprueba tu conexión e inténtalo de nuevo.");
+      })
       .finally(() => activo && setCargando(false));
 
     return () => { activo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, recarga]);
 
   // Notificación de un comentario: baja hasta él y lo resalta unos segundos
   useEffect(() => {
@@ -75,18 +104,21 @@ function ForoDetalle() {
     return () => { clearTimeout(t); el.classList.remove("resaltado-notificacion"); };
   }, [cargando, comentarioUrl, comentarios]);
 
-  const agregarComentario = async (nuevoComentario) => {
+  const agregarComentario = async (nuevoComentario, comentarioPadreId = null) => {
     try {
-      const respuesta = await foroService.crearComentario(idHilo(hilo) || id, nuevoComentario);
+      const respuesta = await foroService.crearComentario(idHilo(hilo) || id, nuevoComentario, comentarioPadreId);
       const guardado = respuesta.datos || respuesta.data || respuesta;
-      setComentarios((prev) => [...prev, { ...guardado, usuario: guardado.usuario ?? user }]);
-      setHilo((prev) => ({ ...prev, numero_comentarios: (Number(prev?.numero_comentarios) || comentarios.length) + 1 }));
+      const nuevo = { ...guardado, usuario: guardado.usuario ?? user, respuestas: [] };
+      setComentarios((prev) => comentarioPadreId
+        ? agregarEnHilo(prev, comentarioPadreId, nuevo)
+        : [...prev, nuevo]);
+      setHilo((prev) => ({ ...prev, numero_comentarios: (Number(prev?.numero_comentarios) || contarComentarios(comentarios)) + 1 }));
       return true;
     } catch (error) {
       console.error("Error al publicar el comentario:", error);
       const data = error.response?.data;
       if (error.response?.status === 422) {
-        notificarError("Revisa tu comentario", Object.values(data?.errors ?? data?.errores ?? {}).flat().join(" ") || data?.mensaje);
+        notificarError("Revisa tu comentario", Object.values(data?.errors ?? data?.errores ?? data?.error ?? {}).flat().join(" ") || data?.mensaje);
       } else if (error.response?.status === 401) {
         notificarError("Inicia sesión", "Debes iniciar sesión para publicar un comentario.");
       } else {
@@ -107,8 +139,11 @@ function ForoDetalle() {
     if (!ok) return;
     try {
       await foroService.eliminarComentario(idComentario);
-      setComentarios((prev) => prev.filter((c) => (c.id_participacion ?? c.id) !== idComentario));
-      setHilo((prev) => ({ ...prev, numero_comentarios: Math.max(0, (Number(prev?.numero_comentarios) || comentarios.length) - 1) }));
+      const eliminados = (function contarSubarbol(comentario) {
+        return 1 + (comentario.respuestas || []).reduce((total, respuesta) => total + contarSubarbol(respuesta), 0);
+      })(comentario);
+      setComentarios((prev) => eliminarDelHilo(prev, idComentario));
+      setHilo((prev) => ({ ...prev, numero_comentarios: Math.max(0, (Number(prev?.numero_comentarios) || contarComentarios(comentarios)) - eliminados) }));
       notificarExito("Comentario eliminado");
     } catch (error) {
       const data = error.response?.data;
@@ -131,9 +166,10 @@ function ForoDetalle() {
     return (
       <Pagina>
         <div className="estado-vacio publicacion-principal">
-          <div className="estado-vacio-icono"><Icono nombre="search" /></div>
-          <h3>Foro no encontrado</h3>
-          <p>Puede que haya sido eliminado o que el enlace sea incorrecto.</p>
+          <div className="estado-vacio-icono"><Icono nombre={errorCarga ? "exclamation-triangle" : "search"} /></div>
+          <h3>{errorCarga ? "No se pudo cargar la publicación" : "Foro no encontrado"}</h3>
+          <p>{errorCarga || "Puede que haya sido eliminado o que el enlace sea incorrecto."}</p>
+          {errorCarga && <Button variant="outline-success" className="me-2" onClick={() => setRecarga((valor) => valor + 1)}>Reintentar</Button>}
           <Link to="/foro" className="btn btn-primary">Ver todos los foros</Link>
         </div>
       </Pagina>
@@ -191,11 +227,16 @@ function ForoDetalle() {
       )}
 
       <section>
-        <h2 className="comentarios-titulo">Comentarios ({comentarios.length})</h2>
+        <h2 className="comentarios-titulo">Comentarios ({contarComentarios(comentarios)})</h2>
         <div className="d-flex flex-column gap-3 mb-4">
           {comentarios.length > 0 ? (
             comentarios.map((c, i) => (
-              <ComentarioCard key={c.id_participacion || c.id_comentario || c.id || i} comentario={c} onEliminar={eliminarComentario} />
+              <ComentarioCard
+                key={c.id_participacion || c.id_comentario || c.id || i}
+                comentario={c}
+                onEliminar={eliminarComentario}
+                onAgregarComentario={agregarComentario}
+              />
             ))
           ) : (
             <div className="comentario-item text-center text-muted small py-4">

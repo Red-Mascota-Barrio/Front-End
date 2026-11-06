@@ -68,6 +68,7 @@ export const adminService = {
 
   // ---------- Eventos ----------
   listarEventos: async () => lista(await api.get(RUTAS.eventos)),
+  listarInscritos: async (id) => lista(await api.get(`${RUTAS.eventos}/${id}/inscritos`)),
   crearEvento: async (payload) => datos(await api.post(RUTAS.eventos, payload)),
   actualizarEvento: async (id, payload) => datos(await api.put(`${RUTAS.eventos}/${id}`, payload)),
   eliminarEvento: async (id) => (await api.delete(`${RUTAS.eventos}/${id}`)).data,
@@ -98,4 +99,4 @@ export const adminService = {
     }
     throw new Error('El reporte no tiene contenido asociado.');
   },
-};
+};
