@@ -118,7 +118,7 @@ export const AdminReportes = () => {
     setProcesando(r.id_reporte);
     try {
       await adminService.eliminarContenidoReportado(r);
-      setReportes((lista) => lista.filter((x) => x.id_reporte !== r.id_reporte));
+      await cargar();
       refrescarReportes?.();
       notificarExito('Contenido eliminado y reporte resuelto');
     } catch (err) {

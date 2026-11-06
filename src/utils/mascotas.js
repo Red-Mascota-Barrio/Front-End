@@ -14,12 +14,6 @@ export const textoTamano = (t) => {
 // Marca la imagen por defecto para mostrarla tenue y sin recortar
 export const claseFoto = (src, sinFoto) => (src === sinFoto ? 'sin-foto' : '');
 
-export const TAMANOS_MASCOTA = [
-  { valor: 'pequeno', texto: 'Pequeño' },
-  { valor: 'mediano', texto: 'Mediano' },
-  { valor: 'grande', texto: 'Grande' },
-];
-
 // "2026-11-03" de hoy (hora local), útil para el max de los inputs de fecha
 export const hoyISO = () => {
   const d = new Date();

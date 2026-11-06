@@ -76,7 +76,7 @@ const { mascotas: propias, fiable } = await mascotasService.misMascotas(user);
   };
 
   // La persona dejó de ver una mascota que le compartieron
-  const handleDejarDeVer = async () => {
+  const handleDejarDeCompartir = async () => {
     setMascotaSeleccionada(null);
     await cargar();
   };
@@ -183,7 +183,7 @@ const { mascotas: propias, fiable } = await mascotasService.misMascotas(user);
           onEliminar={handleEliminarMascota}
           onSolicitudAprobada={handleSolicitudAprobada}
           puedeCompartir
-          onDejarDeVer={handleDejarDeVer}
+          onDejarDeCompartir={handleDejarDeCompartir}
           mostrarSolicitudes
           onCancelarAdopcion={handleCancelarAdopcion}
           onPublicar={handlePublicarAdopcion}

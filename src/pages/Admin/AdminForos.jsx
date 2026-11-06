@@ -176,6 +176,7 @@ export const AdminForos = () => {
                   <th>Autor</th>
                   <th>Categoría</th>
                   <th className="text-center">Comentarios</th>
+                  <th>Moderación</th>
                   <th>Publicado</th>
                   <th className="text-end">Acciones</th>
                 </tr>
@@ -190,6 +191,11 @@ export const AdminForos = () => {
                     <td>{autorDe(f)}</td>
                     <td><Badge variante="success">{categoriaDe(f)}</Badge></td>
                     <td className="text-center">{Number(f.numero_comentarios ?? 0)}</td>
+                    <td>
+                      {Number(f.reportes_en_revision_count ?? 0) > 0
+                        ? <Badge variante="warning">En revisión</Badge>
+                        : <Badge variante="success">Sin reportes en revisión</Badge>}
+                    </td>
                     <td className="text-secondary">{fechaCorta(f.fecha_creacion)}</td>
                     <td>
                       <div className="d-flex justify-content-end gap-1">
@@ -220,6 +226,12 @@ export const AdminForos = () => {
             <div className="small text-secondary mb-2">
               {autorDe(detalle)} · {categoriaDe(detalle)} · {fechaCorta(detalle.fecha_creacion)}
             </div>
+            {detalle.reportes?.length > 0 && (
+              <Aviso tipo="advertencia">
+                Este foro tiene {detalle.reportes.length} {detalle.reportes.length === 1 ? 'reporte' : 'reportes'} directo(s):{' '}
+                {detalle.reportes.map((reporte) => reporte.estado_reporte?.nombre_estado || 'Pendiente').join(', ')}.
+              </Aviso>
+            )}
             <p style={{ whiteSpace: 'pre-line' }}>{detalle.contenido}</p>
 
             <h6 className="fw-bold mt-4 mb-2">Comentarios ({detalle.cargado ? comentarios.length : '…'})</h6>
@@ -238,6 +250,17 @@ export const AdminForos = () => {
                         {c.nivel > 0 && <span className="text-secondary"> · respuesta</span>}
                       </div>
                       <div className="small" style={{ whiteSpace: 'pre-line' }}>{c.comentario}</div>
+                      {c.reportes?.length > 0 && (
+                        <div className="mt-2 d-flex flex-column gap-1">
+                          {c.reportes.map((reporte) => (
+                            <div key={reporte.id_reporte} className="rounded-2 bg-danger-subtle text-danger-emphasis px-2 py-1 small">
+                              <strong>Comentario reportado · {reporte.estado_reporte?.nombre_estado || 'Pendiente'}</strong>
+                              {reporte.tipo_reporte?.nombre_tipo && <span> · {reporte.tipo_reporte.nombre_tipo}</span>}
+                              {reporte.descripcion && <div>{reporte.descripcion}</div>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <BotonAccion icono="eliminar" titulo="Eliminar comentario" peligro onClick={() => eliminarComentario(c)} />
                   </ListGroup.Item>

@@ -13,17 +13,6 @@ import '../../styles/mascotas.css';
 
 const POR_PAGINA = 9;
 
-const TAMANOS = [
-  { valor: '', texto: 'Todos los tamaños' },
-  { valor: 'pequeno', texto: 'Pequeño' },
-  { valor: 'mediano', texto: 'Mediano' },
-  { valor: 'grande', texto: 'Grande' },
-];
-const GENEROS = [
-  { valor: '', texto: 'Todos' },
-  { valor: 'macho', texto: 'Macho', icono: <Icono nombre="gender-male" /> },
-  { valor: 'hembra', texto: 'Hembra', icono: <Icono nombre="gender-female" /> },
-];
 const EDADES = [
   { valor: '', texto: 'Todas las edades' },
   ...ETAPAS_EDAD.map(({ valor, texto }) => ({ valor, texto })),
@@ -107,6 +96,8 @@ const GrupoFiltro = ({ titulo, opciones, valor, onCambiar }) => (
 export const Mascotas = () => {
   const { user } = useAuth();
   const [mascotas, setMascotas] = useState([]);
+  const [catalogos, setCatalogos] = useState({ generos: [], tamanos: [] });
+  const [errorCatalogos, setErrorCatalogos] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -156,6 +147,27 @@ export const Mascotas = () => {
     const id = setTimeout(cargar, 0);
     return () => clearTimeout(id);
   }, [cargar]);
+
+  useEffect(() => {
+    let vigente = true;
+    mascotasService.obtenerCatalogos()
+      .then((datos) => vigente && setCatalogos({ generos: datos.generos ?? [], tamanos: datos.tamanos ?? [] }))
+      .catch((error) => vigente && setErrorCatalogos(error.response?.data?.mensaje || 'No se pudieron cargar los filtros de mascotas.'));
+    return () => { vigente = false; };
+  }, []);
+
+  const opcionesTamanos = useMemo(() => [
+    { valor: '', texto: 'Todos los tamaños' },
+    ...catalogos.tamanos.map((opcion) => ({ valor: opcion.valor, texto: opcion.texto })),
+  ], [catalogos.tamanos]);
+  const opcionesGeneros = useMemo(() => [
+    { valor: '', texto: 'Todos' },
+    ...catalogos.generos.map((opcion) => ({
+      valor: opcion.valor,
+      texto: opcion.texto,
+      icono: <Icono nombre={opcion.valor === 'macho' ? 'gender-male' : 'gender-female'} />,
+    })),
+  ], [catalogos.generos]);
 
   const seleccionarMascota = (mascota) => {
     setMascotaSeleccionada(mascota);
@@ -257,8 +269,8 @@ export const Mascotas = () => {
   const chips = [
     busquedaDebounced && { texto: `“${busquedaDebounced}”`, quitar: () => setBusqueda('') },
     filtroEspecie && { texto: filtroEspecie, quitar: () => cambiar(setFiltroEspecie)('') },
-    filtroTamano && { texto: TAMANOS.find((t) => t.valor === filtroTamano)?.texto, quitar: () => cambiar(setFiltroTamano)('') },
-    filtroGenero && { texto: GENEROS.find((g) => g.valor === filtroGenero)?.texto, quitar: () => cambiar(setFiltroGenero)('') },
+    filtroTamano && { texto: opcionesTamanos.find((t) => t.valor === filtroTamano)?.texto, quitar: () => cambiar(setFiltroTamano)('') },
+    filtroGenero && { texto: opcionesGeneros.find((g) => g.valor === filtroGenero)?.texto, quitar: () => cambiar(setFiltroGenero)('') },
     filtroEdad && { texto: EDADES.find((e) => e.valor === filtroEdad)?.texto, quitar: () => cambiar(setFiltroEdad)('') },
   ].filter(Boolean);
 
@@ -295,9 +307,9 @@ export const Mascotas = () => {
               <p className="filtros-titulo">Filtrar por</p>
               <GrupoFiltro titulo="Especie" opciones={especies} valor={filtroEspecie} onCambiar={cambiar(setFiltroEspecie)} />
               <div className="filtro-divider" />
-              <GrupoFiltro titulo="Tamaño" opciones={TAMANOS} valor={filtroTamano} onCambiar={cambiar(setFiltroTamano)} />
+              <GrupoFiltro titulo="Tamaño" opciones={opcionesTamanos} valor={filtroTamano} onCambiar={cambiar(setFiltroTamano)} />
               <div className="filtro-divider" />
-              <GrupoFiltro titulo="Género" opciones={GENEROS} valor={filtroGenero} onCambiar={cambiar(setFiltroGenero)} />
+              <GrupoFiltro titulo="Género" opciones={opcionesGeneros} valor={filtroGenero} onCambiar={cambiar(setFiltroGenero)} />
               <div className="filtro-divider" />
               <GrupoFiltro titulo="Edad" opciones={EDADES} valor={filtroEdad} onCambiar={cambiar(setFiltroEdad)} />
             </aside>
@@ -305,6 +317,7 @@ export const Mascotas = () => {
 
           {/* RESULTADOS */}
           <Col lg={9}>
+            {errorCatalogos && <Alert variant="warning" role="alert">{errorCatalogos}</Alert>}
             {/* Barra blanca: es lo que queda encima del borde del héroe, así el texto
                 nunca se monta sobre el fondo verde */}
             <div className="barra-herramientas mb-3">

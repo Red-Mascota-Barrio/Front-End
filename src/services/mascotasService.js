@@ -190,4 +190,8 @@ export const mascotasService = {
     const res = await api.get(`/razas/especie/${idEspecie}`);
     return lista(res.data, 'razas');
   },
+  obtenerCatalogos: async () => {
+    const res = await api.get('/catalogos/mascotas');
+    return res.data?.datos ?? {};
+  },
 };

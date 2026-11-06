@@ -99,8 +99,8 @@ export const TabMisMascotas = () => {
     setVersion((v) => v + 1);
   };
 
-  // La persona dejó de ver una mascota que le compartieron
-  const handleDejarDeVer = () => {
+  // La persona retira de su perfil el acceso compartido
+  const handleDejarDeCompartir = () => {
     cerrarPerfil();
     setVersion((v) => v + 1);
   };
@@ -182,7 +182,7 @@ export const TabMisMascotas = () => {
           onEliminar={handleEliminar}
           onSolicitudAprobada={handleSolicitudAprobada}
           puedeCompartir
-          onDejarDeVer={handleDejarDeVer}
+          onDejarDeCompartir={handleDejarDeCompartir}
           mostrarSolicitudes
           onCancelarAdopcion={handleCancelarAdopcion}
           onPublicar={handlePublicar}

@@ -8,12 +8,11 @@ import {
   SIN_FOTO,
   RAZA_OTRA,
 } from '../../services/mascotasService';
-import { TAMANOS_MASCOTA, hoyISO, mesesDesde, textoEdad } from '../../utils/mascotas';
+import { hoyISO, mesesDesde, textoEdad } from '../../utils/mascotas';
 
 // "Pequeño" / "pequeño" -> "pequeno" (valor que guarda la BD)
 const valorTamano = (t) => {
-  const k = String(t ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return TAMANOS_MASCOTA.some((o) => o.valor === k) ? k : '';
+  return String(t ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ñ/g, 'n');
 };
 
 export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = null }) {
@@ -29,9 +28,7 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
     fecha_nacimiento: String(mascota?.fecha_nacimiento ?? '').slice(0, 10),
     tamano: valorTamano(mascota?.tamano),
     peso_kg: mascota?.peso_kg ? Number(mascota.peso_kg) : '',
-    genero: mascota?.genero
-      ? String(mascota.genero).charAt(0).toUpperCase() + String(mascota.genero).slice(1).toLowerCase()
-      : 'Hembra',
+    genero: String(mascota?.genero ?? '').toLowerCase(),
     foto: null,
     descripcion: mascota?.notas_adicionales ?? '',
     esterilizado: Boolean(Number(mascota?.esterilizado)),
@@ -43,6 +40,9 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
   const [errorEspecies, setErrorEspecies] = useState('');
   const [razas, setRazas] = useState([]);
   const [cargandoRazas, setCargandoRazas] = useState(false);
+  const [catalogos, setCatalogos] = useState({ generos: [], tamanos: [] });
+  const [cargandoCatalogos, setCargandoCatalogos] = useState(true);
+  const [errorCatalogos, setErrorCatalogos] = useState('');
   const [previa, setPrevia] = useState(() => (
     mascota ? urlFoto(fotoDeMascota(mascota)) : null
   ));
@@ -73,6 +73,20 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
     return () => {
       activo = false;
     };
+  }, []);
+
+  useEffect(() => {
+    let activo = true;
+    mascotasService.obtenerCatalogos()
+      .then((datos) => {
+        if (activo) setCatalogos({ generos: datos.generos ?? [], tamanos: datos.tamanos ?? [] });
+      })
+      .catch((err) => {
+        console.error('Error al cargar los catálogos de mascotas:', err);
+        if (activo) setErrorCatalogos(err.response?.data?.mensaje || 'No se pudieron cargar los catálogos de mascotas.');
+      })
+      .finally(() => { if (activo) setCargandoCatalogos(false); });
+    return () => { activo = false; };
   }, []);
 
   useEffect(() => {
@@ -210,6 +224,8 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
                   {errorEspecies && <div className="form-text text-danger" role="alert">{errorEspecies}</div>}
                 </div>
 
+                {errorCatalogos && <div className="col-12"><div className="alert alert-danger mb-0" role="alert">{errorCatalogos}</div></div>}
+
                 {/* Desplegable Raza (Dependiente) */}
                 <div className="col-md-6">
                   <label className="form-label">Raza *</label>
@@ -268,9 +284,13 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
                     name="genero"
                     value={formData.genero}
                     onChange={handleChange}
+                    disabled={cargandoCatalogos || Boolean(errorCatalogos)}
+                    required
                   >
-                    <option value="Hembra">Hembra</option>
-                    <option value="Macho">Macho</option>
+                    <option value="">{cargandoCatalogos ? 'Cargando opciones…' : '-- Seleccionar --'}</option>
+                    {catalogos.generos.map((opcion) => (
+                      <option key={opcion.valor} value={opcion.valor}>{opcion.texto}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -283,10 +303,11 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
                     name="tamano"
                     value={formData.tamano}
                     onChange={handleChange}
+                    disabled={cargandoCatalogos || Boolean(errorCatalogos)}
                   >
                     <option value="">-- Seleccionar --</option>
-                    {TAMANOS_MASCOTA.map((t) => (
-                      <option key={t.valor} value={t.valor}>{t.texto}</option>
+                    {catalogos.tamanos.map((opcion) => (
+                      <option key={opcion.valor} value={opcion.valor}>{opcion.texto}</option>
                     ))}
                   </select>
                 </div>

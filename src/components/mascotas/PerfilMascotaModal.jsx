@@ -49,7 +49,7 @@ export default function PerfilMascotaModal({
   onCancelarAdopcion,
   onSolicitudAprobada,
   puedeCompartir = false,
-  onDejarDeVer,
+  onDejarDeCompartir,
   errorPublicacion = '',
   adopcionId,
   onSolicitar,
@@ -66,15 +66,15 @@ export default function PerfilMascotaModal({
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const [cancelandoAdopcion, setCancelandoAdopcion] = useState(false);
   const [errorCancelacion, setErrorCancelacion] = useState('');
-  // Compartir mascota (solo el dueño) / dejar de ver una mascota compartida contigo
+  // Compartir mascota (solo el dueño) / retirar el acceso compartido desde el perfil receptor
   const [mostrarCompartir, setMostrarCompartir] = useState(false);
   const [resultadoCompartidos, setResultadoCompartidos] = useState(null);
   const [versionCompartidos, setVersionCompartidos] = useState(0);
   const [quitandoCompartidoId, setQuitandoCompartidoId] = useState(null);
   const [errorCompartidos, setErrorCompartidos] = useState('');
-  const [confirmarDejarDeVer, setConfirmarDejarDeVer] = useState(false);
-  const [dejandoDeVer, setDejandoDeVer] = useState(false);
-  const [errorDejarDeVer, setErrorDejarDeVer] = useState('');
+  const [confirmarDejarDeCompartir, setConfirmarDejarDeCompartir] = useState(false);
+  const [dejandoDeCompartir, setDejandoDeCompartir] = useState(false);
+  const [errorDejarDeCompartir, setErrorDejarDeCompartir] = useState('');
   const { user } = useAuth();
   const mascotaId = mascota?.id_mascotas ?? mascota?.id;
   // Mascota que otra persona compartió conmigo: solo se puede ver (sin editar, publicar, eliminar ni ver solicitudes)
@@ -237,19 +237,19 @@ export default function PerfilMascotaModal({
   };
 
   // La persona con quien se compartió deja de ver la mascota en su perfil
-  const confirmarDejarDeVerMascota = async () => {
+  const confirmarDejarDeCompartirMascota = async () => {
     if (!mascota.compartido_id) return;
-    setDejandoDeVer(true);
-    setErrorDejarDeVer('');
+    setDejandoDeCompartir(true);
+    setErrorDejarDeCompartir('');
     try {
       await compartidosService.eliminar(mascota.compartido_id);
-      setConfirmarDejarDeVer(false);
-      onDejarDeVer?.(mascotaId);
+      setConfirmarDejarDeCompartir(false);
+      onDejarDeCompartir?.(mascotaId);
     } catch (error) {
-      console.error('Error al dejar de ver la mascota compartida:', error);
-      setErrorDejarDeVer(mensajeDeError(error, 'No se pudo quitar la mascota de tu perfil. Intenta de nuevo.'));
+      console.error('Error al dejar de compartir la mascota:', error);
+      setErrorDejarDeCompartir(mensajeDeError(error, 'No se pudo quitar la mascota de tu perfil. Intenta de nuevo.'));
     } finally {
-      setDejandoDeVer(false);
+      setDejandoDeCompartir(false);
     }
   };
 
@@ -526,9 +526,9 @@ export default function PerfilMascotaModal({
               <button
                 type="button"
                 className="btn-modal-pill btn-modal-eliminar"
-                onClick={() => { setErrorDejarDeVer(''); setConfirmarDejarDeVer(true); }}
+                onClick={() => { setErrorDejarDeCompartir(''); setConfirmarDejarDeCompartir(true); }}
               >
-                <i className="bi bi-eye-slash" aria-hidden="true" /> Dejar de ver
+                <i className="bi bi-share" aria-hidden="true" /> Dejar de compartir
               </button>
             )}
           </div>
@@ -695,18 +695,18 @@ export default function PerfilMascotaModal({
       )}
 
       <Modal
-        show={confirmarDejarDeVer}
+        show={confirmarDejarDeCompartir}
         onHide={() => {
-          if (!dejandoDeVer) setConfirmarDejarDeVer(false);
+          if (!dejandoDeCompartir) setConfirmarDejarDeCompartir(false);
         }}
         centered
-        backdrop={dejandoDeVer ? 'static' : true}
-        keyboard={!dejandoDeVer}
-        aria-labelledby="confirmar-dejar-de-ver-titulo"
+        backdrop={dejandoDeCompartir ? 'static' : true}
+        keyboard={!dejandoDeCompartir}
+        aria-labelledby="confirmar-dejar-de-compartir-titulo"
       >
-        <Modal.Header closeButton={!dejandoDeVer} className="border-0 pb-0">
-          <Modal.Title id="confirmar-dejar-de-ver-titulo" className="h4">
-            Dejar de ver mascota
+        <Modal.Header closeButton={!dejandoDeCompartir} className="border-0 pb-0">
+          <Modal.Title id="confirmar-dejar-de-compartir-titulo" className="h4">
+            Dejar de compartir mascota
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center px-4">
@@ -715,24 +715,24 @@ export default function PerfilMascotaModal({
           </div>
           <p className="text-secondary mb-3">
             {mascota.nombre} dejará de aparecer en tu perfil. Si quieres volver a verla,
-            {mascota.compartida_por ? ` ${mascota.compartida_por}` : ' su dueño'} tendrá que compartírtela de nuevo.
+            {mascota.compartida_por ? ` ${mascota.compartida_por}` : ' su dueño'} tendrá que compartirla contigo de nuevo.
           </p>
-          {errorDejarDeVer && <Alert variant="danger" className="mb-0">{errorDejarDeVer}</Alert>}
+          {errorDejarDeCompartir && <Alert variant="danger" className="mb-0">{errorDejarDeCompartir}</Alert>}
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0 pt-0">
           <Button
             variant="outline-secondary"
-            onClick={() => setConfirmarDejarDeVer(false)}
-            disabled={dejandoDeVer}
+            onClick={() => setConfirmarDejarDeCompartir(false)}
+            disabled={dejandoDeCompartir}
           >
             Cancelar
           </Button>
-          <Button variant="danger" onClick={confirmarDejarDeVerMascota} disabled={dejandoDeVer}>
-            {dejandoDeVer ? (
+          <Button variant="danger" onClick={confirmarDejarDeCompartirMascota} disabled={dejandoDeCompartir}>
+            {dejandoDeCompartir ? (
               <>
-                <Spinner animation="border" size="sm" aria-hidden="true" /> Quitando…
+                <Spinner animation="border" size="sm" aria-hidden="true" /> Dejando de compartir…
               </>
-            ) : 'Sí, dejar de ver'}
+            ) : 'Sí, dejar de compartir'}
           </Button>
         </Modal.Footer>
       </Modal>
