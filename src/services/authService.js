@@ -13,6 +13,11 @@ export const authService = {
     return response.data;
   },
 
+  reenviarCodigoVerificacion: async (correo) => {
+    const response = await api.post('/register/resend-otp', { correo });
+    return response.data;
+  },
+
   // Petición para verificar código (Paso 2 / RF18)
   verifyCode: async (codeData) => {
     const response = await api.post('/verify-code', codeData);

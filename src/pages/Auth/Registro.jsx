@@ -4,6 +4,7 @@ import { FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { TermsModal } from '../../components/auth/TermsModal';
+import { PrivacyModal } from '../../components/auth/PrivacyModal';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import { rolDeUsuario } from '../../utils/perfil';
@@ -41,9 +42,12 @@ const Pasos = ({ actual }) => (
 export const Registro = () => {
   const [step, setStep] = useState(1);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [verClave, setVerClave] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
 
   // Correo y contraseña del paso 1: se reutilizan para verificar el OTP sin volver a pedirlos
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -58,6 +62,7 @@ export const Registro = () => {
     try {
       setLoading(true);
       setErrorMsg(null);
+      setSuccessMsg(null);
 
       const payload = {
         nombre: data.nombre,
@@ -65,6 +70,8 @@ export const Registro = () => {
         correo: data.correo,
         telefono: data.telefono || '',
         contrasena: data.password,
+        acepto_terminos: data.terminos === true,
+        acepto_privacidad: data.privacidad === true,
       };
 
       await authService.register(payload);
@@ -77,6 +84,21 @@ export const Registro = () => {
       setErrorMsg(error.response?.data?.mensaje || 'Error al registrarse. Revisa los datos.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const reenviarCodigo = async () => {
+    if (!registeredEmail || resendingOtp) return;
+    setResendingOtp(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      const respuesta = await authService.reenviarCodigoVerificacion(registeredEmail);
+      setSuccessMsg(respuesta.mensaje || 'Enviamos un nuevo código a tu correo.');
+    } catch (error) {
+      setErrorMsg(error.response?.data?.mensaje || 'No pudimos reenviar el código. Revisa tu correo e inténtalo de nuevo.');
+    } finally {
+      setResendingOtp(false);
     }
   };
 
@@ -119,6 +141,7 @@ export const Registro = () => {
             <Pasos actual={step} />
 
             {errorMsg && <Alert variant="danger" role="alert"><Icono nombre="exclamation-circle" /> {errorMsg}</Alert>}
+            {successMsg && <Alert variant="success" role="status">{successMsg}</Alert>}
 
             {/* PASO 1: DATOS BÁSICOS */}
             {step === 1 && (
@@ -199,7 +222,7 @@ export const Registro = () => {
                     {errors.password && <div className="invalid-feedback d-block">{errors.password.message}</div>}
                   </Form.Group>
 
-                  <Form.Group className="mb-4" controlId="terminos">
+                  <Form.Group className="consentimiento-registro mb-2" controlId="terminos">
                     <Form.Check
                       type="checkbox"
                       isInvalid={!!errors.terminos}
@@ -210,7 +233,7 @@ export const Registro = () => {
                           <button
                             type="button"
                             className="btn btn-link p-0 align-baseline link-sutil"
-                            onClick={() => setShowTerms(true)}
+                            onClick={(event) => { event.preventDefault(); event.stopPropagation(); setShowTerms(true); }}
                           >
                             términos y condiciones
                           </button>
@@ -218,6 +241,27 @@ export const Registro = () => {
                       }
                     />
                     {errors.terminos && <div className="invalid-feedback d-block">{errors.terminos.message}</div>}
+                  </Form.Group>
+
+                  <Form.Group className="consentimiento-registro mb-4" controlId="privacidad">
+                    <Form.Check
+                      type="checkbox"
+                      isInvalid={!!errors.privacidad}
+                      {...register('privacidad', { required: 'Debes aceptar la política de privacidad' })}
+                      label={
+                        <>
+                          Acepto la{' '}
+                          <button
+                            type="button"
+                            className="btn btn-link p-0 align-baseline link-sutil"
+                            onClick={(event) => { event.preventDefault(); event.stopPropagation(); setShowPrivacy(true); }}
+                          >
+                            política de privacidad y tratamiento de datos
+                          </button>
+                        </>
+                      }
+                    />
+                    {errors.privacidad && <div className="invalid-feedback d-block">{errors.privacidad.message}</div>}
                   </Form.Group>
 
                   <Button type="submit" variant="primary" disabled={loading} className="w-100">
@@ -259,6 +303,12 @@ export const Registro = () => {
                     {loading ? 'Verificando…' : 'Verificar y acceder'}
                   </Button>
 
+                  <div className="text-center mb-3">
+                    <Button type="button" variant="link" className="p-0 link-sutil" onClick={reenviarCodigo} disabled={loading || resendingOtp}>
+                      {resendingOtp ? 'Reenviando código…' : '¿No llegó el código? Reenviar OTP'}
+                    </Button>
+                  </div>
+
                   <div className="text-center">
                     <Button variant="link" onClick={() => setStep(1)} className="text-secondary text-decoration-none p-0">
                       <FaArrowLeft /> Volver al paso anterior
@@ -299,6 +349,7 @@ export const Registro = () => {
       </Row>
 
       <TermsModal show={showTerms} handleClose={() => setShowTerms(false)} />
+      <PrivacyModal show={showPrivacy} handleClose={() => setShowPrivacy(false)} />
     </Container>
   );
 };

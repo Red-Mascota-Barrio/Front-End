@@ -33,6 +33,8 @@ const GoogleLogo = () => (
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [requiresOtp, setRequiresOtp] = useState(false); // Controla si mostramos el campo OTP
+  const [resendingOtp, setResendingOtp] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const hashSplit = window.location.hash.split('?')[1] || '';
@@ -50,6 +52,7 @@ export const Login = () => {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm();
   const { login } = useAuth();
@@ -59,6 +62,26 @@ export const Login = () => {
     const rol = rolDeUsuario(user);
     login(user, token, rol);
     navigate(rol === 1 ? '/admin' : '/', { replace: true });
+  };
+
+  const reenviarOtp = async () => {
+    const correo = getValues('correo')?.trim();
+    if (!correo) {
+      setErrorMsg('Escribe tu correo para reenviar el código.');
+      return;
+    }
+
+    setResendingOtp(true);
+    setErrorMsg(null);
+    setSuccessMsg('');
+    try {
+      const respuesta = await authService.reenviarCodigoVerificacion(correo);
+      setSuccessMsg(respuesta.mensaje || 'Enviamos un nuevo código de verificación.');
+    } catch (error) {
+      setErrorMsg(error.response?.data?.mensaje || 'No pudimos reenviar el código. Inténtalo nuevamente.');
+    } finally {
+      setResendingOtp(false);
+    }
   };
 
   // ==========================================
@@ -165,6 +188,7 @@ export const Login = () => {
                 <Icono nombre={requiresOtp ? 'shield-lock' : 'exclamation-circle'} /> {errorMsg}
               </Alert>
             )}
+            {successMsg && <Alert variant="success" role="status">{successMsg}</Alert>}
 
             <Form onSubmit={handleSubmit(onSubmit)} noValidate>
               <Form.Group className="mb-3" controlId="correo">
@@ -205,20 +229,27 @@ export const Login = () => {
 
               {/* OTP: solo si la cuenta no está verificada */}
               {requiresOtp && (
-                <Form.Group className="mb-3 mt-3" controlId="codigo_otp">
-                  <Form.Label>Código de verificación (OTP)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="123456"
-                    maxLength={6}
-                    className="campo-otp"
-                    {...register('codigo_otp', { required: 'Ingresa el código para verificar tu cuenta' })}
-                    isInvalid={!!errors.codigo_otp}
-                    disabled={loading}
-                  />
-                  <Form.Control.Feedback type="invalid">{errors.codigo_otp?.message}</Form.Control.Feedback>
-                </Form.Group>
+                <>
+                  <Form.Group className="mb-2 mt-3" controlId="codigo_otp">
+                    <Form.Label>Código de verificación (OTP)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="123456"
+                      maxLength={6}
+                      className="campo-otp"
+                      {...register('codigo_otp', { required: 'Ingresa el código para verificar tu cuenta' })}
+                      isInvalid={!!errors.codigo_otp}
+                      disabled={loading}
+                    />
+                    <Form.Control.Feedback type="invalid">{errors.codigo_otp?.message}</Form.Control.Feedback>
+                  </Form.Group>
+                  <div className="text-end mb-3">
+                    <Button type="button" variant="link" className="p-0 link-sutil" onClick={reenviarOtp} disabled={loading || resendingOtp}>
+                      {resendingOtp ? 'Reenviando…' : 'Reenviar código OTP'}
+                    </Button>
+                  </div>
+                </>
               )}
 
               <div className="text-end mb-4">

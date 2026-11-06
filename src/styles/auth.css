@@ -124,6 +124,7 @@
 
 .link-sutil { font-size: 0.8125rem; color: var(--verde-principal); font-weight: 500; text-decoration: none; }
 .link-sutil:hover { text-decoration: underline; }
+.consentimiento-registro .form-check-label { line-height: 1.55; }
 
 /* Botón del ojo dentro del campo de contraseña */
 .campo-password { position: relative; }
