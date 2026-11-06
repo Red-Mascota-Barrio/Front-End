@@ -14,6 +14,13 @@ export const rutaDeNotificacion = (n, { role } = {}) => {
     return d.en_perfil ? `/perfil?tab=mascotas&mascota=${d.mascota_id}` : '/mascotas';
   }
 
+  // Mascotas compartidas: la invitación se responde en un modal (lo abre la campana); la respuesta
+  // a quien compartió lo lleva a su perfil con el modal de la mascota (ahí ve con quién la compartió).
+  if (n?.tipo === 'compartido') {
+    if (d.accion === 'responder' || !d.mascota_id) return null;
+    return d.en_perfil ? `/perfil?tab=mascotas&mascota=${d.mascota_id}` : null;
+  }
+
   // Foro y reportes de foro/comentario: al hilo, posicionado en el comentario si lo hay
   if (n?.tipo === 'foro' || n?.tipo === 'reporte') {
     if (!d.foro_id) return null;

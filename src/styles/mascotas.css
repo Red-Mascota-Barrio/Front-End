@@ -130,6 +130,7 @@
 /* Imagen por defecto (huella) cuando la mascota no tiene foto */
 img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
 .mascota-card-badge { position: absolute; top: 12px; left: 12px; }
+.mascota-card-badge-compartida { position: absolute; top: 12px; right: 12px; }
 .mascota-card-cuerpo { padding: 14px 16px; flex: 1; }
 .mascota-card-cuerpo h3 {
   font-family: var(--font-principal);
@@ -303,6 +304,18 @@ img.sin-foto { object-fit: contain !important; padding: 48px; opacity: 0.18; }
   background: #d1fae5;
   border-color: var(--verde-principal);
   color: var(--verde-oscuro);
+  transform: translateY(-1px);
+}
+
+.btn-modal-compartir {
+  background: #e8f0fe;
+  color: #1a3a8b;
+  border-color: #c7d7fb;
+}
+.btn-modal-compartir:hover:not(:disabled) {
+  background: #d6e4fd;
+  border-color: #1a3a8b;
+  color: #1a3a8b;
   transform: translateY(-1px);
 }
 

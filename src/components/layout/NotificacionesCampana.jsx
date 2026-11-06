@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { notificacionesService, haceCuanto } from '../../services/notificacionesService';
 import { rutaDeNotificacion } from '../../utils/notificaciones';
 import { useAuth } from '../../context/AuthContext';
+import ResponderCompartidoModal from '../mascotas/ResponderCompartidoModal';
 
 // Cada cuánto se revisa si hay notificaciones nuevas (ms)
 const INTERVALO = 30000;
@@ -27,6 +28,8 @@ export const NotificacionesCampana = () => {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(false);
   const [abierta, setAbierta] = useState(false);
+  // Invitación de mascota compartida abierta desde una notificación (modal aceptar / rechazar)
+  const [compartidoAbierto, setCompartidoAbierto] = useState(null);
   const abiertaRef = useRef(false);
   const contenedor = useRef(null);
   const boton = useRef(null);
@@ -119,6 +122,12 @@ export const NotificacionesCampana = () => {
   // Clic en una notificación: se marca como leída, se cierra el menú y se va a su destino
   const abrirNotificacion = (n) => {
     marcarLeida(n);
+    // "Te quieren compartir una mascota": abre el modal para aceptar o rechazar
+    if (n.tipo === 'compartido' && n.datos?.accion === 'responder' && n.datos?.compartido_id) {
+      alAbrir(false);
+      setCompartidoAbierto(n.datos.compartido_id);
+      return;
+    }
     const ruta = rutaDeNotificacion(n, { role });
     if (!ruta) return;
     alAbrir(false);
@@ -135,7 +144,15 @@ export const NotificacionesCampana = () => {
     }
   };
 
+  // Al aceptar: se recarga "Mis mascotas" (si ya está abierto) y se va al perfil con el modal de la mascota
+  const alAceptarCompartida = (mascotaId) => {
+    setCompartidoAbierto(null);
+    window.dispatchEvent(new Event('mis-mascotas:recargar'));
+    navigate(mascotaId ? `/perfil?tab=mascotas&mascota=${mascotaId}` : '/perfil?tab=mascotas');
+  };
+
   return (
+    <>
     <div className="campana" ref={contenedor}>
       <button
         ref={boton}
@@ -192,5 +209,14 @@ export const NotificacionesCampana = () => {
       </div>
       )}
     </div>
+
+    {compartidoAbierto && (
+      <ResponderCompartidoModal
+        compartidoId={compartidoAbierto}
+        onClose={() => setCompartidoAbierto(null)}
+        onAceptada={alAceptarCompartida}
+      />
+    )}
+    </>
   );
 };

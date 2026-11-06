@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, Row, Col } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
 import { Icono } from '../common/Icono';
@@ -44,9 +44,11 @@ export const TabMisMascotas = () => {
   if (!idEnUrl && ultimoIdUrl) {
     setUltimoIdUrl(null);
   } else if (idEnUrl && idEnUrl !== ultimoIdUrl && mascotasCargadas.length > 0) {
-    setUltimoIdUrl(idEnUrl);
     const deLaUrl = mascotasCargadas.find((m) => String(idMascota(m)) === String(idEnUrl));
-    if (deLaUrl) setSeleccionada(deLaUrl);
+    if (deLaUrl) {
+      setUltimoIdUrl(idEnUrl);
+      setSeleccionada(deLaUrl);
+    }
   }
 
   // Cierra el modal y limpia ?mascota= para que no se reabra al recargar
@@ -60,6 +62,13 @@ export const TabMisMascotas = () => {
       }, { replace: true });
     }
   };
+
+  // Al aceptar una mascota compartida (desde la campana) se recarga la lista sin salir del perfil
+  useEffect(() => {
+    const recargar = () => setVersion((v) => v + 1);
+    window.addEventListener('mis-mascotas:recargar', recargar);
+    return () => window.removeEventListener('mis-mascotas:recargar', recargar);
+  }, []);
 
   const abrirRegistro = () => setMostrarRegistro(true);
   const cerrarRegistro = () => setMostrarRegistro(false);
@@ -86,6 +95,12 @@ export const TabMisMascotas = () => {
   };
 
   const handleSolicitudAprobada = async () => {
+    cerrarPerfil();
+    setVersion((v) => v + 1);
+  };
+
+  // La persona dejó de ver una mascota que le compartieron
+  const handleDejarDeVer = () => {
     cerrarPerfil();
     setVersion((v) => v + 1);
   };
@@ -166,6 +181,8 @@ export const TabMisMascotas = () => {
           }}
           onEliminar={handleEliminar}
           onSolicitudAprobada={handleSolicitudAprobada}
+          puedeCompartir
+          onDejarDeVer={handleDejarDeVer}
           mostrarSolicitudes
           onCancelarAdopcion={handleCancelarAdopcion}
           onPublicar={handlePublicar}

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Llama a la variable de entorno, con un fallback por seguridad
-  baseURL: import.meta.env.VITE_API_URL || 'https://back-end-v2-xyqa.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

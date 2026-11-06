@@ -9,6 +9,8 @@ import {
 } from '../../services/mascotasService';
 import { especieDeMascota, razaDeMascota } from '../../utils/admin';
 import { IconoEspecie } from '../common/Icono';
+import CompartirMascotaModal from './CompartirMascotaModal';
+import { compartidosService, mensajeDeError } from '../../services/compartidosService';
 import {
   capitalizar as cap, textoEdad, textoTamano, textoFecha, textoPeso, esMiMascota, yaSolicitoAdopcion,
 } from '../../utils/mascotas';
@@ -46,6 +48,8 @@ export default function PerfilMascotaModal({
   onPublicar,
   onCancelarAdopcion,
   onSolicitudAprobada,
+  puedeCompartir = false,
+  onDejarDeVer,
   errorPublicacion = '',
   adopcionId,
   onSolicitar,
@@ -62,8 +66,21 @@ export default function PerfilMascotaModal({
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const [cancelandoAdopcion, setCancelandoAdopcion] = useState(false);
   const [errorCancelacion, setErrorCancelacion] = useState('');
+  // Compartir mascota (solo el dueño) / dejar de ver una mascota compartida contigo
+  const [mostrarCompartir, setMostrarCompartir] = useState(false);
+  const [resultadoCompartidos, setResultadoCompartidos] = useState(null);
+  const [versionCompartidos, setVersionCompartidos] = useState(0);
+  const [quitandoCompartidoId, setQuitandoCompartidoId] = useState(null);
+  const [errorCompartidos, setErrorCompartidos] = useState('');
+  const [confirmarDejarDeVer, setConfirmarDejarDeVer] = useState(false);
+  const [dejandoDeVer, setDejandoDeVer] = useState(false);
+  const [errorDejarDeVer, setErrorDejarDeVer] = useState('');
   const { user } = useAuth();
   const mascotaId = mascota?.id_mascotas ?? mascota?.id;
+  // Mascota que otra persona compartió conmigo: solo se puede ver (sin editar, publicar, eliminar ni ver solicitudes)
+  const esCompartida = Boolean(mascota?.compartida);
+  const verSolicitudes = mostrarSolicitudes && !esCompartida;
+  const verCompartidos = puedeCompartir && !esCompartida && !modoAdopcion;
   // adopcion_activa_id lo calcula el back (publicación 'Disponible'); si no viene, se deduce de las adopciones
   const estaPublicada = mascota && 'adopcion_activa_id' in mascota
     ? Boolean(mascota.adopcion_activa_id)
@@ -76,7 +93,7 @@ export default function PerfilMascotaModal({
     );
 
   useEffect(() => {
-    if (!mostrarSolicitudes || !estaPublicada || !mascotaId) return undefined;
+    if (!verSolicitudes || !estaPublicada || !mascotaId) return undefined;
 
     let vigente = true;
     mascotasService.listarSolicitudesDeMascota(mascotaId)
@@ -97,13 +114,40 @@ export default function PerfilMascotaModal({
     return () => {
       vigente = false;
     };
-  }, [mostrarSolicitudes, estaPublicada, mascotaId]);
+  }, [verSolicitudes, estaPublicada, mascotaId]);
+
+  // Personas con quienes el dueño compartió esta mascota
+  useEffect(() => {
+    if (!verCompartidos || !mascotaId) return undefined;
+
+    let vigente = true;
+    compartidosService.listar({ mascota_id: mascotaId })
+      .then((datos) => {
+        if (vigente) setResultadoCompartidos({ mascotaId, datos, error: '' });
+      })
+      .catch((error) => {
+        console.error('Error al cargar con quién se compartió la mascota:', error);
+        if (vigente) {
+          setResultadoCompartidos({
+            mascotaId,
+            datos: [],
+            error: mensajeDeError(error, 'No se pudo cargar con quién compartiste esta mascota.'),
+          });
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [verCompartidos, mascotaId, versionCompartidos]);
 
   if (!mascota) return null;
 
   const resultadoActual = resultadoSolicitudes?.mascotaId === mascotaId ? resultadoSolicitudes : null;
   const solicitudes = resultadoActual?.datos ?? [];
-  const cargandoSolicitudes = mostrarSolicitudes && !resultadoActual;
+  const cargandoSolicitudes = verSolicitudes && !resultadoActual;
+  const compartidosActual = resultadoCompartidos?.mascotaId === mascotaId ? resultadoCompartidos : null;
+  const compartidos = compartidosActual?.datos ?? [];
   const errorSolicitudes = resultadoActual?.error ?? '';
   const haySolicitudAprobada = solicitudes.some(
     (solicitud) => String(solicitud.fase_actual).toLowerCase() === 'aprobada'
@@ -174,6 +218,41 @@ export default function PerfilMascotaModal({
     }
   };
 
+  // El dueño deja de compartir (o cancela una invitación pendiente)
+  const quitarCompartido = async (compartido) => {
+    setQuitandoCompartidoId(compartido.id_compartidos);
+    setErrorCompartidos('');
+    try {
+      await compartidosService.eliminar(compartido.id_compartidos);
+      setResultadoCompartidos((actual) => actual && ({
+        ...actual,
+        datos: actual.datos.filter((c) => c.id_compartidos !== compartido.id_compartidos),
+      }));
+    } catch (error) {
+      console.error('Error al dejar de compartir la mascota:', error);
+      setErrorCompartidos(mensajeDeError(error, 'No se pudo quitar a esta persona. Intenta de nuevo.'));
+    } finally {
+      setQuitandoCompartidoId(null);
+    }
+  };
+
+  // La persona con quien se compartió deja de ver la mascota en su perfil
+  const confirmarDejarDeVerMascota = async () => {
+    if (!mascota.compartido_id) return;
+    setDejandoDeVer(true);
+    setErrorDejarDeVer('');
+    try {
+      await compartidosService.eliminar(mascota.compartido_id);
+      setConfirmarDejarDeVer(false);
+      onDejarDeVer?.(mascotaId);
+    } catch (error) {
+      console.error('Error al dejar de ver la mascota compartida:', error);
+      setErrorDejarDeVer(mensajeDeError(error, 'No se pudo quitar la mascota de tu perfil. Intenta de nuevo.'));
+    } finally {
+      setDejandoDeVer(false);
+    }
+  };
+
   const abrirRespuestaSolicitud = (solicitud, faseActual) => {
     setSolicitudSeleccionada({ solicitud, faseActual, completada: false, error: '' });
   };
@@ -222,6 +301,11 @@ export default function PerfilMascotaModal({
       <Modal.Header closeButton>
         <Modal.Title as="h2" className="h4 mb-0 d-flex align-items-center gap-2 flex-wrap">
           {mascota.nombre}
+          {esCompartida && (
+            <span className="badge badge-azul fw-semibold fs-6">
+              <i className="bi bi-people-fill" aria-hidden="true" /> Compartida contigo
+            </span>
+          )}
         </Modal.Title>
       </Modal.Header>
 
@@ -263,7 +347,7 @@ export default function PerfilMascotaModal({
           </div>
         )}
 
-        {mostrarSolicitudes && estaPublicada && (
+        {verSolicitudes && estaPublicada && (
           <section className="mt-4 pt-3 border-top">
             <h5 className="text-primary mb-3">Solicitudes de adopción</h5>
             {cargandoSolicitudes ? (
@@ -348,6 +432,55 @@ export default function PerfilMascotaModal({
           </section>
         )}
 
+        {verCompartidos && (
+          <section className="mt-4 pt-3 border-top">
+            <h5 className="text-primary mb-3">Compartida con</h5>
+            {!compartidosActual ? (
+              <div className="text-center py-2">
+                <Spinner animation="border" size="sm" role="status" />
+                <span className="ms-2">Cargando…</span>
+              </div>
+            ) : compartidosActual.error ? (
+              <Alert variant="danger" className="mb-0">{compartidosActual.error}</Alert>
+            ) : compartidos.length === 0 ? (
+              <p className="text-muted mb-0">
+                Aún no has compartido a {mascota.nombre} con nadie. Usa el botón &quot;Compartir mascota&quot; para invitar a alguien por su correo.
+              </p>
+            ) : (
+              <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+                {compartidos.map((c) => {
+                  const nombre = [c.usuario?.nombre, c.usuario?.apellido].filter(Boolean).join(' ') || 'Sin nombre';
+                  const etiqueta = c.estado === 'aceptado'
+                    ? { clase: 'badge-verde', texto: 'Aceptada' }
+                    : c.estado === 'rechazado'
+                      ? { clase: 'badge-gris', texto: 'Rechazada' }
+                      : { clase: 'badge-naranja', texto: 'Pendiente' };
+                  return (
+                    <li key={c.id_compartidos} className="d-flex flex-wrap align-items-center justify-content-between gap-2 border rounded-3 px-3 py-2">
+                      <span className="d-flex flex-column">
+                        <strong>{nombre}</strong>
+                        <small className="text-muted">{c.usuario?.correo || ''}</small>
+                      </span>
+                      <span className="d-flex align-items-center gap-2">
+                        <span className={`badge ${etiqueta.clase}`}>{etiqueta.texto}</span>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => quitarCompartido(c)}
+                          disabled={quitandoCompartidoId === c.id_compartidos}
+                        >
+                          {c.estado === 'pendiente' ? 'Cancelar invitación' : c.estado === 'aceptado' ? 'Dejar de compartir' : 'Quitar'}
+                        </Button>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {errorCompartidos && <Alert variant="danger" className="mt-2 mb-0">{errorCompartidos}</Alert>}
+          </section>
+        )}
+
         {errorPublicacion && (
           <Alert variant="danger" className="mt-4 mb-0">
             {errorPublicacion}
@@ -381,6 +514,24 @@ export default function PerfilMascotaModal({
               {solicitando ? 'Enviando solicitud…' : 'Solicitar adopción'}
             </Button>
           )
+        ) : esCompartida ? (
+          // Compartida conmigo: solo lectura (sin editar, publicar, compartir ni eliminar)
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <span className="text-muted small d-inline-flex align-items-center gap-1">
+              <i className="bi bi-eye" aria-hidden="true" />
+              {mascota.compartida_por ? `${mascota.compartida_por} la compartió contigo. ` : 'Compartida contigo. '}
+              Solo puedes verla.
+            </span>
+            {mascota.compartido_id && (
+              <button
+                type="button"
+                className="btn-modal-pill btn-modal-eliminar"
+                onClick={() => { setErrorDejarDeVer(''); setConfirmarDejarDeVer(true); }}
+              >
+                <i className="bi bi-eye-slash" aria-hidden="true" /> Dejar de ver
+              </button>
+            )}
+          </div>
         ) : (
           <div className="d-flex flex-wrap gap-2 align-items-center">
             {onEditar && (
@@ -391,6 +542,16 @@ export default function PerfilMascotaModal({
                 disabled={eliminandoMascota}
               >
                 <i className="bi bi-pencil-square" aria-hidden="true" /> Editar mascota
+              </button>
+            )}
+            {puedeCompartir && (
+              <button
+                type="button"
+                className="btn-modal-pill btn-modal-compartir"
+                onClick={() => setMostrarCompartir(true)}
+                disabled={eliminandoMascota}
+              >
+                <i className="bi bi-share" aria-hidden="true" /> Compartir mascota
               </button>
             )}
             {onPublicar && (
@@ -523,6 +684,57 @@ export default function PerfilMascotaModal({
             </Modal.Footer>
           </>
         )}
+      </Modal>
+
+      {mostrarCompartir && (
+        <CompartirMascotaModal
+          mascota={mascota}
+          onClose={() => setMostrarCompartir(false)}
+          onCompartida={() => setVersionCompartidos((v) => v + 1)}
+        />
+      )}
+
+      <Modal
+        show={confirmarDejarDeVer}
+        onHide={() => {
+          if (!dejandoDeVer) setConfirmarDejarDeVer(false);
+        }}
+        centered
+        backdrop={dejandoDeVer ? 'static' : true}
+        keyboard={!dejandoDeVer}
+        aria-labelledby="confirmar-dejar-de-ver-titulo"
+      >
+        <Modal.Header closeButton={!dejandoDeVer} className="border-0 pb-0">
+          <Modal.Title id="confirmar-dejar-de-ver-titulo" className="h4">
+            Dejar de ver mascota
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center px-4">
+          <div className="adopcion-respuesta-icono rechazo">
+            <i className="bi bi-eye-slash" aria-hidden="true" />
+          </div>
+          <p className="text-secondary mb-3">
+            {mascota.nombre} dejará de aparecer en tu perfil. Si quieres volver a verla,
+            {mascota.compartida_por ? ` ${mascota.compartida_por}` : ' su dueño'} tendrá que compartírtela de nuevo.
+          </p>
+          {errorDejarDeVer && <Alert variant="danger" className="mb-0">{errorDejarDeVer}</Alert>}
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0 pt-0">
+          <Button
+            variant="outline-secondary"
+            onClick={() => setConfirmarDejarDeVer(false)}
+            disabled={dejandoDeVer}
+          >
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={confirmarDejarDeVerMascota} disabled={dejandoDeVer}>
+            {dejandoDeVer ? (
+              <>
+                <Spinner animation="border" size="sm" aria-hidden="true" /> Quitando…
+              </>
+            ) : 'Sí, dejar de ver'}
+          </Button>
+        </Modal.Footer>
       </Modal>
 
       <Modal

@@ -36,6 +36,11 @@ export default function MascotaCard({ mascota, onVerPerfil }) {
             {estado.texto}
           </span>
         )}
+        {mascota.compartida && (
+          <span className="badge mascota-card-badge-compartida badge-azul">
+            <Icono nombre="people-fill" /> Compartida
+          </span>
+        )}
       </div>
 
       <div className="mascota-card-cuerpo">
