@@ -1,7 +1,5 @@
 /* ============================================================
-   Panel de administración — ajustes mínimos sobre Bootstrap 5.
-   Casi todo el diseño viene de clases de Bootstrap en los JSX;
-   aquí solo va el color de marca y el sidebar.
+   Panel de administración — estilo de marca y sistema visual compartido.
    ============================================================ */
 
 .adm-app {
@@ -23,8 +21,31 @@
   --bs-card-bg: var(--fondo-superficie);
   border: 1px solid var(--borde-suave) !important;
   box-shadow: var(--sombra-xs) !important;
+  transition: border-color var(--transicion), box-shadow var(--transicion), transform var(--transicion);
 }
 .adm-app .card-header { background-color: var(--fondo-superficie); }
+.adm-app .card:hover { border-color: var(--borde) !important; box-shadow: var(--sombra-sm) !important; }
+
+.adm-page-header {
+  padding: 1.25rem 1.4rem;
+  background: linear-gradient(110deg, #fff 65%, #f0fbf6 100%);
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xs);
+}
+.adm-page-header .adm-titulo { margin: 0; }
+
+.adm-stat-card { position: relative; overflow: hidden; }
+.adm-stat-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  content: '';
+  background: linear-gradient(180deg, #20c997, #198754);
+}
+.adm-stat-card:hover { transform: translateY(-2px); }
+.adm-stat-card.alerta::before { background: linear-gradient(180deg, #fb7185, #e11d48); }
+.adm-stat-card .adm-stat-icono { border-radius: 16px !important; }
 
 .adm-titulo,
 .adm-marca { color: var(--adm-verde-oscuro); }
@@ -32,7 +53,19 @@
 .adm-marca { font-family: var(--font-display); font-weight: 800; font-size: 0.95rem !important; }
 
 /* ---------- Sidebar ---------- */
-.adm-sidebar { --bs-offcanvas-width: 270px; }
+.adm-sidebar {
+  --bs-offcanvas-width: 270px;
+  color: #e5fff5;
+  background: linear-gradient(165deg, #064e3b 0%, #075b45 58%, #08765a 100%) !important;
+  border: 0 !important;
+  box-shadow: 8px 0 28px rgba(6, 78, 59, .12);
+}
+.adm-sidebar .offcanvas-header { border-color: rgba(255, 255, 255, .14) !important; }
+.adm-sidebar .offcanvas-title,
+.adm-sidebar .adm-marca { color: #fff !important; }
+.adm-sidebar .btn-close { filter: invert(1); opacity: .8; }
+.adm-sidebar .adm-sidebar-seccion { color: #a8e6cf !important; }
+.adm-sidebar hr { border-color: rgba(255, 255, 255, .2); opacity: 1; }
 
 @media (min-width: 992px) {
   .adm-sidebar {
@@ -42,8 +75,8 @@
     height: 100vh;
     flex-shrink: 0;
     overflow-y: auto;
-    background-color: #fff !important;
-    border-right: 1px solid var(--bs-border-color);
+    background: linear-gradient(165deg, #064e3b 0%, #075b45 58%, #08765a 100%) !important;
+    border-right: 0;
   }
   .adm-sidebar .offcanvas-body { padding: 1rem !important; }
 }
@@ -56,7 +89,7 @@
   gap: 0.75rem;
   padding: 0.55rem 0.85rem;
   border-radius: 0.5rem;
-  color: var(--texto-secundario);
+  color: rgba(240, 255, 249, .82);
   font-weight: 500;
   font-size: 0.875rem;
   border: 0;
@@ -65,11 +98,12 @@
 }
 .adm-nav .nav-link:hover,
 .adm-nav .nav-link.active {
-  background: var(--adm-verde-fondo);
-  color: var(--adm-verde-oscuro);
+  background: rgba(255, 255, 255, .13);
+  color: #fff;
 }
-.adm-nav .nav-link.active { font-weight: 700; }
-.adm-nav .nav-link.text-danger:hover { background: #fef2f2; color: #9f1239 !important; }
+.adm-nav .nav-link.active { font-weight: 700; box-shadow: inset 3px 0 0 #6ee7b7; }
+.adm-nav .nav-link.text-danger { color: #fecdd3 !important; }
+.adm-nav .nav-link.text-danger:hover { background: rgba(225, 29, 72, .18); color: #fff !important; }
 
 /* ---------- Piezas pequeñas ---------- */
 .adm-avatar {
@@ -107,6 +141,8 @@
 }
 
 .adm-app .table > :not(caption) > * > * { padding: 0.75rem 1rem; }
+.adm-app .table > tbody > tr > * { transition: background-color var(--transicion); }
+.adm-app .table > tbody > tr:hover > * { background-color: #f0fbf6; }
 /* Encabezados de tabla: ver .table > thead th en theme.css (estilo .tabla-admin del mockup) */
 
 .adm-app .evento-admin-fila { cursor: pointer; transition: background-color var(--transicion); }
@@ -136,9 +172,10 @@
   background: rgba(255, 255, 255, 0.96) !important;
   border-bottom: 1px solid var(--borde-suave) !important;
   backdrop-filter: blur(8px);
-  min-height: 64px;
+  min-height: 68px;
   box-shadow: var(--sombra-xs);
 }
+.adm-app > .flex-grow-1 > main { max-width: 1800px; width: 100%; margin-inline: auto; }
 
 .adm-user-toggle {
   transition: all var(--transicion);
@@ -170,4 +207,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+@media (max-width: 575.98px) {
+  .adm-page-header { padding: 1rem; }
+  .adm-app > .flex-grow-1 > main { padding: 1rem !important; }
 }

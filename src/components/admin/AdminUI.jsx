@@ -9,7 +9,7 @@ import { formatoNumero } from '../../utils/admin';
    ============================================================ */
 
 export const PageHeader = ({ titulo, subtitulo, children }) => (
-  <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div className="adm-page-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
       <h1 className="h3 fw-bold mb-1 adm-titulo">{titulo}</h1>
       {subtitulo && <p className="text-secondary small mb-0">{subtitulo}</p>}
@@ -21,7 +21,7 @@ export const PageHeader = ({ titulo, subtitulo, children }) => (
 export const StatCard = ({ icono, numero, label, alerta = false, cargando = false }) => {
   const v = alerta ? 'danger' : 'success';
   return (
-    <Card className={`h-100 border-0 shadow-sm ${alerta ? 'border-start border-4 border-danger' : ''}`}>
+    <Card className={`adm-stat-card h-100 border-0 shadow-sm ${alerta ? 'alerta' : ''}`}>
       <Card.Body className="d-flex align-items-center gap-3">
         <div className={`adm-stat-icono rounded-3 bg-${v}-subtle text-${v}-emphasis`}>
           <AdminIcon nombre={icono} size={24} />
