@@ -35,7 +35,7 @@ function ComentarioCard({ comentario, onEliminar, onRecomendar, onAgregarComenta
             {fecha && <span className="comentario-fecha">{haceCuanto(fecha)}</span>}
           </div>
           <div className="comentario-acciones">
-            {id && token && onRecomendar && (
+            {id && token && onRecomendar && comentario.recomendaciones_disponibles !== false && (
               <button
                 type="button"
                 className={`btn-recomendar${comentario.recomendado_por_usuario ? " recomendado" : ""}`}
