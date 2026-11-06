@@ -66,15 +66,6 @@ function ForoDetalle() {
       respuestas: eliminarDelHilo(comentario.respuestas || [], comentarioId),
     }));
 
-  const actualizarRecomendacion = (lista, comentarioId, datos) => lista.map((comentario) => {
-    if (Number(comentario.id_participacion ?? comentario.id) === Number(comentarioId)) {
-      return { ...comentario, ...datos };
-    }
-    return comentario.respuestas?.length
-      ? { ...comentario, respuestas: actualizarRecomendacion(comentario.respuestas, comentarioId, datos) }
-      : comentario;
-  });
-
   useEffect(() => {
     let activo = true;
     setCargando(true);
@@ -157,21 +148,6 @@ function ForoDetalle() {
     } catch (error) {
       const data = error.response?.data;
       notificarError("No se pudo eliminar", data?.mensaje || data?.message || "Intenta de nuevo más tarde.");
-    }
-  };
-
-  const recomendarComentario = async (comentarioId, yaRecomendado) => {
-    try {
-      const respuesta = yaRecomendado
-        ? await foroService.quitarRecomendacion(comentarioId)
-        : await foroService.recomendarComentario(comentarioId);
-      const datos = respuesta.datos || respuesta.data || {};
-      setComentarios((prev) => actualizarRecomendacion(prev, comentarioId, datos));
-      return true;
-    } catch (error) {
-      const mensaje = error.response?.data?.mensaje || "No pudimos guardar tu recomendación. Inténtalo de nuevo.";
-      notificarError("No se pudo recomendar", mensaje);
-      return false;
     }
   };
 
@@ -259,7 +235,6 @@ function ForoDetalle() {
                 key={c.id_participacion || c.id_comentario || c.id || i}
                 comentario={c}
                 onEliminar={eliminarComentario}
-                onRecomendar={recomendarComentario}
                 onAgregarComentario={agregarComentario}
               />
             ))
