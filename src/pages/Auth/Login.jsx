@@ -43,6 +43,8 @@ export const Login = () => {
     if (urlError) {
       return urlError === 'google_auth_failed'
         ? 'No se pudo iniciar sesión con Google. Intenta de nuevo o ingresa con tu correo.'
+        : urlError === 'account_inactive'
+          ? 'Tu cuenta está inactiva. Contacta a un administrador para recuperar el acceso.'
         : 'Error al iniciar sesión con Google.';
     }
     return null;

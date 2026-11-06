@@ -22,6 +22,17 @@ const lista = (response) => {
   return d?.data ?? d?.usuarios ?? d?.mascotas ?? d?.eventos ?? d?.reportes ?? [];
 };
 
+const eventoPayload = (payload, actualizar = false) => {
+  if (typeof File === 'undefined' || !(payload.foto_evento instanceof File)) return payload;
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([campo, valor]) => {
+    if (valor !== undefined && valor !== null) formData.append(campo, valor);
+  });
+  if (actualizar) formData.append('_method', 'PUT');
+  return formData;
+};
+
 // Estados de reporte (EstadoReporteSeeder)
 export const ESTADOS_REPORTE = {
   PENDIENTE: 1,
@@ -69,8 +80,14 @@ export const adminService = {
   // ---------- Eventos ----------
   listarEventos: async () => lista(await api.get(RUTAS.eventos)),
   listarInscritos: async (id) => lista(await api.get(`${RUTAS.eventos}/${id}/inscritos`)),
-  crearEvento: async (payload) => datos(await api.post(RUTAS.eventos, payload)),
-  actualizarEvento: async (id, payload) => datos(await api.put(`${RUTAS.eventos}/${id}`, payload)),
+  crearEvento: async (payload) => datos(await api.post(RUTAS.eventos, eventoPayload(payload))),
+  actualizarEvento: async (id, payload) => {
+    const body = eventoPayload(payload, true);
+    const response = body instanceof FormData
+      ? await api.post(`${RUTAS.eventos}/${id}`, body)
+      : await api.put(`${RUTAS.eventos}/${id}`, body);
+    return datos(response);
+  },
   eliminarEvento: async (id) => (await api.delete(`${RUTAS.eventos}/${id}`)).data,
 
   // ---------- Adopciones ----------

@@ -13,7 +13,7 @@ import { IconoTipoEvento } from '../../components/common/Icono';
 import { iniciales, urlFoto } from '../../utils/perfil';
 import { useSearchParams } from 'react-router-dom';
 
-const FORM_VACIO = { nombre: '', tipo_evento_id: '', fecha_evento: '', hora_evento: '', ubicacion: '', descripcion: '' };
+const FORM_VACIO = { nombre: '', tipo_evento_id: '', fecha_evento: '', hora_evento: '', ubicacion: '', descripcion: '', foto_evento: '', foto_evento_archivo: null };
 
 const tipoDe = (e) => rel(e, 'tipo_evento', 'tipoEvento');
 const organizadorDe = (e) => rel(e, 'usuario_organizador', 'usuarioOrganizador');
@@ -72,6 +72,7 @@ export const AdminEventos = () => {
   const [errores, setErrores] = useState({});
   const [intentado, setIntentado] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [fotoPrevia, setFotoPrevia] = useState('');
   const [eventoInscritos, setEventoInscritos] = useState(null);
   const [inscritos, setInscritos] = useState([]);
   const [cargandoInscritos, setCargandoInscritos] = useState(false);
@@ -79,6 +80,10 @@ export const AdminEventos = () => {
   const solicitudInscritos = useRef(0);
 
   const [recarga, setRecarga] = useState(0);
+
+  useEffect(() => () => {
+    if (fotoPrevia.startsWith('blob:')) URL.revokeObjectURL(fotoPrevia);
+  }, [fotoPrevia]);
   const cargar = useCallback(() => {
     setCargando(true);
     setError('');
@@ -141,6 +146,7 @@ export const AdminEventos = () => {
 
   const abrirNuevo = () => {
     setForm(FORM_VACIO);
+    setFotoPrevia('');
     setErrores({});
     setIntentado(false);
     setModal('nuevo');
@@ -154,10 +160,18 @@ export const AdminEventos = () => {
       hora_evento: String(e.hora_evento ?? '').slice(0, 5),
       ubicacion: e.ubicacion ?? '',
       descripcion: e.descripcion ?? '',
+      foto_evento: e.foto_evento ?? '',
+      foto_evento_archivo: null,
     });
+    setFotoPrevia('');
     setErrores({});
     setIntentado(false);
     setModal(e);
+  };
+
+  const cerrarModalEvento = () => {
+    setModal(null);
+    setFotoPrevia('');
   };
 
   const abrirInscritos = useCallback(async (evento) => {
@@ -197,6 +211,12 @@ export const AdminEventos = () => {
     if (intentado) setErrores(validar(nuevo, modal === 'nuevo' ? null : modal));
   };
 
+  const seleccionarFoto = (ev) => {
+    const archivo = ev.target.files?.[0] ?? null;
+    setForm((actual) => ({ ...actual, foto_evento_archivo: archivo }));
+    setFotoPrevia(archivo ? URL.createObjectURL(archivo) : '');
+  };
+
   const guardar = async (ev) => {
     ev.preventDefault();
     setIntentado(true);
@@ -205,7 +225,12 @@ export const AdminEventos = () => {
     if (Object.keys(err).length) return;
 
     setGuardando(true);
-    const payload = { ...form, tipo_evento_id: Number(form.tipo_evento_id) };
+    const campos = { ...form };
+    const fotoEventoArchivo = campos.foto_evento_archivo;
+    delete campos.foto_evento;
+    delete campos.foto_evento_archivo;
+    const payload = { ...campos, tipo_evento_id: Number(form.tipo_evento_id) };
+    if (fotoEventoArchivo) payload.foto_evento = fotoEventoArchivo;
     try {
       if (modal === 'nuevo') {
         await adminService.crearEvento(payload);
@@ -214,7 +239,7 @@ export const AdminEventos = () => {
         await adminService.actualizarEvento(modal.id_evento, payload);
         notificarExito('Evento actualizado');
       }
-      setModal(null);
+      cerrarModalEvento();
       cargar();
     } catch (e) {
       const errApi = e?.response?.data?.error;
@@ -416,7 +441,7 @@ export const AdminEventos = () => {
       <AdminModal
         abierto={Boolean(modal)}
         titulo={modal === 'nuevo' ? 'Nuevo evento' : 'Editar evento'}
-        onCerrar={() => setModal(null)}
+        onCerrar={cerrarModalEvento}
       >
         <Form onSubmit={guardar} noValidate>
           <Row className="g-3">
@@ -461,9 +486,26 @@ export const AdminEventos = () => {
               <Form.Control as="textarea" rows={3} placeholder="Detalles del evento, requisitos, contacto…" maxLength={255} {...props('descripcion')} />
               {errorDe('descripcion')}
             </Form.Group>
+            <Form.Group as={Col} xs={12} controlId="evFoto">
+              <Form.Label>Foto del evento <span className="text-secondary small">(opcional · máximo 4 MB)</span></Form.Label>
+              <Form.Control type="file" accept="image/jpeg,image/png,image/webp" onChange={seleccionarFoto} disabled={guardando} />
+              {(fotoPrevia || form.foto_evento) && (
+                <div className="mt-3 d-flex align-items-center gap-3">
+                  <img
+                    src={fotoPrevia || urlFoto({ foto: form.foto_evento })}
+                    alt="Vista previa de la foto del evento"
+                    className="rounded-3 border"
+                    style={{ width: 120, height: 84, objectFit: 'cover' }}
+                  />
+                  <span className="small text-secondary">
+                    {form.foto_evento_archivo?.name || 'Foto actual del evento'}
+                  </span>
+                </div>
+              )}
+            </Form.Group>
           </Row>
           <ModalAcciones>
-            <Button variant="outline-secondary" onClick={() => setModal(null)}>Cancelar</Button>
+            <Button variant="outline-secondary" onClick={cerrarModalEvento}>Cancelar</Button>
             <Button type="submit" variant="success" disabled={guardando}>
               {guardando ? 'Guardando…' : modal === 'nuevo' ? 'Crear evento' : 'Guardar cambios'}
             </Button>
