@@ -74,13 +74,24 @@ export const Registro = () => {
         acepto_privacidad: data.privacidad === true,
       };
 
-      await authService.register(payload);
+      const response = await authService.register(payload);
 
       setRegisteredEmail(data.correo);
       setClave(data.password);
       setStep(2); // La cuenta queda sin verificar: pasamos al OTP
+
+      if (response?.correo_enviado === false || response?.datos?.correo_enviado === false) {
+        setErrorMsg(response?.mensaje || 'La cuenta fue registrada, pero no pudimos enviar el código. Puedes solicitar el reenvío.');
+      }
     } catch (error) {
       console.error('Error en registro:', error);
+      if (error.response?.status === 503) {
+        setRegisteredEmail(data.correo);
+        setClave(data.password);
+        setStep(2);
+        setErrorMsg(error.response?.data?.mensaje || 'La cuenta quedó pendiente, pero no pudimos enviar el código. Puedes solicitar el reenvío.');
+        return;
+      }
       setErrorMsg(error.response?.data?.mensaje || 'Error al registrarse. Revisa los datos.');
     } finally {
       setLoading(false);

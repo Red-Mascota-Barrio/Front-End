@@ -11,6 +11,12 @@ const api = axios.create({
 
 // Sanctum: el token Bearer viaja en cada petición cuando hay sesión.
 api.interceptors.request.use((config) => {
+  if (!config.baseURL || config.baseURL === 'undefined') {
+    const errorMsg = '[API] Petición cancelada: baseURL de la API no está configurada.';
+    console.error(errorMsg, config.url);
+    return Promise.reject(new Error(errorMsg));
+  }
+
   if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
     config.headers.delete('Content-Type');
   }

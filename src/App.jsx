@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 import { AppRouter } from './routes/AppRouter';
 import { AuthProvider } from './context/AuthContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function App() {
   useEffect(() => {
@@ -17,11 +18,13 @@ function App() {
   }, []);
 
   return (
-    <HashRouter>
-      <AuthProvider>
-        <AppRouter />
-      </AuthProvider>
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <AuthProvider>
+          <AppRouter />
+        </AuthProvider>
+      </HashRouter>
+    </ErrorBoundary>
   );
 }
 
