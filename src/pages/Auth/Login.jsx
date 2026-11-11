@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { rolDeUsuario } from '../../utils/perfil';
+import { API_URL } from '../../config/api';
 
 import imagenMascotas from '../../assets/images/auth/perro-login.png';
 import logo from '../../assets/images/inicio/logo.png';
@@ -268,7 +269,7 @@ export const Login = () => {
             <Button
               variant="light"
               className="w-100 d-inline-flex align-items-center justify-content-center gap-2"
-              onClick={() => { const apiUrl = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/+$/, ''); const retorno = encodeURIComponent(window.location.href); window.location.href = `${apiUrl}/auth/google/redirect?redirect_to=${retorno}`; }}
+              onClick={() => { const retorno = encodeURIComponent(window.location.href); window.location.href = `${API_URL}/auth/google/redirect?redirect_to=${retorno}`; }}
               disabled={loading}
             >
               <GoogleLogo /> Continuar con Google

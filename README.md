@@ -6,7 +6,7 @@ React 19 + Vite + **Bootstrap 5 / React-Bootstrap**. Consume la API Laravel del 
 
 ```bash
 npm install
-cp .env.example .env      # VITE_API_URL=http://localhost:8000/api
+cp .env.example .env      # VITE_API_URL=https://mascotas.api.adsocidm.com/api
 npm run dev               # http://localhost:5173
 npm run lint
 npm run build
@@ -18,22 +18,21 @@ npm run build
 src/
 ├── main.jsx              # Carga Bootstrap → tema → App (el orden importa)
 ├── App.jsx               # Router + AuthProvider
-├── index.css             # Reset mínimo
-├── assets/images/        # auth/, common/, inicio/
+├── index.css             # Reset mínimo global
+├── assets/
+│   └── images/           # Recursos gráficos por dominio: auth/, common/, inicio/
 ├── components/
-│   ├── common/Icono.jsx  # <Icono nombre="..."/> (Bootstrap Icons) e íconos de especie / tipo de evento
-│   ├── layout/           # AppNavbar, Footer
+│   ├── common/           # Iconografía y piezas reutilizables
+│   ├── layout/           # AppNavbar, Footer, notificaciones
 │   ├── home/ auth/ mascotas/ eventos/ foro/ perfil/
-│   └── admin/            # AdminLayout (sidebar), AdminUI (piezas del panel), AdminIcon
-├── context/AuthContext.jsx   # sesión (token, user, role) + estadísticas
+│   └── admin/            # AdminLayout, AdminUI y utilidades del panel
+├── config/               # Configuración compartida del cliente (API/base URLs)
+├── context/              # Estado global (AuthContext)
 ├── pages/                # Una página por ruta (Inicio, Auth, Mascotas, Eventos, Foro, Perfil, Admin)
-├── routes/               # AppRouter (rutas) y ProtectedRoute (roles 1 = admin, 2 = usuario)
-├── services/             # Una capa por recurso de la API (axios en api.js)
-├── styles/
-│   ├── theme.css         # Tema Bootstrap con la paleta del mockup (variables --bs-* y --verde-*)
-│   ├── layout.css        # Navbar, footer, héroes, tarjetas laterales, estados vacíos
-│   └── home|auth|mascotas|eventos|foro|perfil|admin.css   # estilos de cada módulo
-└── utils/                # Helpers: fechas y normalización (admin.js), foro, eventos, mascotas, perfil
+├── routes/               # AppRouter y ProtectedRoute
+├── services/             # Capa HTTP por recurso (axios en api.js)
+├── styles/               # Tema Bootstrap y estilos por módulo
+└── utils/                # Helpers y normalización de datos
 ```
 
 ## Convenciones

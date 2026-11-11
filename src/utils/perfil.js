@@ -1,8 +1,9 @@
+import { urlStorage } from '../config/api';
+
 // Construye la URL de la foto de perfil (acepta URL absoluta o ruta de storage de Laravel)
 export const urlFoto = (usuario) => {
   const foto = usuario?.foto_perfil ?? usuario?.foto ?? null;
   if (!foto) return null;
-  const origen = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
   let ruta = String(foto).trim();
   if (!ruta) return null;
 
@@ -13,14 +14,14 @@ export const urlFoto = (usuario) => {
   const matchStorage = ruta.match(/(?:storage|public)\/(.+)$/i);
   if (matchStorage) {
     const limpia = matchStorage[1].replace(/^\/+/, '');
-    return `${origen}/api/storage/${limpia}`;
+    return urlStorage(limpia);
   }
 
   if (/^https?:\/\/(localhost|127\.0\.0\.1|back-end-kks2\.onrender\.com)(:\d+)?/i.test(ruta)) {
     const limpia = ruta
       .replace(/^https?:\/\/[^/]+\/?/i, '')
       .replace(/^(api\/)?(storage\/|public\/)?/, '');
-    return `${origen}/api/storage/${limpia}`;
+    return urlStorage(limpia);
   }
 
   if (/^https?:\/\//i.test(ruta)) {
@@ -31,7 +32,7 @@ export const urlFoto = (usuario) => {
   }
 
   const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/|api\/storage\/)/, '');
-  return `${origen}/api/storage/${limpia}`;
+  return urlStorage(limpia);
 };
 
 // Indica si la cuenta tiene la insignia de verificado

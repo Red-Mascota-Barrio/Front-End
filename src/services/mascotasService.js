@@ -1,6 +1,7 @@
 import { api } from './api';
 import SIN_FOTO from '../assets/images/common/pata.png';
 import { esMiMascota, tieneInfoDueno } from '../utils/mascotas';
+import { urlStorage } from '../config/api';
 
 export { SIN_FOTO };
 
@@ -13,10 +14,7 @@ const lista = (data, clave) => {
   if (Array.isArray(contenido?.[clave])) return contenido[clave];
   return Array.isArray(data?.[clave]) ? data[clave] : [];
 };
-const ORIGEN_API = (import.meta.env.VITE_API_URL || 'https://back-end-kks2.onrender.com/api').replace(/\/api\/?$/, '');
-
-// Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL completa
-// (https://back-end-kks2.onrender.com/api/storage/mascotas/abc.jpg).
+// Convierte la ruta de foto que devuelve Laravel ("mascotas/abc.jpg") en una URL del nuevo dominio.
 export const urlFoto = (foto) => {
   if (!foto) return SIN_FOTO;
   let ruta = String(foto).trim();
@@ -31,7 +29,7 @@ export const urlFoto = (foto) => {
   const matchStorage = ruta.match(/(?:storage|public)\/(.+)$/i);
   if (matchStorage) {
     const limpia = matchStorage[1].replace(/^\/+/, '');
-    return `${ORIGEN_API}/api/storage/${limpia}`;
+    return urlStorage(limpia);
   }
 
   // Si apunta a localhost o al backend de render
@@ -39,7 +37,7 @@ export const urlFoto = (foto) => {
     const limpia = ruta
       .replace(/^https?:\/\/[^/]+\/?/i, '')
       .replace(/^(api\/)?(storage\/|public\/)?/, '');
-    return `${ORIGEN_API}/api/storage/${limpia}`;
+    return urlStorage(limpia);
   }
 
   // Si ya es una URL externa válida (ej. Unsplash, Imgur)
@@ -51,7 +49,7 @@ export const urlFoto = (foto) => {
   }
 
   const limpia = ruta.replace(/^\/+/, '').replace(/^(public\/|storage\/|api\/storage\/)/, '');
-  return `${ORIGEN_API}/api/storage/${limpia}`;
+  return urlStorage(limpia);
 };
 
 // Foto principal de una mascota: columna "foto" o, si no hay, la primera imagen de la galería
