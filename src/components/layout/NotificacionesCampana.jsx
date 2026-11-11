@@ -22,7 +22,7 @@ const INTERVALO = 30000;
  */
 export const NotificacionesCampana = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, token } = useAuth();
   const [noLeidas, setNoLeidas] = useState(0);
   const [lista, setLista] = useState([]);
   const [cargando, setCargando] = useState(false);
@@ -34,15 +34,21 @@ export const NotificacionesCampana = () => {
   const contenedor = useRef(null);
   const boton = useRef(null);
 
+  const tieneTokenValido = Boolean(
+    token && token !== 'undefined' && token !== 'null' && String(token).trim() !== ''
+  );
+
   const actualizarContador = useCallback(async () => {
+    if (!tieneTokenValido) return;
     try {
       setNoLeidas(await notificacionesService.contarNoLeidas());
     } catch {
-      /* sin conexión o sesión vencida: se reintenta en el próximo ciclo */
+      /* sin conexión o sesión vencida */
     }
-  }, []);
+  }, [tieneTokenValido]);
 
   const cargarLista = useCallback(async () => {
+    if (!tieneTokenValido) return;
     setCargando(true);
     setError(false);
     try {
@@ -57,30 +63,50 @@ export const NotificacionesCampana = () => {
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [tieneTokenValido]);
 
-  // Sondeo periódico + al volver a la pestaña
+  // Sondeo periódico + al volver a la pestaña (solo cuando hay sesión activa)
   useEffect(() => {
-    (async () => {
-      try {
-        setNoLeidas(await notificacionesService.contarNoLeidas());
-      } catch {
-        /* se reintenta en el próximo ciclo */
-      }
-    })();
+    if (!tieneTokenValido) return;
+
+    let activo = true;
+    notificacionesService.contarNoLeidas()
+      .then((total) => {
+        if (activo) setNoLeidas(total);
+      })
+      .catch(() => {});
+
     const id = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        if (abiertaRef.current) cargarLista();
-        else actualizarContador();
+        if (abiertaRef.current) {
+          cargarLista();
+        } else {
+          notificacionesService.contarNoLeidas()
+            .then((total) => {
+              if (activo) setNoLeidas(total);
+            })
+            .catch(() => {});
+        }
       }
     }, INTERVALO);
-    const alVolver = () => document.visibilityState === 'visible' && actualizarContador();
+
+    const alVolver = () => {
+      if (document.visibilityState === 'visible') {
+        notificacionesService.contarNoLeidas()
+          .then((total) => {
+            if (activo) setNoLeidas(total);
+          })
+          .catch(() => {});
+      }
+    };
+
     document.addEventListener('visibilitychange', alVolver);
     return () => {
+      activo = false;
       clearInterval(id);
       document.removeEventListener('visibilitychange', alVolver);
     };
-  }, [actualizarContador, cargarLista]);
+  }, [tieneTokenValido, cargarLista]);
 
   const alAbrir = useCallback((abrir) => {
     abiertaRef.current = abrir;

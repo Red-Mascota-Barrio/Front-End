@@ -10,8 +10,10 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
 
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  const [enviando, setEnviando] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [tituloInvalido, setTituloInvalido] = useState(false);
+  const [contenidoInvalido, setContenidoInvalido] = useState(false);
 
   // Categorías cargadas desde el backend
   const [categoriasList, setCategoriasList] = useState([]);
@@ -22,26 +24,61 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
 
   const [categoria, setCategoria] = useState(String(opcionesLocales[0]?.id_categoria ?? ""));
 
-  // Manejar el envío del formulario
+  // Manejar el envío del formulario con validaciones básicas y prevención de doble clic
   const manejarPublicacion = async (e) => {
     e.preventDefault();
-    if (!titulo.trim() || !contenido.trim() || !categoria) {
-      setError("Completa el título, la categoría y el contenido.");
+
+    const tituloLimpio = titulo.trim();
+    const contenidoLimpio = contenido.trim();
+
+    let hayErrores = false;
+
+    if (!tituloLimpio) {
+      setTituloInvalido(true);
+      hayErrores = true;
+    } else {
+      setTituloInvalido(false);
+    }
+
+    if (!contenidoLimpio) {
+      setContenidoInvalido(true);
+      hayErrores = true;
+    } else {
+      setContenidoInvalido(false);
+    }
+
+    if (!categoria) {
+      setError("Por favor selecciona una categoría válida.");
+      hayErrores = true;
+    }
+
+    if (hayErrores) {
+      if (!error && (!tituloLimpio || !contenidoLimpio)) {
+        setError("El título y el contenido son obligatorios.");
+      }
       return;
     }
 
     const nuevoHilo = {
-      titulo: titulo.trim(),
-      contenido: contenido.trim(),
+      titulo: tituloLimpio,
+      contenido: contenidoLimpio,
       categoria_foro_id: Number(categoria),
     };
 
     try {
-      setEnviando(true);
+      setIsLoading(true);
       setError(null);
       const respuesta = await foroService.crear(nuevoHilo);
 
       if (respuesta.resultado === "ok" || respuesta.datos) {
+        // Reset completo del formulario tras éxito (200 / 201)
+        setTitulo("");
+        setContenido("");
+        setError(null);
+        setTituloInvalido(false);
+        setContenidoInvalido(false);
+
+        // Notificar al componente padre y cerrar el modal automáticamente
         onCrearHilo(respuesta.datos);
         onCerrar();
       } else {
@@ -50,22 +87,30 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
     } catch (err) {
       console.error("Error al publicar el hilo:", err.response?.data ?? err);
       const data = err.response?.data;
-      const validacion = data?.errors ?? data?.errores;
+      const validacion = data?.errors ?? data?.errores ?? data?.error;
 
-      if (err.response?.status === 401) setError("Debes iniciar sesión para publicar un foro.");
-      else if ([409, 429].includes(err.response?.status)) setError(data?.mensaje);
-      else if (validacion) setError(Object.values(validacion).flat().join(" "));
-      else if (err.response) setError(data?.mensaje || data?.message || `Error del servidor (${err.response.status}).`);
-      else setError("No se recibió respuesta del servidor.");
+      if (err.response?.status === 401) {
+        setError("Debes iniciar sesión para publicar un foro.");
+      } else if ([409, 429].includes(err.response?.status)) {
+        setError(data?.mensaje || "Operación no permitida en este momento.");
+      } else if (validacion && typeof validacion === "object") {
+        setError(Object.values(validacion).flat().join(" "));
+      } else if (err.response) {
+        setError(data?.mensaje || data?.message || `Error del servidor (${err.response.status}).`);
+      } else {
+        setError("No se recibió respuesta del servidor.");
+      }
     } finally {
-      setEnviando(false);
+      setIsLoading(false);
     }
   };
 
   // Traer las categorías desde el backend de forma segura
   useEffect(() => {
+    let montado = true;
     api.get("/categorias")
       .then((response) => {
+        if (!montado) return;
         const data = response.data;
         const arrayCategorias = data.datos ? data.datos : data;
         if (Array.isArray(arrayCategorias)) {
@@ -79,15 +124,20 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
         setLoading(false);
       })
       .catch((err) => {
+        if (!montado) return;
         console.error("Error al cargar categorías:", err);
         setCategoriasList([]);
         setLoading(false);
       });
+
+    return () => {
+      montado = false;
+    };
   }, []);
 
   return (
-    <Modal show onHide={enviando ? undefined : onCerrar} centered>
-      <Modal.Header closeButton={!enviando}>
+    <Modal show onHide={isLoading ? undefined : onCerrar} centered>
+      <Modal.Header closeButton={!isLoading}>
         <Modal.Title as="h2" className="h5 mb-0">Crear nuevo foro</Modal.Title>
       </Modal.Header>
 
@@ -96,23 +146,32 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
           {error && <Alert variant="danger"><Icono nombre="exclamation-circle" /> {error}</Alert>}
 
           <Form.Group className="mb-3" controlId="titulo">
-            <Form.Label>Título</Form.Label>
+            <Form.Label>Título <span className="text-danger">*</span></Form.Label>
             <Form.Control
               type="text"
               placeholder="¿Sobre qué quieres hablar?"
               maxLength={255}
               value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
+              isInvalid={tituloInvalido}
+              onChange={(e) => {
+                setTitulo(e.target.value);
+                if (tituloInvalido && e.target.value.trim()) setTituloInvalido(false);
+              }}
+              disabled={isLoading}
               required
             />
+            <Form.Control.Feedback type="invalid">
+              El título es obligatorio.
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="categoria">
-            <Form.Label>Categoría</Form.Label>
+            <Form.Label>Categoría <span className="text-danger">*</span></Form.Label>
             <Form.Select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
-              disabled={loading}
+              disabled={loading || isLoading}
+              required
             >
               {loading ? (
                 <option>Cargando categorías...</option>
@@ -127,24 +186,32 @@ function CrearHiloModal({ onCerrar, onCrearHilo, categorias = [] }) {
           </Form.Group>
 
           <Form.Group controlId="contenido">
-            <Form.Label>Contenido</Form.Label>
+            <Form.Label>Contenido <span className="text-danger">*</span></Form.Label>
             <Form.Control
               as="textarea"
               rows={6}
               placeholder="Cuenta tu experiencia o tu pregunta con detalle…"
               value={contenido}
-              onChange={(e) => setContenido(e.target.value)}
+              isInvalid={contenidoInvalido}
+              onChange={(e) => {
+                setContenido(e.target.value);
+                if (contenidoInvalido && e.target.value.trim()) setContenidoInvalido(false);
+              }}
+              disabled={isLoading}
               required
             />
+            <Form.Control.Feedback type="invalid">
+              El contenido es obligatorio.
+            </Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="light" onClick={onCerrar} disabled={enviando || loading}>
+          <Button variant="light" onClick={onCerrar} disabled={isLoading || loading}>
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" disabled={enviando || loading}>
-            {enviando ? "Publicando…" : "Publicar foro"}
+          <Button type="submit" variant="primary" disabled={isLoading || loading}>
+            {isLoading ? "Publicando..." : "Publicar foro"}
           </Button>
         </Modal.Footer>
       </Form>
