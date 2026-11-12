@@ -21,13 +21,15 @@ api.interceptors.request.use((config) => {
     config.headers.delete('Content-Type');
   }
 
-  const token = localStorage.getItem('token');
-  if (token && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
-    config.headers.Authorization = `Bearer ${token.trim()}`;
-  } else {
-    delete config.headers.Authorization;
+const authExplicit = config.headers?.Authorization;
+  if (!authExplicit) {
+    const token = localStorage.getItem('token');
+    if (token && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
+      config.headers.Authorization = `Bearer ${token.trim()}`;
+    } else {
+      delete config.headers.Authorization;
+    }
   }
-
   return config;
 });
 
