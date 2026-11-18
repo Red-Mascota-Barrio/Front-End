@@ -59,8 +59,9 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
     let activo = true;
 
     mascotasService.obtenerEspecies()
-      .then(data => {
-        if (activo) setEspecies(data);
+      .then(respuesta => {
+        const datosEspecies = respuesta.datos || respuesta;
+        if (activo) setEspecies(datosEspecies);
       })
       .catch(err => {
         console.error('Error al obtener especies:', err);
@@ -78,14 +79,23 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
   useEffect(() => {
     let activo = true;
     mascotasService.obtenerCatalogos()
-      .then((datos) => {
-        if (activo) setCatalogos({ generos: datos.generos ?? [], tamanos: datos.tamanos ?? [] });
+      .then((respuesta) => {
+        // Extraemos la propiedad 'datos' que viene en el JSON del backend
+        const catalogosData = respuesta.datos || respuesta; 
+        
+        if (activo) {
+          setCatalogos({ 
+            generos: catalogosData.generos ?? [], 
+            tamanos: catalogosData.tamanos ?? [] 
+          });
+        }
       })
       .catch((err) => {
         console.error('Error al cargar los catálogos de mascotas:', err);
         if (activo) setErrorCatalogos(err.response?.data?.mensaje || 'No se pudieron cargar los catálogos de mascotas.');
       })
       .finally(() => { if (activo) setCargandoCatalogos(false); });
+      
     return () => { activo = false; };
   }, []);
 
@@ -94,8 +104,9 @@ export default function RegistrarMascotaModal({ onClose, onGuardar, mascota = nu
 
     let activo = true;
     mascotasService.obtenerRazasPorEspecie(formData.id_especie)
-      .then(data => {
-        if (activo) setRazas(data);
+      .then(respuesta => {
+        const datosRazas = respuesta.datos || respuesta;
+        if (activo) setRazas(datosRazas);
       })
       .catch(err => {
         console.error('Error al obtener razas:', err);
