@@ -14,6 +14,7 @@ import imagenDestacado from '../../assets/images/inicio/banner.png';
 import '../../styles/eventos.css';
 
 const TODOS = 'Todos';
+const rawApiUrl = import.meta.env.VITE_API_URL;
 
 const hoy = () => {
   const d = new Date();
@@ -28,7 +29,7 @@ const EventoDestacado = ({ evento, onInscribir, onCancelar }) => {
     <article className="evento-featured" id={`evento-${evento.id}`}>
       <div className="evento-featured-img">
         <img
-          src={evento.foto || imagenDestacado}
+          src={rawApiUrl + '/storage/' + evento.foto_evento || imagenDestacado}
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = imagenDestacado; }}
           alt={evento.titulo}
         />
