@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { AvatarPerfil } from './AvatarPerfil';
 import { Icono } from '../common/Icono';
+import RegistrarMascotaModal from '../mascotas/RegistrarMascotaModal';
+import { mascotasService } from '../../services/mascotasService';
 import { esVerificado } from '../../utils/perfil';
 
 // Claves de GET /estadisticas/usuario
@@ -13,10 +16,21 @@ const STATS = [
 ];
 
 // Encabezado del perfil (perfil_Usuario.html del mockup)
-export const PerfilHeader = ({ usuario, estadisticas }) => {
+export const PerfilHeader = ({ usuario, estadisticas, onMascotaRegistrada }) => {
+  const [mostrarRegistro, setMostrarRegistro] = useState(false);
+
   // En la BD la biografía es la columna "descripcion"
   const bio = usuario?.descripcion ?? usuario?.biografia;
   const ubicacion = [usuario?.barrio, usuario?.ciudad].filter(Boolean).join(', ');
+
+  const handleGuardarMascota = async (datosNuevos) => {
+    await mascotasService.crear(datosNuevos);
+    setMostrarRegistro(false);
+    // Notifica a TabMisMascotas para que recargue la lista si está montada
+    window.dispatchEvent(new Event('mis-mascotas:recargar'));
+    // Callback opcional por si el componente padre necesita actualizar las estadísticas del header
+    onMascotaRegistrada?.();
+  };
 
   return (
     <section className="perfil-encabezado">
@@ -53,12 +67,19 @@ export const PerfilHeader = ({ usuario, estadisticas }) => {
             <Button as={Link} to="/perfil/editar" variant="outline-primary" size="sm">
               <Icono nombre="pencil" /> Editar
             </Button>
-            <Button as={Link} to="/mis-mascotas?registrar=1" variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={() => setMostrarRegistro(true)}>
               <Icono nombre="plus-lg" /> Agregar mascota
             </Button>
           </div>
         </div>
       </div>
+
+      {mostrarRegistro && (
+        <RegistrarMascotaModal
+          onClose={() => setMostrarRegistro(false)}
+          onGuardar={handleGuardarMascota}
+        />
+      )}
     </section>
   );
 };
